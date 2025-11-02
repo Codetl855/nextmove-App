@@ -26,6 +26,7 @@ const LoginScreen: React.FC = () => {
     const [keepLoggedIn, setKeepLoggedIn] = useState(false);
 
     const handleLogin = () => {
+        navigation.navigate('UserBottomTab' as never);
         if (selectedOption === 'email') {
             console.log('Login with Email:', email, password);
         } else {
