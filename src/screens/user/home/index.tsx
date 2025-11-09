@@ -30,9 +30,13 @@ const HomeScreen: React.FC = () => {
                 <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
                     <View style={styles.container}>
                         <View style={styles.headerView}>
-                            <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                            <TouchableOpacity onPress={() => navigation?.openDrawer()} >
+                                <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                            </TouchableOpacity>
                             <Image source={require('../../../assets/images/HomeLogo.png')} style={styles.headerLogo} />
-                            <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
+                            <TouchableOpacity onPress={() => navigation.navigate('NotificationsScreen')}>
+                                <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
+                            </TouchableOpacity>
                         </View>
                         <View style={styles.filterView}>
                             <NMTextInput

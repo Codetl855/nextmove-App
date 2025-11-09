@@ -100,6 +100,7 @@ const UserBottomTab: React.FC = () => {
                         tabPress: e => {
                             e.preventDefault();
                             console.log('Add button pressed');
+                            navigation.navigate('AddProperties' as never);
                         },
                     })}
                     options={{

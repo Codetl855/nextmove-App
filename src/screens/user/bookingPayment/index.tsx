@@ -7,7 +7,7 @@ import { ChevronLeft, Edit3Icon, SquareCheckIcon } from 'lucide-react-native'
 import NMTextInput from '../../../components/common/NMTextInput';
 import NMButton from '../../../components/common/NMButton';
 import NMRadioButton from '../../../components/common/NMRadioButton';
-const BookingPayment: React.FC = () => {
+const BookingPayment: React.FC = ({ navigation }: any) => {
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
             <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
@@ -205,6 +205,7 @@ const BookingPayment: React.FC = () => {
                         fontFamily='semiBold'
                         width={'90%'}
                         style={{ alignSelf: 'center', marginVertical: 10 }}
+                        onPress={() => navigation.navigate('PaymentMethod')}
                     />
 
                 </View>

@@ -29,6 +29,7 @@ interface NMButtonProps {
     leftIcon?: React.ReactNode;
     rightIcon?: React.ReactNode;
     iconSpacing?: number;
+    contentStyleExtra?: ViewStyle
 }
 
 const NMButton: React.FC<NMButtonProps> = ({
@@ -49,6 +50,7 @@ const NMButton: React.FC<NMButtonProps> = ({
     leftIcon,
     rightIcon,
     iconSpacing = 8,
+    contentStyleExtra
 }) => {
     const buttonStyle: ViewStyle = {
         backgroundColor: disabled ? '#A9A9A9' : backgroundColor,
@@ -78,7 +80,7 @@ const NMButton: React.FC<NMButtonProps> = ({
             {loading ? (
                 <ActivityIndicator color={textColor} />
             ) : (
-                <View style={styles.content}>
+                <View style={[styles.content, contentStyleExtra]}>
                     {leftIcon && <View style={{ marginRight: iconSpacing }}>{leftIcon}</View>}
                     <Text style={[styles.text, labelStyle, textStyle]}>{title}</Text>
                     {rightIcon && <View style={{ marginLeft: iconSpacing }}>{rightIcon}</View>}

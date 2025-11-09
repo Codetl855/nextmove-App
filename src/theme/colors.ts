@@ -8,6 +8,7 @@ export const Colors = {
     gray: '#949494',
     lightGray: '#D3D3D3',
     lightB6: '#B6B6B6',
+    whitEC: '#ECECEC',
 
     // Backgrounds
     background: '#F4F4F4',
@@ -39,6 +40,8 @@ export const Colors = {
     statusText: '#0AC247',
     statusPendingText: '#FFB300',
     statusPendingBg: '#FFF6E0',
+    statusSoldText: '#DA0B0B',
+    statusSoldBg: '#FBE2E2',
 
     //star color
     star: '#FFC300',
