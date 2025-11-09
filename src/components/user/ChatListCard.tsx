@@ -1,16 +1,19 @@
-import { StyleSheet, View } from 'react-native'
+import { StyleSheet, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import NMText from '../common/NMText'
 import { Colors } from '../../theme/colors'
 import { CheckCheck } from 'lucide-react-native'
+import { useNavigation } from '@react-navigation/native'
 
 interface ChatListCardProps {
     countHave?: boolean
 }
 
 const ChatListCard: React.FC<ChatListCardProps> = ({ countHave }) => {
+    const navigation = useNavigation();
+
     return (
-        <View style={styles.mainContainer}>
+        <TouchableOpacity style={styles.mainContainer} onPress={() => navigation.navigate('ChatScreen' as never)} activeOpacity={0.8}>
             <View style={styles.avater}>
                 <View style={styles.activeAvater} />
             </View>
@@ -39,7 +42,7 @@ const ChatListCard: React.FC<ChatListCardProps> = ({ countHave }) => {
                     <CheckCheck size={20} color={Colors.primary} />
                 )}
             </View>
-        </View>
+        </TouchableOpacity>
     )
 }
 

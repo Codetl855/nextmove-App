@@ -28,6 +28,7 @@ import PackagesScreen from '../../screens/user/packages';
 import PaymentMethod from '../../screens/user/paymentMethod';
 import NotificationsScreen from '../../screens/user/notifications';
 import AddProperties from '../../screens/user/addProperties';
+import ChatScreen from '../../screens/user/chat';
 
 const Stack = createStackNavigator();
 
@@ -67,6 +68,7 @@ const UserStack: React.FC = () => {
                 <Stack.Screen name="PaymentMethod" component={PaymentMethod} />
                 <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
                 <Stack.Screen name="AddProperties" component={AddProperties} />
+                <Stack.Screen name="ChatScreen" component={ChatScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );
