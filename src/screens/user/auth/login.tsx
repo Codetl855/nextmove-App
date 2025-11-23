@@ -16,21 +16,65 @@ import NMButton from '../../../components/common/NMButton';
 import NMRadioButton from '../../../components/common/NMRadioButton';
 import NMTextInput from '../../../components/common/NMTextInput';
 import { Mail, Phone, Lock, CheckCircle, Circle } from 'lucide-react-native';
+import { useForm } from '../../../hooks/useForm';
+import { validatePassword } from '../../../utils/passwordValidation';
+import { apiRequest } from '../../../services/apiClient';
+import { showErrorToast, showSuccessToast } from '../../../utils/toastService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen: React.FC = () => {
     const navigation = useNavigation();
     const [selectedOption, setSelectedOption] = useState<'email' | 'mobile'>('email');
-    const [email, setEmail] = useState('');
-    const [mobile, setMobile] = useState('');
-    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
     const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+    const { values, errors, handleChange, validate } = useForm({
+        email: "",
+        mobile: "",
+        password: "",
+    });
 
-    const handleLogin = () => {
-        navigation.navigate('UserBottomTab' as never);
-        if (selectedOption === 'email') {
-            console.log('Login with Email:', email, password);
-        } else {
-            console.log('Login with Mobile:', mobile, password);
+    const handleLogin = async () => {
+        const isValid = validate({
+            email: (v) =>
+                selectedOption === "email" && !v.includes("@")
+                    ? "Invalid email address"
+                    : null,
+            mobile: (v) =>
+                selectedOption === "mobile" && v.length < 10
+                    ? "Invalid mobile number"
+                    : null,
+            password: validatePassword,
+        });
+
+        if (!isValid) return;
+
+        const payload =
+            selectedOption === "email"
+                ? { email: values.email, password: values.password }
+                : { mobile: values.mobile, password: values.password };
+
+        try {
+            setLoading(true);
+
+            const { result, error } = await apiRequest({
+                endpoint: "v1/mobile/login",
+                method: "POST",
+                data: payload,
+            });
+
+            if (error) {
+                showErrorToast(error);
+                return;
+            }
+
+            await AsyncStorage.setItem("loginUser", JSON.stringify(result));
+            showSuccessToast("Login successful!");
+            navigation.navigate("UserBottomTab" as never);
+
+        } catch (err) {
+            showErrorToast("Something went wrong!");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -88,19 +132,22 @@ const LoginScreen: React.FC = () => {
                                     <NMTextInput
                                         label="Email"
                                         placeholder="Enter your email"
-                                        value={email}
-                                        onChangeText={setEmail}
+                                        value={values.email}
+                                        onChangeText={(text) => handleChange("email", text)}
                                         inputType="email"
                                         leftIcon={<Mail size={18} color={Colors.textLight} />}
+                                        error={errors.email}
                                     />
+
                                     <NMTextInput
                                         label="Password"
                                         placeholder="*********"
-                                        value={password}
-                                        onChangeText={setPassword}
+                                        value={values.password}
+                                        onChangeText={(text) => handleChange("password", text)}
                                         inputType="password"
                                         showPasswordToggle
                                         leftIcon={<Lock size={18} color={Colors.textLight} />}
+                                        error={errors.password}
                                     />
                                 </>
                             ) : (
@@ -108,19 +155,22 @@ const LoginScreen: React.FC = () => {
                                     <NMTextInput
                                         label="Mobile Number"
                                         placeholder="+92 303 55566545"
-                                        value={mobile}
-                                        onChangeText={setMobile}
+                                        value={values.mobile}
+                                        onChangeText={(text) => handleChange("mobile", text)}
                                         keyboardType="phone-pad"
                                         leftIcon={<Phone size={18} color={Colors.textLight} />}
+                                        error={errors.mobile}
                                     />
+
                                     <NMTextInput
                                         label="Password"
                                         placeholder="*********"
-                                        value={password}
-                                        onChangeText={setPassword}
+                                        value={values.password}
+                                        onChangeText={(text) => handleChange("password", text)}
                                         inputType="password"
                                         showPasswordToggle
                                         leftIcon={<Lock size={18} color={Colors.textLight} />}
+                                        error={errors.password}
                                     />
                                 </>
                             )}
@@ -162,6 +212,7 @@ const LoginScreen: React.FC = () => {
 
                             <NMButton
                                 title="Login"
+                                loading={loading}
                                 onPress={handleLogin}
                                 backgroundColor={Colors.primary}
                                 textColor={Colors.white}

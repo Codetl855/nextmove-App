@@ -22,7 +22,7 @@ const NMSafeAreaWrapper: React.FC<NMSafeAreaWrapperProps> = ({
     children,
     statusBarColor,
     statusBarStyle = 'dark-content',
-    backgroundColor = '#ffffff',
+    backgroundColor = Platform.OS === 'android' ? '#ffffff' : '#000',
     edges = ['top', 'bottom'],
     style,
 }) => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     Modal,
     View,
@@ -11,18 +11,34 @@ import { Colors } from '../../theme/colors';
 import NMTextInput from '../common/NMTextInput';
 import NMButton from '../common/NMButton';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface CommentSheetModalProps {
     visible: boolean;
-    onClose: () => void;
+    onClose?: () => void;
+    onSubmit: (review: string, rating: number) => void;
 }
 
 const CommentSheetModal: React.FC<CommentSheetModalProps> = ({
     visible,
     onClose,
+    onSubmit
 }) => {
 
     const navigation = useNavigation();
+    const [userInfo, setUserInfo] = useState<any>({});
+    const [rating, setRating] = useState(5);
+    const [comment, setComment] = useState('');
+    const getLoginUser = async () => {
+        const user = await AsyncStorage.getItem('loginUser');;
+        const parsedUser = JSON.parse(user);
+        setUserInfo(parsedUser);
+    }
+
+    useEffect(() => {
+        getLoginUser();
+        setComment('');
+    }, []);
 
     return (
         <Modal
@@ -57,12 +73,16 @@ const CommentSheetModal: React.FC<CommentSheetModalProps> = ({
                         label='Name'
                         placeholder='Enter your name'
                         mainViewStyle={{ marginVertical: 10, marginHorizontal: 20 }}
+                        value={`${userInfo?.user?.first_name} ${userInfo?.user?.last_name}`}
+                        editable={false}
                     />
 
                     <NMTextInput
                         label='Email'
                         placeholder='Enter your email'
                         mainViewStyle={{ marginVertical: 10, marginHorizontal: 20 }}
+                        value={userInfo?.user?.email}
+                        editable={false}
                     />
 
                     <NMTextInput
@@ -72,6 +92,9 @@ const CommentSheetModal: React.FC<CommentSheetModalProps> = ({
                         numberOfLines={5}
                         mainViewStyle={{ marginVertical: 10, marginHorizontal: 20 }}
                         inputStyle={{ textAlignVertical: 'top', height: 100 }}
+                        required
+                        value={comment}
+                        onChangeText={(text) => setComment(text)}
                     />
 
                     <View style={styles.starReview}>
@@ -79,10 +102,18 @@ const CommentSheetModal: React.FC<CommentSheetModalProps> = ({
                             Rate Us
                         </NMText>
                         <View style={styles.inRow}>
-                            {[1, 2, 3, 4, 5].map((item, index) => (
-                                <StarIcon key={index} color={Colors.star} size={16} fill={Colors.star} />
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <TouchableOpacity key={star} onPress={() => setRating(star)}>
+                                    <StarIcon
+                                        size={24}
+                                        color={star <= rating ? Colors.star : Colors.border}
+                                        fill={star <= rating ? Colors.star : 'none'}
+                                        strokeWidth={2}
+                                    />
+                                </TouchableOpacity>
                             ))}
                         </View>
+
                     </View>
 
                     <NMButton
@@ -92,7 +123,10 @@ const CommentSheetModal: React.FC<CommentSheetModalProps> = ({
                         borderRadius={8}
                         style={{ alignSelf: 'center', marginTop: 10 }}
                         onPress={() => {
-                            onClose();
+                            onSubmit(comment, rating);
+                            if (onClose) {
+                                onClose();
+                            }
                         }}
                     />
 

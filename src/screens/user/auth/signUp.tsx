@@ -15,28 +15,141 @@ import NMText from '../../../components/common/NMText';
 import NMButton from '../../../components/common/NMButton';
 import NMTextInput from '../../../components/common/NMTextInput';
 import NMRadioButton from '../../../components/common/NMRadioButton';
+import { useForm } from '../../../hooks/useForm';
+import { validatePassword } from '../../../utils/passwordValidation';
+import { apiRequest } from '../../../services/apiClient';
+import { showErrorToast, showSuccessToast } from '../../../utils/toastService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SignUpScreen: React.FC = () => {
     const navigation = useNavigation();
     const [userType, setUserType] = useState<'personal' | 'agency'>('personal');
+    const [loading, setLoading] = useState(false);
+    const { values, errors, handleChange, validate } = useForm({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        password: '',
+        confirmPassword: '',
+        agencyName: '',
+        agencyEmail: '',
+        agencyPhone: '',
+        agencyPassword: '',
+        agencyConfirmPassword: '',
+    });
 
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [agencyName, setAgencyName] = useState('');
-    const [agencyEmail, setAgencyEmail] = useState('');
-    const [agencyPhone, setAgencyPhone] = useState('');
-    const [agencyPassword, setAgencyPassword] = useState('');
-    const [agencyConfirmPassword, setAgencyConfirmPassword] = useState('');
+    const handleSignUp = async () => {
 
-    const handleSignUp = () => {
-        if (userType === 'personal') {
-            console.log('SignUp Personal:', { firstName, lastName, email, phone, password, confirmPassword });
-        } else {
-            console.log('SignUp Agency:', { agencyName, agencyEmail, agencyPhone, agencyPassword, agencyConfirmPassword });
+        const isValid = validate({
+            firstName: (v) =>
+                userType === 'personal' && !v ? 'First name is required' : null,
+            lastName: (v) =>
+                userType === 'personal' && !v ? 'Last name is required' : null,
+            email: (v) =>
+                userType === 'personal' && (!v || !v.includes('@'))
+                    ? 'Invalid email address'
+                    : null,
+            phone: (v) =>
+                userType === 'personal' && (!v || v.length < 10)
+                    ? 'Invalid phone number'
+                    : null,
+            password: (v) =>
+                userType === 'personal'
+                    ? !v
+                        ? 'Password is required'
+                        : validatePassword(v)
+                    : null,
+            confirmPassword: (v) =>
+                userType === 'personal' && v !== values.password
+                    ? 'Passwords do not match'
+                    : null,
+            agencyName: (v) =>
+                userType === 'agency' && !v ? 'Agency name is required' : null,
+            agencyEmail: (v) =>
+                userType === 'agency' && (!v || !v.includes('@'))
+                    ? 'Invalid agency email'
+                    : null,
+            agencyPhone: (v) =>
+                userType === 'agency' && (!v || v.length < 10)
+                    ? 'Invalid agency phone number'
+                    : null,
+            agencyPassword: (v) =>
+                userType === 'agency'
+                    ? !v
+                        ? 'Password is required'
+                        : validatePassword(v)
+                    : null,
+            agencyConfirmPassword: (v) =>
+                userType === 'agency' && v !== values.agencyPassword
+                    ? 'Passwords do not match'
+                    : null,
+        });
+
+        if (!isValid) return;
+
+        const payload =
+            userType === 'personal'
+                ? {
+                    first_name: values.firstName,
+                    last_name: values.lastName,
+                    email: values.email,
+                    mobile: values.phone,
+                    password: values.password,
+                    password_confirmation: values.confirmPassword,
+                }
+                : {
+                    agency_name: values.agencyName,
+                    email: values.agencyEmail,
+                    mobile: values.agencyPhone,
+                    password: values.agencyPassword,
+                    password_confirmation: values.agencyConfirmPassword,
+                };
+
+        const fieldMap: Record<string, keyof typeof values> = {
+            first_name: 'firstName',
+            last_name: 'lastName',
+            mobile: userType === 'personal' ? 'phone' : 'agencyPhone',
+            email: userType === 'personal' ? 'email' : 'agencyEmail',
+            password: userType === 'personal' ? 'password' : 'agencyPassword',
+            password_confirmation: userType === 'personal' ? 'confirmPassword' : 'agencyConfirmPassword',
+            agency_name: 'agencyName',
+        };
+
+        try {
+            setLoading(true);
+
+            const { result, error, fieldErrors } = await apiRequest({
+                endpoint: 'v1/mobile/register',
+                method: 'POST',
+                data: payload,
+            });
+
+            if (fieldErrors) {
+                Object.keys(fieldErrors).forEach((key) => {
+                    const mappedKey = fieldMap[key] || (key as keyof typeof values);
+                    handleChange(
+                        mappedKey,
+                        values[mappedKey],
+                        fieldErrors[key][0]
+                    );
+                });
+                return;
+            }
+
+            if (error) {
+                showErrorToast(error);
+                return;
+            }
+            // console.log('result check', JSON.stringify(result));
+            // await AsyncStorage.setItem('loginUser', JSON.stringify(result));
+            showSuccessToast(result.message || 'Registration successful!');
+            navigation.navigate('loginScreen' as never);
+        } catch (err) {
+            showErrorToast('Something went wrong!');
+            console.error(err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -91,48 +204,64 @@ const SignUpScreen: React.FC = () => {
                                     <NMTextInput
                                         label="First Name"
                                         placeholder="John"
-                                        value={firstName}
-                                        onChangeText={setFirstName}
-                                        style={{ flex: 1, marginRight: 10 }}
+                                        value={values.firstName}
+                                        onChangeText={(text) => handleChange("firstName", text)}
+                                        inputType="text"
+                                        error={errors.firstName}
+                                        required
                                     />
                                     <NMTextInput
                                         label="Last Name"
                                         placeholder="Doe"
-                                        value={lastName}
-                                        onChangeText={setLastName}
-                                        style={{ flex: 1 }}
+                                        value={values.lastName}
+                                        onChangeText={(text) => handleChange("lastName", text)}
+                                        inputType="text"
+                                        error={errors.lastName}
+                                        required
                                     />
+
                                     <NMTextInput
                                         label="Email"
                                         placeholder="example@mail.com"
-                                        value={email}
-                                        onChangeText={setEmail}
+                                        value={values.email}
+                                        onChangeText={(text) => handleChange("email", text)}
+                                        inputType="email"
+                                        error={errors.email}
+                                        required
                                     />
                                     <NMTextInput
                                         label="Phone"
                                         placeholder="+92 303 55566545"
-                                        value={phone}
-                                        onChangeText={setPhone}
+                                        value={values.phone}
+                                        onChangeText={(text) => handleChange("phone", text)}
                                         keyboardType="phone-pad"
+                                        inputType="text"
+                                        error={errors.phone}
+                                        required
                                     />
+
                                     <View style={styles.row50}>
                                         <NMTextInput
                                             label="Create Password"
                                             placeholder="*********"
-                                            value={password}
-                                            onChangeText={setPassword}
+                                            value={values.password}
+                                            onChangeText={(text) => handleChange("password", text)}
                                             inputType="password"
                                             showPasswordToggle
+                                            error={errors.password}
                                             mainViewStyle={{ width: '48%' }}
+                                            required
                                         />
                                         <NMTextInput
                                             label="Confirm Password"
                                             placeholder="*********"
-                                            value={confirmPassword}
-                                            onChangeText={setConfirmPassword}
+                                            value={values.confirmPassword}
+                                            onChangeText={(text) => handleChange("confirmPassword", text)}
                                             inputType="password"
                                             showPasswordToggle
+                                            error={errors.confirmPassword}
                                             mainViewStyle={{ width: '48%' }}
+                                            required
                                         />
                                     </View>
                                 </>
@@ -141,39 +270,50 @@ const SignUpScreen: React.FC = () => {
                                     <NMTextInput
                                         label="Agency Name"
                                         placeholder="Your Agency Name"
-                                        value={agencyName}
-                                        onChangeText={setAgencyName}
+                                        value={values.agencyName}
+                                        onChangeText={(text) => handleChange("agencyName", text)}
+                                        inputType="text"
+                                        error={errors.agencyName}
+                                        required
                                     />
                                     <NMTextInput
                                         label="Agency Email"
                                         placeholder="agency@mail.com"
-                                        value={agencyEmail}
-                                        onChangeText={setAgencyEmail}
+                                        value={values.agencyEmail}
+                                        onChangeText={(text) => handleChange("agencyEmail", text)}
+                                        inputType="email"
+                                        error={errors.agencyEmail}
+                                        required
                                     />
                                     <NMTextInput
                                         label="Agency Contact Number"
                                         placeholder="+92 303 55566545"
-                                        value={agencyPhone}
-                                        onChangeText={setAgencyPhone}
+                                        value={values.agencyPhone}
+                                        onChangeText={(text) => handleChange("agencyPhone", text)}
                                         keyboardType="phone-pad"
+                                        inputType="text"
+                                        error={errors.agencyPhone}
+                                        required
                                     />
                                     <View style={styles.row50}>
                                         <NMTextInput
                                             label="Create Password"
                                             placeholder="*********"
-                                            value={agencyPassword}
-                                            onChangeText={setAgencyPassword}
+                                            value={values.agencyPassword}
+                                            onChangeText={(text) => handleChange("agencyPassword", text)}
                                             inputType="password"
                                             showPasswordToggle
+                                            error={errors.agencyPassword}
                                             mainViewStyle={{ width: '48%' }}
                                         />
                                         <NMTextInput
                                             label="Confirm Password"
                                             placeholder="*********"
-                                            value={agencyConfirmPassword}
-                                            onChangeText={setAgencyConfirmPassword}
+                                            value={values.agencyConfirmPassword}
+                                            onChangeText={(text) => handleChange("agencyConfirmPassword", text)}
                                             inputType="password"
                                             showPasswordToggle
+                                            error={errors.agencyConfirmPassword}
                                             mainViewStyle={{ width: '48%' }}
                                         />
                                     </View>
@@ -182,6 +322,7 @@ const SignUpScreen: React.FC = () => {
 
                             <NMButton
                                 title="Sign Up"
+                                loading={loading}
                                 onPress={handleSignUp}
                                 backgroundColor={Colors.primary}
                                 textColor={Colors.white}

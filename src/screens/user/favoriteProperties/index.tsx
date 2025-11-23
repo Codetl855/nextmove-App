@@ -1,11 +1,75 @@
 import { Image, ScrollView, StyleSheet, View } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper'
 import { Colors } from '../../../theme/colors'
 import NMText from '../../../components/common/NMText'
 import FilterListCard from '../../../components/user/FilterListCard'
+import { showErrorToast, showSuccessToast } from '../../../utils/toastService'
+import { apiRequest } from '../../../services/apiClient'
+import LoaderModal from '../../../components/common/NMLoaderModal'
 
 const FavoriteProperties: React.FC = () => {
+
+    const [favList, setFavList] = useState([]);
+    const [loader, setLoader] = useState(false);
+    const getFavList = async () => {
+        try {
+            setLoader(true);
+            const { result, error } = await apiRequest({
+                endpoint: `v1/favourites`,
+                method: 'GET',
+            });
+
+            if (result) {
+                console.log("Properties List:", JSON.stringify(result.data));
+                setFavList(result.data);
+            }
+
+            if (error) {
+                console.log("Error:", error);
+                showErrorToast(`Get Properties Error: ${error}`);
+            }
+
+        } catch (err) {
+            console.error("Unexpected Error:", err);
+            showErrorToast(`Unexpected Error: ${err}`);
+        } finally {
+            setLoader(false);
+        }
+    };
+
+    const makeUnFavorite = async (property: any) => {
+        try {
+            setLoader(true);
+
+            const { result, error } = await apiRequest({
+                endpoint: `v1/favourites/${property.property_id}/toggle`,
+                method: 'POST',
+            });
+
+            if (result) {
+                console.log("Properties List:", JSON.stringify(result));
+                getFavList();
+                showSuccessToast('Favorite status updated successfully');
+            }
+
+            if (error) {
+                console.log("Error:", error);
+                showErrorToast(`Get Properties Error: ${error}`);
+            }
+
+        } catch (err) {
+            console.error("Unexpected Error:", err);
+            showErrorToast(`Unexpected Error: ${err}`);
+        } finally {
+            setLoader(false);
+        }
+    };
+
+    useEffect(() => {
+        getFavList();
+    }, []);
+
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
             <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
@@ -24,9 +88,17 @@ const FavoriteProperties: React.FC = () => {
                     </View>
                 </View>
 
-                {[...Array(10)].map((_, index) => (
-                    <FilterListCard key={index} />
+
+                {favList?.map(item => (
+                    <FilterListCard
+                        key={item.property_id}
+                        item={item}
+                        isFavorite={true}
+                        onFavoritePress={(pressedItem) => makeUnFavorite(pressedItem)}
+                    />
                 ))}
+
+                <LoaderModal visible={loader} />
             </ScrollView>
         </NMSafeAreaWrapper>
     )

@@ -1,5 +1,5 @@
 import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper'
 import { Colors } from '../../../theme/colors'
 import NMTextInput from '../../../components/common/NMTextInput'
@@ -12,10 +12,24 @@ import BlogCardList from '../../../components/user/BlogCardList'
 import { SheetProvider, SheetManager } from 'react-native-actions-sheet';
 import FilterSheet from '../../../components/user/FilterSheet';
 import { useNavigation } from '@react-navigation/native'
+import { apiRequest } from '../../../services/apiClient'
+import { showErrorToast } from '../../../utils/toastService'
+import LoaderModal from '../../../components/common/NMLoaderModal'
 
 const HomeScreen: React.FC = () => {
 
     const navigation = useNavigation();
+    const [selectedTab, setSelectedTab] = useState('1');
+    const [properties, setProperties] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    const tabs = [
+        { id: '1', label: 'House' },
+        { id: '2', label: 'Apartment' },
+        { id: '3', label: 'Villa' },
+        { id: '4', label: 'Studio' },
+    ];
+
     const showFilterSheet = () => {
         SheetManager.show('filter-sheet');
     };
@@ -23,6 +37,36 @@ const HomeScreen: React.FC = () => {
     const hideFilterSheet = () => {
         SheetManager.hide('filter-sheet');
     };
+
+    const getPropertyList = async () => {
+        try {
+            setLoading(true);
+            const { result, error } = await apiRequest({
+                endpoint: `v1/featured-properties/?type=${tabs[selectedTab - 1].label}`,
+                method: 'GET',
+            });
+
+            if (result) {
+                console.log("Properties List:", JSON.stringify(result.data));
+                setProperties(result.data);
+            }
+
+            if (error) {
+                console.log("Error:", error);
+                showErrorToast(`Get Properties Error: ${error}`);
+            }
+
+        } catch (err) {
+            console.error("Unexpected Error:", err);
+            showErrorToast(`Unexpected Error: ${err}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        getPropertyList();
+    }, [selectedTab]);
 
     return (
         <SheetProvider>
@@ -56,11 +100,12 @@ const HomeScreen: React.FC = () => {
                         </NMText>
 
                         <NMTabs
-                            onTabSelect={(tabId) => console.log('Selected:', tabId)}
+                            tabs={tabs}
+                            onTabSelect={(tabId) => setSelectedTab(tabId)}
                             defaultSelected="1"
                         />
 
-                        <PropertyCardList />
+                        <PropertyCardList properties={properties} />
 
                         <PostAnAd />
 
@@ -79,6 +124,7 @@ const HomeScreen: React.FC = () => {
                     </View>
                 </ScrollView>
                 <FilterSheet sheetId="filter-sheet" />
+                <LoaderModal visible={loading} />
             </NMSafeAreaWrapper>
         </SheetProvider>
     )

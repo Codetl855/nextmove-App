@@ -27,6 +27,7 @@ interface NMTextInputProps extends TextInputProps {
     inputStyle?: TextStyle;
     fontFamily?: keyof typeof Fonts;
     labelStyle?: TextStyle;
+    error?: string;
 }
 
 const NMTextInput: React.FC<NMTextInputProps> = ({
@@ -43,6 +44,7 @@ const NMTextInput: React.FC<NMTextInputProps> = ({
     inputStyle,
     fontFamily = 'regular',
     labelStyle,
+    error,
     ...rest
 }) => {
     const [isPasswordVisible, setIsPasswordVisible] = useState(secureTextEntry);
@@ -78,7 +80,11 @@ const NMTextInput: React.FC<NMTextInputProps> = ({
                 </View>
             )}
 
-            <View style={[styles.inputContainer, containerStyle]}>
+            <View style={[
+                styles.inputContainer,
+                containerStyle,
+                error ? { borderColor: Colors.error } : { borderColor: Colors.border }
+            ]}>
 
                 {leftIcon && <View style={styles.iconContainer}>{leftIcon}</View>}
 
@@ -109,6 +115,15 @@ const NMTextInput: React.FC<NMTextInputProps> = ({
                     )}
                 </View>
             </View>
+            {error && (
+                <NMText
+                    fontSize={12}
+                    color={Colors.error}
+                    style={{ marginTop: 4 }}
+                >
+                    {error}
+                </NMText>
+            )}
         </View>
     );
 };

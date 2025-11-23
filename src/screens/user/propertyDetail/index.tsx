@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { ChevronLeft, Bookmark, Heart, Share2, MapPin, PhoneCallIcon, Mail, ChevronRight, PlusIcon } from 'lucide-react-native';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
@@ -10,19 +10,120 @@ import PropertyDescriptionModal from '../../../components/user/PropertyDescripti
 import BookKnowModal from '../../../components/user/BookKnowModal';
 import CommentView from '../../../components/user/CommentView';
 import CommentSheetModal from '../../../components/user/CommentSheetModal';
+import { apiRequest } from '../../../services/apiClient';
+import { showErrorToast, showSuccessToast } from '../../../utils/toastService';
+import LoaderModal from '../../../components/common/NMLoaderModal';
 
 const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
-    const { SelectedCategory } = route.params;
+    const { SelectedCategory, property } = route.params;
 
     const [modalVisible, setModalVisible] = useState(false);
     const [commentSheetVisible, setCommentSheetVisible] = useState(false);
     const [bookModalVisible, setBookModalVisible] = useState(false);
+    const [isFavourite, setIsFavourite] = useState(false);
+    const [loader, setLoader] = useState(false);
+    const [detailData, setDetailData] = useState<any>({});
     const propertyImages = [
         'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
         'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800',
         'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800',
         'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800',
     ];
+
+    const getPropertyDetails = async () => {
+        try {
+            setLoader(true);
+            const { result, error } = await apiRequest({
+                endpoint: `v1/get-property/${property.id}`,
+                method: 'GET',
+            });
+
+            if (result) {
+                console.log("Properties List:", JSON.stringify(result));
+                setDetailData(result.data);
+                setIsFavourite(result?.data?.is_favourite);
+            }
+
+            if (error) {
+                console.log("Error:", error);
+                showErrorToast(`Get Properties Error: ${error}`);
+            }
+
+        } catch (err) {
+            console.error("Unexpected Error:", err);
+            showErrorToast(`Unexpected Error: ${err}`);
+        } finally {
+            setLoader(false);
+        }
+    };
+
+    const makeFavorite = async () => {
+        try {
+            setLoader(true);
+
+            const { result, error } = await apiRequest({
+                endpoint: `v1/favourites/${property.id}/toggle`,
+                method: 'POST',
+            });
+
+            if (result) {
+                setIsFavourite(!isFavourite);
+                console.log("Properties List:", JSON.stringify(result));
+                showSuccessToast('Favorite status updated successfully');
+                getPropertyDetails();
+            }
+
+            if (error) {
+                console.log("Error:", error);
+                showErrorToast(`Get Properties Error: ${error}`);
+            }
+
+        } catch (err) {
+            console.error("Unexpected Error:", err);
+            showErrorToast(`Unexpected Error: ${err}`);
+        } finally {
+            setLoader(false);
+        }
+    };
+
+    useEffect(() => {
+        getPropertyDetails();
+    }, []);
+
+    const handleSubmission = async (reviewText: string, rating: number) => {
+        const newReview = {
+            property_id: property.id,
+            review_text: reviewText,
+            rating: rating,
+        };
+
+        try {
+            setLoader(true);
+            const { result, error } = await apiRequest({
+                endpoint: `v1/reviews`,
+                method: 'POST',
+                data: newReview,
+            });
+
+            if (result) {
+                console.log("reviews post:", JSON.stringify(result));
+                setCommentSheetVisible(false);
+                getPropertyDetails();
+            }
+
+            if (error) {
+                console.log("Error:", error);
+                showErrorToast(`Get Properties Error: ${error}`);
+            }
+
+        } catch (err) {
+            console.error("Unexpected Error:", err);
+            showErrorToast(`Unexpected Error: ${err}`);
+        } finally {
+            setLoader(false);
+        }
+    };
+
 
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.black} statusBarStyle="light-content">
@@ -31,7 +132,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                 <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                     <View style={styles.imageContainer}>
                         <Image
-                            source={{ uri: propertyImages[0] }}
+                            source={{ uri: detailData?.media?.[0]?.media_url }}
                             style={styles.mainImage}
                             resizeMode="cover"
                         />
@@ -44,8 +145,12 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                                 <TouchableOpacity style={styles.iconButton}>
                                     <Bookmark color="#000" size={20} strokeWidth={2} />
                                 </TouchableOpacity>
-                                <TouchableOpacity style={styles.iconButton}>
-                                    <Heart color="#000" size={20} strokeWidth={2} />
+                                <TouchableOpacity style={styles.iconButton} onPress={() => makeFavorite()}>
+                                    <Heart
+                                        color={isFavourite ? Colors.primary : '#000'}
+                                        fill={isFavourite ? Colors.primary : Colors.background}
+                                        size={20}
+                                        strokeWidth={2} />
                                 </TouchableOpacity>
                                 <TouchableOpacity style={styles.iconButton}>
                                     <Share2 color="#000" size={20} strokeWidth={2} />
@@ -55,10 +160,10 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                     </View>
                     <View style={styles.contentView}>
                         <View style={styles.imageSlider}>
-                            {propertyImages.map((image, index) => (
+                            {detailData?.media?.map((image, index) => (
                                 <Image
                                     key={index}
-                                    source={{ uri: image }}
+                                    source={{ uri: image?.media_url }}
                                     style={styles.imageSliderStyle}
                                     resizeMode="cover"
                                 />
@@ -67,11 +172,11 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                         <View style={styles.contentHeader}>
                             <View style={[styles.inRow, { justifyContent: 'space-between', }]}>
                                 <NMText fontSize={18} fontFamily='bold' color={Colors.textPrimary} style={styles.adjuestTitle}>
-                                    Luxury Apartments In California.
+                                    {detailData?.title}
                                 </NMText>
                                 <View style={styles.inRow}>
                                     <NMText fontSize={16} fontFamily='bold' color={Colors.primary}>
-                                        $250,00
+                                        $ {detailData?.price}
                                     </NMText>
                                     <NMText fontSize={12} fontFamily='medium' color={Colors.primary}>/Month</NMText>
                                 </View>
@@ -79,13 +184,13 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                             <View style={[styles.inRow, { marginTop: 6 }]}>
                                 <MapPin size={18} color={Colors.primary} />
                                 <NMText fontSize={14} fontFamily='regular' color={Colors.textPrimary}>
-                                    Al Orubah Street, Um Al Hammam Dist.
+                                    {detailData?.address}
                                 </NMText>
                             </View>
                         </View>
 
                         <NMText fontSize={18} fontFamily='light' color={Colors.textLight}>
-                            Risk management and compliance, when approached strategically, have the potential to go beyond mitigating threats and protecting a company’s operations & reputation.They can actually generate value and create opportunities.
+                            {detailData?.description}
                         </NMText>
 
                         <View style={styles.featuresContainer}>
@@ -93,28 +198,28 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                             <View style={styles.feature}>
                                 <Image source={require('../../../assets/icons/sqf.png')} style={styles.featureIcon} />
                                 <NMText fontSize={14} fontFamily='regular' color={Colors.textPrimary}>
-                                    8000sqf
+                                    {detailData?.size}sqf
                                 </NMText>
                             </View>
 
                             <View style={styles.feature}>
                                 <Image source={require('../../../assets/icons/bed.png')} style={styles.featureIcon} />
                                 <NMText fontSize={14} fontFamily='regular' color={Colors.textPrimary}>
-                                    3 Beds
+                                    {detailData?.bed || 0} Beds
                                 </NMText>
                             </View>
 
                             <View style={styles.feature}>
                                 <Image source={require('../../../assets/icons/bath.png')} style={styles.featureIcon} />
                                 <NMText fontSize={14} fontFamily='regular' color={Colors.textPrimary}>
-                                    4 Baths
+                                    {detailData?.bath || 0} Baths
                                 </NMText>
                             </View>
 
                             <View style={styles.feature}>
                                 <Image source={require('../../../assets/icons/kitchen.png')} style={styles.featureIcon} />
                                 <NMText fontSize={14} fontFamily='regular' color={Colors.textPrimary}>
-                                    1 Kitchen
+                                    {detailData?.kitchen || 0} Kitchen
                                 </NMText>
                             </View>
                         </View>
@@ -203,16 +308,29 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                                     />
                                 </View>
                                 <View style={{ height: 15 }} />
-                                {[1, 2, 3, 4, 5].map((item, index, arr) => (
+                                {/* {[1, 2, 3, 4, 5].map((item, index, arr) => (
                                     <CommentView
                                         key={index}
                                         widthSet={index === arr.length - 1 ? 0 : 1}
                                     />
+                                ))} */}
+                                {detailData?.latest_reviews?.map((review, index, arr) => (
+                                    <CommentView
+                                        key={review.id}
+                                        widthSet={index === arr.length - 1 ? 0 : 1}
+                                        rating={review.rating}
+                                        comment={review.review_text}
+                                        userName={`${review.user?.first_name ?? ''} ${review.user?.last_name ?? ''}`}
+                                        userImage={review.user?.profile_image_url}
+                                        time={review.created_at}
+                                    />
                                 ))}
+
 
                                 <CommentSheetModal
                                     visible={commentSheetVisible}
                                     onClose={() => setCommentSheetVisible(false)}
+                                    onSubmit={handleSubmission}
                                 />
                             </View>
                         )}
@@ -253,6 +371,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                 </View>
             </View>
             <PropertyDescriptionModal
+                detailData={detailData}
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
                 showTabINBuy={SelectedCategory == 'BUY'}
@@ -261,6 +380,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                 visible={bookModalVisible}
                 onClose={() => setBookModalVisible(false)}
             />
+            <LoaderModal visible={loader} />
         </NMSafeAreaWrapper>
     );
 };

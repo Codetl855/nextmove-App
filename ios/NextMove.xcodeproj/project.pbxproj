@@ -9,18 +9,18 @@
 /* Begin PBXBuildFile section */
 		0C80B921A6F3F58F76C31292 /* libPods-NextMove.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-NextMove.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
-		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		D316735D2521E2790662A43A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
-		5C6B545B16CE413BA2BE5900 /* Outfit-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F3419112913C43638CDDA7B6 /* Outfit-Black.ttf */; };
-		4B7F12CC16FC463E811CFC11 /* Outfit-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 28C7644AEDD9497C9939E0C2 /* Outfit-Bold.ttf */; };
-		F97B9361CDB04DD5BA1FA6D1 /* Outfit-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 65E67D14A53F49239B20B814 /* Outfit-ExtraBold.ttf */; };
-		CFD71270D033458EB21F9A63 /* Outfit-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 575BA8A401F84F6B849794D1 /* Outfit-ExtraLight.ttf */; };
 		178A1B916F0C47119A7535D0 /* Outfit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6BB27412390849D7952C16A3 /* Outfit-Light.ttf */; };
-		DCE8D63B3D51466086BD7057 /* Outfit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B1227BA4E90D4F8CAA9AE1C4 /* Outfit-Medium.ttf */; };
-		CF64DF456A73437D9B50B970 /* Outfit-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6C03FCB925814586B33D099A /* Outfit-Regular.ttf */; };
-		960B5BC9943948FD9E36AC9B /* Outfit-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7F66BB2A9ABA40B58821FF4F /* Outfit-SemiBold.ttf */; };
+		4B7F12CC16FC463E811CFC11 /* Outfit-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 28C7644AEDD9497C9939E0C2 /* Outfit-Bold.ttf */; };
+		5C6B545B16CE413BA2BE5900 /* Outfit-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F3419112913C43638CDDA7B6 /* Outfit-Black.ttf */; };
+		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		78C2AECB3D99402A8F44C111 /* Outfit-Thin.ttf in Resources */ = {isa = PBXBuildFile; fileRef = CE4D366BF110467EA22686AC /* Outfit-Thin.ttf */; };
+		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		960B5BC9943948FD9E36AC9B /* Outfit-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7F66BB2A9ABA40B58821FF4F /* Outfit-SemiBold.ttf */; };
+		CF64DF456A73437D9B50B970 /* Outfit-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6C03FCB925814586B33D099A /* Outfit-Regular.ttf */; };
+		CFD71270D033458EB21F9A63 /* Outfit-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 575BA8A401F84F6B849794D1 /* Outfit-ExtraLight.ttf */; };
+		D316735D2521E2790662A43A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		DCE8D63B3D51466086BD7057 /* Outfit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B1227BA4E90D4F8CAA9AE1C4 /* Outfit-Medium.ttf */; };
+		F97B9361CDB04DD5BA1FA6D1 /* Outfit-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 65E67D14A53F49239B20B814 /* Outfit-ExtraBold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,21 +28,21 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = NextMove/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = NextMove/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = NextMove/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		28C7644AEDD9497C9939E0C2 /* Outfit-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Outfit-Bold.ttf"; path = "../src/assets/fonts/Outfit-Bold.ttf"; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-NextMove.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NextMove.debug.xcconfig"; path = "Target Support Files/Pods-NextMove/Pods-NextMove.debug.xcconfig"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-NextMove.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NextMove.release.xcconfig"; path = "Target Support Files/Pods-NextMove/Pods-NextMove.release.xcconfig"; sourceTree = "<group>"; };
+		575BA8A401F84F6B849794D1 /* Outfit-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Outfit-ExtraLight.ttf"; path = "../src/assets/fonts/Outfit-ExtraLight.ttf"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-NextMove.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NextMove.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		65E67D14A53F49239B20B814 /* Outfit-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Outfit-ExtraBold.ttf"; path = "../src/assets/fonts/Outfit-ExtraBold.ttf"; sourceTree = "<group>"; };
+		6BB27412390849D7952C16A3 /* Outfit-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Outfit-Light.ttf"; path = "../src/assets/fonts/Outfit-Light.ttf"; sourceTree = "<group>"; };
+		6C03FCB925814586B33D099A /* Outfit-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Outfit-Regular.ttf"; path = "../src/assets/fonts/Outfit-Regular.ttf"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = NextMove/AppDelegate.swift; sourceTree = "<group>"; };
+		7F66BB2A9ABA40B58821FF4F /* Outfit-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Outfit-SemiBold.ttf"; path = "../src/assets/fonts/Outfit-SemiBold.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = NextMove/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		B1227BA4E90D4F8CAA9AE1C4 /* Outfit-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Outfit-Medium.ttf"; path = "../src/assets/fonts/Outfit-Medium.ttf"; sourceTree = "<group>"; };
+		CE4D366BF110467EA22686AC /* Outfit-Thin.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Outfit-Thin.ttf"; path = "../src/assets/fonts/Outfit-Thin.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F3419112913C43638CDDA7B6 /* Outfit-Black.ttf */ = {isa = PBXFileReference; name = "Outfit-Black.ttf"; path = "../src/assets/fonts/Outfit-Black.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		28C7644AEDD9497C9939E0C2 /* Outfit-Bold.ttf */ = {isa = PBXFileReference; name = "Outfit-Bold.ttf"; path = "../src/assets/fonts/Outfit-Bold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		65E67D14A53F49239B20B814 /* Outfit-ExtraBold.ttf */ = {isa = PBXFileReference; name = "Outfit-ExtraBold.ttf"; path = "../src/assets/fonts/Outfit-ExtraBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		575BA8A401F84F6B849794D1 /* Outfit-ExtraLight.ttf */ = {isa = PBXFileReference; name = "Outfit-ExtraLight.ttf"; path = "../src/assets/fonts/Outfit-ExtraLight.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		6BB27412390849D7952C16A3 /* Outfit-Light.ttf */ = {isa = PBXFileReference; name = "Outfit-Light.ttf"; path = "../src/assets/fonts/Outfit-Light.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		B1227BA4E90D4F8CAA9AE1C4 /* Outfit-Medium.ttf */ = {isa = PBXFileReference; name = "Outfit-Medium.ttf"; path = "../src/assets/fonts/Outfit-Medium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		6C03FCB925814586B33D099A /* Outfit-Regular.ttf */ = {isa = PBXFileReference; name = "Outfit-Regular.ttf"; path = "../src/assets/fonts/Outfit-Regular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		7F66BB2A9ABA40B58821FF4F /* Outfit-SemiBold.ttf */ = {isa = PBXFileReference; name = "Outfit-SemiBold.ttf"; path = "../src/assets/fonts/Outfit-SemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		CE4D366BF110467EA22686AC /* Outfit-Thin.ttf */ = {isa = PBXFileReference; name = "Outfit-Thin.ttf"; path = "../src/assets/fonts/Outfit-Thin.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		F3419112913C43638CDDA7B6 /* Outfit-Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Outfit-Black.ttf"; path = "../src/assets/fonts/Outfit-Black.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +57,22 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0382B0E352B145779B70B0F6 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				F3419112913C43638CDDA7B6 /* Outfit-Black.ttf */,
+				28C7644AEDD9497C9939E0C2 /* Outfit-Bold.ttf */,
+				65E67D14A53F49239B20B814 /* Outfit-ExtraBold.ttf */,
+				575BA8A401F84F6B849794D1 /* Outfit-ExtraLight.ttf */,
+				6BB27412390849D7952C16A3 /* Outfit-Light.ttf */,
+				B1227BA4E90D4F8CAA9AE1C4 /* Outfit-Medium.ttf */,
+				6C03FCB925814586B33D099A /* Outfit-Regular.ttf */,
+				7F66BB2A9ABA40B58821FF4F /* Outfit-SemiBold.ttf */,
+				CE4D366BF110467EA22686AC /* Outfit-Thin.ttf */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
 		13B07FAE1A68108700A75B9A /* NextMove */ = {
 			isa = PBXGroup;
 			children = (
@@ -116,23 +132,6 @@
 			);
 			path = Pods;
 			sourceTree = "<group>";
-		};
-		0382B0E352B145779B70B0F6 /* Resources */ = {
-			isa = "PBXGroup";
-			children = (
-				F3419112913C43638CDDA7B6 /* Outfit-Black.ttf */,
-				28C7644AEDD9497C9939E0C2 /* Outfit-Bold.ttf */,
-				65E67D14A53F49239B20B814 /* Outfit-ExtraBold.ttf */,
-				575BA8A401F84F6B849794D1 /* Outfit-ExtraLight.ttf */,
-				6BB27412390849D7952C16A3 /* Outfit-Light.ttf */,
-				B1227BA4E90D4F8CAA9AE1C4 /* Outfit-Medium.ttf */,
-				6C03FCB925814586B33D099A /* Outfit-Regular.ttf */,
-				7F66BB2A9ABA40B58821FF4F /* Outfit-SemiBold.ttf */,
-				CE4D366BF110467EA22686AC /* Outfit-Thin.ttf */,
-			);
-			name = Resources;
-			sourceTree = "<group>";
-			path = "";
 		};
 /* End PBXGroup section */
 
@@ -236,9 +235,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-NextMove/Pods-NextMove-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-NextMove/Pods-NextMove-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -275,9 +278,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-NextMove/Pods-NextMove-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-NextMove/Pods-NextMove-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -304,7 +311,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1.2;
+				DEVELOPMENT_TEAM = 7HH6MH8A8Z;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = NextMove/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
@@ -318,7 +326,8 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.--PRODUCT-NAME-rfc1034identifier-";
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = org.reactjs.native.NextMove;
 				PRODUCT_NAME = NextMove;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -332,7 +341,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 1.2;
+				DEVELOPMENT_TEAM = 7HH6MH8A8Z;
 				INFOPLIST_FILE = NextMove/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -345,7 +355,8 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.--PRODUCT-NAME-rfc1034identifier-";
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = org.reactjs.native.NextMove;
 				PRODUCT_NAME = NextMove;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -421,10 +432,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -493,10 +501,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;

@@ -15,12 +15,58 @@ import NMButton from '../../../components/common/NMButton';
 import NMRadioButton from '../../../components/common/NMRadioButton';
 import NMTextInput from '../../../components/common/NMTextInput';
 import { Mail, Phone } from 'lucide-react-native';
+import { useForm } from '../../../hooks/useForm';
+import { apiRequest } from '../../../services/apiClient';
+import { showErrorToast, showSuccessToast } from '../../../utils/toastService';
 
 const ForgotPasswordScreen: React.FC = () => {
     const navigation = useNavigation();
     const [selectedOption, setSelectedOption] = useState<'email' | 'mobile'>('email');
-    const [email, setEmail] = useState('');
-    const [mobile, setMobile] = useState('');
+    const [loading, setLoading] = useState(false);
+    const { values, errors, handleChange, validate } = useForm({
+        email: "",
+        phone: "",
+    });
+
+    const handleSubmit = async () => {
+
+        const isValid = validate({
+            email: (v) =>
+                selectedOption === 'email' && !v ? 'Email is required' : null,
+            phone: (v) =>
+                selectedOption === 'mobile' && !v ? 'Phone number is required' : null,
+        });
+
+        if (!isValid) return;
+
+        const payload = selectedOption === 'email'
+            ? { email: values.email }
+            : { phone: values.phone };
+
+        try {
+            setLoading(true);
+
+            const { result, error } = await apiRequest({
+                endpoint: "v1/mobile/forgot-password",
+                method: "POST",
+                data: payload,
+            });
+
+            if (error) {
+                showErrorToast(error);
+                return;
+            }
+
+            showSuccessToast(result.message || "Verification code sent successfully!");
+            navigation.navigate("loginScreen" as never);
+            // navigation.navigate('VerificationCodeScreen' as never)
+
+        } catch (err) {
+            showErrorToast("Something went wrong!");
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.black} statusBarStyle="light-content">
@@ -74,19 +120,22 @@ const ForgotPasswordScreen: React.FC = () => {
                             {selectedOption === 'email' ? (
                                 <NMTextInput
                                     label="Email"
-                                    placeholder="Enter your email"
-                                    value={email}
-                                    onChangeText={setEmail}
+                                    placeholder="example@mail.com"
+                                    value={values.email}
+                                    onChangeText={(text) => handleChange("email", text)}
                                     inputType="email"
+                                    error={errors.email}
                                     leftIcon={<Mail size={18} color={Colors.textLight} />}
                                 />
                             ) : (
                                 <NMTextInput
-                                    label="Mobile Number"
+                                    label="Phone"
                                     placeholder="+92 303 55566545"
-                                    value={mobile}
-                                    onChangeText={setMobile}
+                                    value={values.phone}
+                                    onChangeText={(text) => handleChange("phone", text)}
                                     keyboardType="phone-pad"
+                                    inputType="text"
+                                    error={errors.phone}
                                     leftIcon={<Phone size={18} color={Colors.textLight} />}
                                 />
                             )}
@@ -103,7 +152,8 @@ const ForgotPasswordScreen: React.FC = () => {
 
                             <NMButton
                                 title="Send"
-                                onPress={() => navigation.navigate('VerificationCodeScreen' as never)}
+                                loading={loading}
+                                onPress={handleSubmit}
                                 backgroundColor={Colors.primary}
                                 textColor={Colors.white}
                                 fontFamily="bold"

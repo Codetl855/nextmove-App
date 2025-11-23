@@ -1,27 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Edit3Icon, StarIcon } from 'lucide-react-native';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import NMText from '../../../components/common/NMText';
 import { Colors } from '../../../theme/colors';
 import EditReviewModal from '../../../components/user/EditReviewModal';
+import { showErrorToast } from '../../../utils/toastService';
+import { apiRequest } from '../../../services/apiClient';
+import LoaderModal from '../../../components/common/NMLoaderModal';
 
 interface ReviewListCardProps {
-    onEdit: () => void;
+    review: any;
+    onEdit: (review: any) => void;
 }
 
-const ReviewListCard: React.FC<ReviewListCardProps> = ({ onEdit }) => (
+const ReviewListCard: React.FC<ReviewListCardProps> = ({ review: item, onEdit }) => (
     <View style={styles.reviewCard}>
         {/* Rating Stars */}
         <View style={styles.starRow}>
-            {[...Array(5)].map((_, index) => (
+            {[...Array(item?.rating)].map((_, index) => (
                 <StarIcon key={index} color={Colors.star} size={16} fill={Colors.star} />
             ))}
         </View>
 
         {/* Title */}
         <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-            Best For Family Living
+            {item?.property?.title}
         </NMText>
 
         {/* Description */}
@@ -31,11 +35,11 @@ const ReviewListCard: React.FC<ReviewListCardProps> = ({ onEdit }) => (
             color={Colors.textLight}
             style={{ marginTop: 6 }}
         >
-            "The property was exactly as described and the buying process was smooth and hassle-free."
+            {item?.review_text}
         </NMText>
 
         {/* Edit Button */}
-        <TouchableOpacity style={styles.editButton} onPress={onEdit}>
+        <TouchableOpacity style={styles.editButton} onPress={() => onEdit(item)}>
             <Edit3Icon color={Colors.textPrimary} size={18} strokeWidth={2} />
         </TouchableOpacity>
     </View>
@@ -43,9 +47,79 @@ const ReviewListCard: React.FC<ReviewListCardProps> = ({ onEdit }) => (
 
 const ReviewsScreen: React.FC = () => {
     const [editModalVisible, setEditModalVisible] = useState<boolean>(false);
-
-    const handleOpenEdit = () => setEditModalVisible(true);
     const handleCloseEdit = () => setEditModalVisible(false);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [reviewsData, setReviewsData] = useState<any>([]);
+    const [selectedReview, setSelectedReview] = useState<any>(null);
+
+    const handleOpenEdit = (review: any) => {
+        setSelectedReview(review);
+        setEditModalVisible(true);
+    };
+
+
+    const getReviews = async () => {
+        try {
+            setLoading(true);
+            const { result, error } = await apiRequest({
+                endpoint: 'v1/reviews',
+                method: 'GET',
+            });
+
+            if (result) {
+                console.log("Reviews List:", JSON.stringify(result.data));
+                setReviewsData(result.data);
+            }
+
+            if (error) {
+                console.log("Error:", error);
+                showErrorToast(`Get Properties Error: ${error}`);
+            }
+
+        } catch (err) {
+            console.error("Unexpected Error:", err);
+            showErrorToast(`Unexpected Error: ${err}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveReview = async (updatedComment: string, updatedRating: number) => {
+        const bodyData = {
+            rating: updatedRating,
+            review_text: updatedComment,
+        }
+
+        try {
+            setLoading(true);
+            const { result, error } = await apiRequest({
+                endpoint: `v1/reviews/${selectedReview?.id}`,
+                method: 'PUT',
+                data: bodyData,
+            });
+
+            if (result) {
+                console.log("Update Reviews :", JSON.stringify(result));
+                getReviews();
+                setEditModalVisible(false);
+            }
+
+            if (error) {
+                console.log("Error put:", error);
+                showErrorToast(`Get Properties Error: ${error}`);
+            }
+
+        } catch (err) {
+            console.error("Unexpected Error put:", err);
+            showErrorToast(`Unexpected Error: ${err}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        getReviews();
+    }, []);
 
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
@@ -73,12 +147,21 @@ const ReviewsScreen: React.FC = () => {
                 </View>
 
                 {/* Reviews List */}
-                {[...Array(10)].map((_, index) => (
-                    <ReviewListCard key={index} onEdit={handleOpenEdit} />
+                {reviewsData?.data?.map((review: any) => (
+                    <ReviewListCard key={review.id} review={review} onEdit={handleOpenEdit} />
                 ))}
 
                 {/* Edit Review Modal */}
-                <EditReviewModal visible={editModalVisible} onClose={handleCloseEdit} />
+                {/* <EditReviewModal visible={editModalVisible} onClose={handleCloseEdit} /> */}
+                <EditReviewModal
+                    visible={editModalVisible}
+                    onClose={() => setEditModalVisible(false)}
+                    initialComment={selectedReview?.review_text}
+                    initialRating={selectedReview?.rating}
+                    onSave={handleSaveReview}
+                />
+
+                <LoaderModal visible={loading} />
             </ScrollView>
         </NMSafeAreaWrapper>
     );

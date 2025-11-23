@@ -10,12 +10,14 @@ import NMText from '../common/NMText';
 import { Colors } from '../../theme/colors';
 
 interface PropertyDescriptionModalProps {
+    detailData: any
     visible: boolean;
     onClose: () => void;
     showTabINBuy?: boolean
 }
 
 const PropertyDescriptionModal: React.FC<PropertyDescriptionModalProps> = ({
+    detailData,
     visible,
     onClose,
     showTabINBuy
@@ -24,45 +26,43 @@ const PropertyDescriptionModal: React.FC<PropertyDescriptionModalProps> = ({
 
     const renderPropertyDetails = () => (
         <View style={styles.tabContent}>
-            <DetailRow label="ID" value="#1234" bgColor={Colors.background} />
-            <DetailRow label="Area" value="1000 SqFT" />
-            <DetailRow label="Price" value="$25,000" bgColor={Colors.background} />
-            <DetailRow label="Build Year" value="2025" />
-            <DetailRow label="Type" value="Villa" bgColor={Colors.background} />
-            <DetailRow label="Status" value="For Sale" />
-            <DetailRow label="Room" value="5" bgColor={Colors.background} />
-            <DetailRow label="Baths" value="4" />
-            <DetailRow label="Garage" value="1" bgColor={Colors.background} />
-            <DetailRow label="Added" value="1 Week Ago" />
+            <DetailRow label="ID" value="N/A" bgColor={Colors.background} />
+            <DetailRow label="Area" value={`${detailData?.size} SqFT`} />
+            <DetailRow label="Price" value={`$ ${detailData?.price}`} bgColor={Colors.background} />
+            <DetailRow label="Build Year" value={detailData?.year_built} />
+            <DetailRow label="Type" value={detailData?.property_type} bgColor={Colors.background} />
+            <DetailRow label="Status" value="N/A" />
+            <DetailRow label="Room" value={detailData?.bedrooms || 0} bgColor={Colors.background} />
+            <DetailRow label="Baths" value={detailData?.bathrooms || 0} />
+            <DetailRow label="Garage" value={detailData?.garages || 0} bgColor={Colors.background} />
+            <DetailRow label="Added" value={new Date(detailData?.created_at).toDateString()} />
         </View>
     );
 
-    const renderFeatures = () => (
-        <View style={styles.tabContent}>
-            <NMText fontSize={16} fontFamily="light" color={Colors.textLight}>
-                Risk management and compliance, when approached strategically, have the potential to go beyond mitigating threats and protecting the company's operations & reputation. They can actually generate value and create opportunities.
-            </NMText>
+    const renderFeatures = () => {
+        let amenityList: string[] = [];
 
-            <View style={styles.featuresGrid}>
-                <View style={styles.featuresColumn}>
-                    <FeatureItem label="A/C & Heating" />
-                    <FeatureItem label="Swimming Pool" />
-                    <FeatureItem label="Garden" />
-                    <FeatureItem label="Pet Friendly" />
-                    <FeatureItem label="Refrigerator" />
-                    <FeatureItem label="Elevator" />
-                </View>
-                <View style={styles.featuresColumn}>
-                    <FeatureItem label="Garages" />
-                    <FeatureItem label="Parking" />
-                    <FeatureItem label="Disabled Access" />
-                    <FeatureItem label="Ceiling Height" />
-                    <FeatureItem label="Fireplace" />
-                    <FeatureItem label="Wifi" />
+        try {
+            amenityList = JSON.parse(detailData?.ameneties?.amenity_names || '[]');
+        } catch (err) {
+            console.error('Failed to parse amenities:', err);
+        }
+
+        return (
+            <View style={styles.tabContent}>
+                <NMText fontSize={16} fontFamily="light" color={Colors.textLight}>
+                    Risk management and compliance, when approached strategically, have the potential to go beyond mitigating threats and protecting the company's operations & reputation. They can actually generate value and create opportunities.
+                </NMText>
+
+                <View style={[styles.featuresGrid, { flexWrap: 'wrap', gap: 8 }]}>
+                    {amenityList.map((amenity, index) => (
+                        <FeatureItem key={index} label={amenity} />
+                    ))}
                 </View>
             </View>
-        </View>
-    );
+        );
+    };
+
 
     const renderWhatsNearby = () => (
         <View style={styles.tabContent}>
@@ -305,7 +305,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 18,
-        gap: 10,
+        gap: 6,
     },
     rulesContainer: {
         paddingHorizontal: 22,
