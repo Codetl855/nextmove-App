@@ -1,71 +1,70 @@
 import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper'
-import { SheetManager, SheetProvider } from 'react-native-actions-sheet'
 import NMTextInput from '../../../components/common/NMTextInput'
 import { Colors } from '../../../theme/colors'
 import NMText from '../../../components/common/NMText'
 import FilterListCard from '../../../components/user/FilterListCard'
 import FilterSheet from '../../../components/user/FilterSheet'
-import { useNavigation } from '@react-navigation/native'
 
 const FilterList: React.FC = ({ route, navigation }) => {
 
     const { params } = route;
     const { selectedCategory } = params || {};
+    const [filterVisible, setFilterVisible] = useState(false);
+    const [filterData, setFilterData] = useState(null);
 
-    const showFilterSheet = () => {
-        SheetManager.show('filter-sheets');
-    };
-
-    const hideFilterSheet = () => {
-        SheetManager.hide('filter-sheets');
+    const handleApplyFilter = (filters: any) => {
+        console.log('Applied Filters result:', filters);
+        setFilterData(filters);
     };
 
     return (
-        <SheetProvider>
-            <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
-                <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
-                    <View style={styles.container}>
-                        <View style={styles.headerView}>
-                            <View style={styles.inRow}>
-                                <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
-                                <View style={styles.titleView}>
-                                    <NMText fontSize={20} fontFamily='semiBold' color={Colors.textSecondary}>
-                                        Villas for Sale
-                                    </NMText>
-                                    <NMText fontSize={14} fontFamily='regular' color={Colors.textSecondary}>
-                                        1,142 Ads in Rayadh
-                                    </NMText>
-                                </View>
-                            </View>
-                            <View style={styles.inRow}>
-                                <Image source={require('../../../assets/icons/bookMark.png')} style={[styles.headerIcon, { marginRight: 10 }]} />
-                                <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
+        <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
+            <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
+                <View style={styles.container}>
+                    <View style={styles.headerView}>
+                        <View style={styles.inRow}>
+                            <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                            <View style={styles.titleView}>
+                                <NMText fontSize={20} fontFamily='semiBold' color={Colors.textSecondary}>
+                                    Villas for Sale
+                                </NMText>
+                                <NMText fontSize={14} fontFamily='regular' color={Colors.textSecondary}>
+                                    1,142 Ads in Rayadh
+                                </NMText>
                             </View>
                         </View>
-                        <View style={styles.filterView}>
-                            <NMTextInput
-                                placeholder='Search here'
-                                rightIcon={
-                                    <Image source={require('../../../assets/icons/search.png')} style={styles.searchIcon} />
-                                }
-                                containerStyle={styles.inputContainer}
-                                mainViewStyle={{ width: '76%' }}
-                            />
-                            <TouchableOpacity style={styles.filterSlider} onPress={showFilterSheet} activeOpacity={0.7}>
-                                <Image source={require('../../../assets/icons/slidersBold.png')} style={styles.filterIcon} />
-                            </TouchableOpacity>
+                        <View style={styles.inRow}>
+                            <Image source={require('../../../assets/icons/bookMark.png')} style={[styles.headerIcon, { marginRight: 10 }]} />
+                            <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
                         </View>
-
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item, index) => (
-                            <FilterListCard key={index} SelectedCategory={selectedCategory} />
-                        ))}
                     </View>
-                    <FilterSheet sheetId="filter-sheets" />
-                </ScrollView>
-            </NMSafeAreaWrapper>
-        </SheetProvider>
+                    <View style={styles.filterView}>
+                        <NMTextInput
+                            placeholder='Search here'
+                            rightIcon={
+                                <Image source={require('../../../assets/icons/search.png')} style={styles.searchIcon} />
+                            }
+                            containerStyle={styles.inputContainer}
+                            mainViewStyle={{ width: '76%' }}
+                        />
+                        <TouchableOpacity style={styles.filterSlider} onPress={() => setFilterVisible(true)} activeOpacity={0.7}>
+                            <Image source={require('../../../assets/icons/slidersBold.png')} style={styles.filterIcon} />
+                        </TouchableOpacity>
+                    </View>
+
+                    {filterData?.data.map((item, index) => (
+                        <FilterListCard key={index} item={item} SelectedCategory={selectedCategory} />
+                    ))}
+                </View>
+                <FilterSheet
+                    visible={filterVisible}
+                    onClose={() => setFilterVisible(false)}
+                    onApplyFilter={handleApplyFilter}
+                />
+            </ScrollView>
+        </NMSafeAreaWrapper>
     )
 }
 

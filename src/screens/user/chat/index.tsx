@@ -1,36 +1,258 @@
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput } from 'react-native'
-import React, { useState } from 'react'
-import { ChevronLeft, Circle, PhoneCall, Paperclip, Camera, Send, Smile, Check } from 'lucide-react-native'
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, ActivityIndicator, Linking } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { ChevronLeft, Circle, PhoneCall, Paperclip, Camera, Send, Smile, Check, Download, FileText } from 'lucide-react-native'
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper'
 import NMText from '../../../components/common/NMText'
 import { Colors } from '../../../theme/colors'
+import { chatService } from '../../../services/chatService'
+import LoaderModal from '../../../components/common/NMLoaderModal'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import EmojiPicker from "rn-emoji-keyboard";
+import { pick, types } from '@react-native-documents/picker';
+import { pickImagesFromGallery } from '../../../utils/mediaPicker'
+import { getEcho } from '../../../utils/echo'
+const ChatScreen: React.FC = ({ navigation, route }: any) => {
+    const { property } = route.params || {};
 
-const ChatScreen = () => {
-    const [message, setMessage] = useState('')
+    const [messages, setMessages] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [message, setMessage] = useState('');
+    const [currentUserId, setCurrentUserId] = useState(1);
+    const [emojiOpen, setEmojiOpen] = useState(false);
+    const [btnLoading, setbtnLoading] = useState(false);
+    const [attachment, setAttachment] = useState(null);
+    let typingTimeout: any = null;
 
-    const messages = [
-        {
-            id: 1,
-            type: 'received',
-            content: "Hey Gaston, how's all going?",
-            time: '08:30',
-            sender: 'Theresa'
-        },
-        {
-            id: 4,
-            type: 'sent',
-            content: "Thanks, Gaston. I appreciate your support. Overall, I'm optimistic about our team's performance.",
-            time: '08:30'
-        },
-        {
-            id: 5,
-            type: 'received',
-            content: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.',
-            time: '08:30',
-            sender: 'Theresa',
-            isRead: true
+    const fetchMessages = async () => {
+        try {
+            setLoading(true);
+            const userInfo = await AsyncStorage.getItem('loginUser');
+            const conversationId = property?.owner_id || property?.conversation_id;
+            const response = await chatService.getMessages(conversationId);
+            const parsedUser = JSON.parse(userInfo);
+            setCurrentUserId(parsedUser?.user?.id);
+            const messagesData = response?.data || response || [];
+            setMessages(messagesData.reverse());
+        } catch (error: any) {
+            console.log("Failed to load messages:", error.message);
+        } finally {
+            setLoading(false);
         }
-    ]
+    };
+
+    const markAsRead = async () => {
+        try {
+            const conversationId = property?.owner_id || property?.conversation_id;
+            const response = await chatService.markAsRead(conversationId);
+            console.log("read messages:", response);
+
+        } catch (error: any) {
+            console.log("Failed to mark as read:", error.message);
+        }
+    };
+
+    useEffect(() => {
+        markAsRead();
+        fetchMessages();
+    }, []);
+
+    const handlePickImage = async () => {
+        const images = await pickImagesFromGallery({ multiple: false });
+
+        if (images && images.length > 0) {
+            const image = images[0];
+
+            setAttachment({
+                uri: image.uri!,
+                name: image.fileName || `image_${Date.now()}.jpg`,
+                type: image.type || "image/jpeg",
+                size: image.fileSize,
+            });
+        }
+    };
+
+    const handlePickDocument = async () => {
+        try {
+            const [file] = await pick({
+                type: [types.pdf, types.doc, types.docx, types.plainText],
+                allowMultiSelection: false,
+            });
+
+            if (!file) return;
+
+            setAttachment({
+                uri: file.uri,
+                name: file.name,
+                type: file.type || file.nativeType || 'application/octet-stream',
+                size: file.size,
+            });
+        } catch (err) {
+            console.log("Document picker error:", err);
+        }
+    };
+
+    const handleSendMessage = async () => {
+        try {
+            const conversationId = property?.owner_id || property?.conversation_id;
+
+            const formData = new FormData();
+            formData.append("body", message);
+
+            if (attachment) {
+                formData.append("attachments[]", {
+                    uri: attachment.uri,
+                    name: attachment.name,
+                    type: attachment.type,
+                } as any);
+            }
+
+            const response = await chatService.sendMessage(conversationId, formData);
+            console.log("Send message:", response);
+
+            setMessage('');
+            setAttachment(null);
+
+            fetchMessages();
+        } catch (e) {
+            console.log("Send message error:", e);
+        }
+    };
+
+    const handleTyping = async () => {
+        try {
+            const conversationId = property?.owner_id || property?.conversation_id;
+            const response = await chatService.sendTyping(conversationId);
+            console.log("Send typing:", response);
+        } catch (error: any) {
+            console.log("Failed to send typing:", error.message);
+        }
+    }
+
+    const onTyping = (text: any) => {
+        setMessage(text);
+
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            handleTyping();
+        }, 500);
+    };
+
+    const renderMessageContent = (msg: any) => {
+        switch (msg.type) {
+            case 'text':
+                return (
+                    <Text style={[
+                        styles.messageText,
+                        msg.user.id === currentUserId ? styles.sentText : styles.receivedText
+                    ]}>
+                        {msg.body}
+                    </Text>
+                );
+
+            case 'image':
+                return (
+                    <View>
+                        {msg.attachments.map((attachment: any) => (
+                            <Image
+                                key={attachment.id}
+                                source={{ uri: attachment.url }}
+                                style={styles.messageImage}
+                                resizeMode="cover"
+                            />
+                        ))}
+                    </View>
+                );
+
+            case 'file':
+                return (
+                    <View style={styles.fileContainer}>
+                        {msg.attachments.map((attachment: any) => (
+                            <View key={attachment.id} >
+                                <View style={styles.fileInfo}>
+                                    <Paperclip color={msg.user.id === currentUserId ? Colors.white : Colors.primary} size={16} />
+                                    <Text style={[
+                                        styles.fileName,
+                                        msg.user.id === currentUserId ? styles.sentText : styles.receivedText
+                                    ]}>
+                                        {attachment.file_name}
+                                    </Text>
+                                    <TouchableOpacity
+                                        style={styles.downloadButton}
+                                        onPress={() => {
+                                            if (attachment.url) {
+                                                Linking.openURL(attachment.url);
+                                            } else {
+                                                console.log("No attachment URL found");
+                                            }
+                                        }}>
+                                        <Download color={Colors.primary} size={16} strokeWidth={2} />
+                                    </TouchableOpacity>
+                                </View>
+                                <Text style={[
+                                    styles.fileSize,
+                                    msg.user.id === currentUserId ? styles.sentText : styles.receivedText
+                                ]}>
+                                    {attachment.file_size}
+                                </Text>
+                            </View>
+                        ))}
+                    </View>
+                );
+
+            default:
+                return null;
+        }
+    };
+
+    // useEffect(() => {
+
+    //     let echo: any = null;
+
+    //     const setupEcho = async () => {
+    //         // 1️⃣ Get global Echo instance
+    //         echo = await getEcho();
+
+    //         // 2️⃣ Subscribe to private channel
+    //         echo.private(`chat.${property?.owner_id || property?.conversation_id}`)
+    //             .listen(".conversation.updated", (event: any) => {
+    //                 console.log("📩 New message pusher:", event);
+    //             });
+
+    //         console.log("👂 Listening to channel:", `chat.${property?.owner_id || property?.conversation_id}`);
+    //     };
+
+    //     setupEcho();
+
+    //     // 3️⃣ Cleanup when screen unmounts
+    //     return () => {
+    //         if (echo) {
+    //             echo.leave(`chat.${property?.owner_id || property?.conversation_id}`);
+    //             console.log("🧹 Left channel:", `chat.${property?.owner_id || property?.conversation_id}`);
+    //         }
+    //     };
+
+    // }, [property?.owner_id, property?.conversation_id]);
+
+    useEffect(() => {
+        let echo: Echo | null = null;
+        const channelName = `conversation-list.user.${property?.users || property?.conversation_id}`;
+
+        const setup = async () => {
+            echo = await getEcho();
+            echo.private(channelName)
+                .subscribed(() => console.log("📡 Subscribed to", channelName))
+                .listen(".conversation.updated", e => console.log("EVENT:", e));
+        };
+
+        setup();
+
+        return () => {
+            if (echo) echo.leave(channelName);
+        };
+    }, [property?.owner_id, property?.conversation_id]);
+
+
+
 
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
@@ -38,17 +260,23 @@ const ChatScreen = () => {
                 {/* Header */}
                 <View style={styles.headerView}>
                     <View style={styles.inRow}>
-                        <TouchableOpacity style={styles.backBox}>
+                        <TouchableOpacity style={styles.backBox} onPress={() => navigation.goBack()}>
                             <ChevronLeft color={Colors.black} size={24} strokeWidth={2} />
                         </TouchableOpacity>
                         <View style={styles.titleView}>
                             <NMText fontSize={20} fontFamily='semiBold' color={Colors.textSecondary}>
-                                Theresa T. Brose
+                                {currentUserId !== messages[0]?.user?.id ?
+                                    messages[0]?.user?.first_name + ' ' + messages[0]?.user?.last_name : property?.otherItem?.name}
                             </NMText>
                             <View style={styles.inRow}>
-                                <Circle color={Colors.statusText} size={8} fill={Colors.statusText} style={{ marginRight: 5 }} />
+                                <Circle
+                                    color={messages[0]?.user?.is_online ? Colors.statusText : Colors.textLight}
+                                    size={8}
+                                    fill={messages[0]?.user?.is_online ? Colors.statusText : Colors.textLight}
+                                    style={{ marginRight: 5 }}
+                                />
                                 <NMText fontSize={14} fontFamily='regular' color={Colors.statusText}>
-                                    Online
+                                    {messages[0]?.user?.is_online ? 'Online' : 'Offline'}
                                 </NMText>
                             </View>
                         </View>
@@ -59,55 +287,99 @@ const ChatScreen = () => {
                 </View>
 
                 {/* Messages */}
-                <ScrollView style={styles.messagesContainer} contentContainerStyle={{ paddingBottom: 20 }}>
-                    {messages.map((msg) => (
-                        <View
-                            key={msg.id}
-                            style={[styles.messageWrapper, msg.type === 'sent' ? styles.sentWrapper : styles.receivedWrapper]}
-                        >
-                            {msg.type === 'received' && (
-                                <Image
-                                    source={{ uri: 'https://i.pravatar.cc/150?img=5' }}
-                                    style={styles.avatar}
-                                />
-                            )}
+                <ScrollView
+                    style={styles.messagesContainer}
+                    contentContainerStyle={{ paddingBottom: 20 }}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {messages.map((msg) => {
+                        const isSent = msg.user.id === currentUserId;
 
-                            <View style={styles.messageContent}>
-                                <View
-                                    style={[styles.messageBubble, msg.type === 'sent' ? styles.sentBubble : styles.receivedBubble]}
-                                >
-                                    <Text
-                                        style={[styles.messageText, msg.type === 'sent' ? styles.sentText : styles.receivedText]}
+                        return (
+                            <View
+                                key={msg.id}
+                                style={[
+                                    styles.messageWrapper,
+                                    isSent ? styles.sentWrapper : styles.receivedWrapper
+                                ]}
+                            >
+                                {!isSent && (
+                                    <Image
+                                        source={{
+                                            uri: msg.user.profile_image
+                                        }}
+                                        style={styles.avatar}
+                                    />
+                                )}
+
+                                <View style={styles.messageContent}>
+                                    <View
+                                        style={[
+                                            styles.messageBubble,
+                                            isSent ? styles.sentBubble : styles.receivedBubble
+                                        ]}
                                     >
-                                        {msg.content}
-                                    </Text>
-                                    <View style={[styles.timeContainer, msg.type === 'sent' && styles.sentTimeContainer]}>
-                                        <Text
-                                            style={[styles.timeText, msg.type === 'sent' && styles.sentTimeText]}
-                                        >
-                                            {msg.time}
-                                        </Text>
-                                        {msg.type === 'received' && msg.isRead && (
-                                            <Check color={Colors.textLight} size={14} style={{ marginLeft: 4 }} />
-                                        )}
+                                        {renderMessageContent(msg)}
+
+                                        <View style={[
+                                            styles.timeContainer,
+                                            isSent && styles.sentTimeContainer
+                                        ]}>
+                                            <Text style={[
+                                                styles.timeText,
+                                                isSent && styles.sentTimeText
+                                            ]}>
+                                                {msg.formatted_time}
+                                            </Text>
+                                            {isSent && (
+                                                <Check
+                                                    color={Colors.white}
+                                                    size={14}
+                                                    style={{ marginLeft: 4 }}
+                                                />
+                                            )}
+                                        </View>
                                     </View>
                                 </View>
-                            </View>
 
-                            {msg.type === 'sent' && (
-                                <Image
-                                    source={{ uri: 'https://i.pravatar.cc/150?img=12' }}
-                                    style={styles.avatar}
-                                />
-                            )}
-                        </View>
-                    ))}
+                                {isSent && (
+                                    <View style={{ width: 10, height: 10 }} />
+                                )}
+                            </View>
+                        );
+                    })}
                 </ScrollView>
+
+                {attachment && (
+                    <View style={styles.attachmentContainer}>
+                        <TouchableOpacity
+                            style={styles.removeAttachmentButton}
+                            onPress={() => setAttachment(null)}
+                        >
+                            <Text style={{ color: 'white', fontSize: 16, lineHeight: 16 }}>×</Text>
+                        </TouchableOpacity>
+
+                        {attachment.type.startsWith('image/') ? (
+                            <Image
+                                source={{ uri: attachment.uri }}
+                                style={{ width: 120, height: 120, borderRadius: 8 }}
+                                resizeMode="cover"
+                            />
+                        ) : (
+                            <View style={styles.documentPreview}>
+                                <FileText width={48} height={48} color="#555" />
+                                <Text numberOfLines={1} style={styles.documentName}>
+                                    {attachment.name}
+                                </Text>
+                            </View>
+                        )}
+                    </View>
+                )}
 
                 {/* Input Area */}
                 <View style={styles.inputContainer}>
                     <View style={styles.inputWrapper}>
-                        <TouchableOpacity style={styles.inputIcon}>
+                        <TouchableOpacity style={styles.inputIcon} onPress={() => setEmojiOpen(true)}>
                             <Smile color={Colors.textLight} size={22} />
                         </TouchableOpacity>
                         <TextInput
@@ -115,20 +387,39 @@ const ChatScreen = () => {
                             placeholder="Enter your message"
                             placeholderTextColor="#aaa"
                             value={message}
-                            onChangeText={setMessage}
+                            onChangeText={(t) => onTyping(t)}
                             multiline
                         />
-                        <TouchableOpacity style={styles.inputIcon}>
+
+                        <TouchableOpacity style={styles.inputIcon} onPress={handlePickDocument}>
                             <Paperclip color={Colors.textLight} size={20} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.inputIcon}>
+                        <TouchableOpacity style={styles.inputIcon} onPress={handlePickImage}>
                             <Camera color={Colors.textLight} size={20} />
                         </TouchableOpacity>
                     </View>
-                    <TouchableOpacity style={styles.sendButton}>
-                        <Send color={Colors.white} size={20} fill={Colors.white} />
+                    <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
+                        {btnLoading ? <ActivityIndicator size="small" color={Colors.white} /> :
+                            <Send color={Colors.white} size={20} fill={Colors.white} />}
                     </TouchableOpacity>
                 </View>
+                {emojiOpen && (
+                    <View style={{ position: "absolute", bottom: 60, left: 0, right: 0 }}>
+                        <EmojiPicker
+                            onEmojiSelected={(emoji) => setMessage(prev => prev + emoji.emoji)}
+                            open={emojiOpen}
+                            onClose={() => setEmojiOpen(false)}
+                            enableSearch={false}
+                            categoryPosition="bottom"
+                            expandable={false}
+                            theme={{
+                                backdrop: "transparent"
+                            }}
+                        />
+                    </View>
+                )}
+
+                <LoaderModal visible={loading} />
             </View>
         </NMSafeAreaWrapper>
     )
@@ -187,7 +478,8 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
-        marginHorizontal: 8
+        marginHorizontal: 8,
+        backgroundColor: Colors.border
     },
     messageContent: {
         maxWidth: '70%'
@@ -229,7 +521,7 @@ const styles = StyleSheet.create({
         color: Colors.textLight
     },
     sentTimeText: {
-        color: Colors.primary
+        color: 'rgba(255, 255, 255, 0.7)'
     },
     inputContainer: {
         flexDirection: 'row',
@@ -268,5 +560,94 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         justifyContent: 'center',
         alignItems: 'center'
-    }
+    },
+    messageImage: {
+        width: 200,
+        height: 200,
+        borderRadius: 12,
+        marginBottom: 8
+    },
+    fileContainer: {
+        padding: 8
+    },
+    fileInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6
+    },
+    fileName: {
+        fontSize: 14,
+        fontWeight: '500'
+    },
+    fileSize: {
+        fontSize: 12,
+        opacity: 0.7,
+        marginLeft: 20
+    },
+    downloadButton: {
+        width: 26,
+        height: 26,
+        backgroundColor: Colors.background,
+        borderRadius: 4,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    attachmentContainer: {
+        position: 'relative',
+        alignSelf: 'flex-start',
+        marginHorizontal: '5%',
+        marginBottom: -10,
+        zIndex: 1,
+    },
+    removeAttachmentButton: {
+        position: 'absolute',
+        top: -8,
+        right: -8,
+        backgroundColor: 'red',
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1,
+    },
+    documentPreview: {
+        width: 120,
+        height: 120,
+        borderRadius: 8,
+        backgroundColor: '#f0f0f0',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 8,
+    },
+    documentName: {
+        fontSize: 12,
+        color: '#333',
+        textAlign: 'center',
+        marginTop: 4,
+    },
 })
+
+const messages = [
+    {
+        id: 1,
+        type: 'received',
+        content: "Hey Gaston, how's all going?",
+        time: '08:30',
+        sender: 'Theresa'
+    },
+    {
+        id: 4,
+        type: 'sent',
+        content: "Thanks, Gaston. I appreciate your support. Overall, I'm optimistic about our team's performance.",
+        time: '08:30'
+    },
+    {
+        id: 5,
+        type: 'received',
+        content: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.',
+        time: '08:30',
+        sender: 'Theresa',
+        isRead: true
+    }
+]

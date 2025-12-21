@@ -6,10 +6,19 @@ import { Colors } from '../../../theme/colors';
 import NMText from '../../../components/common/NMText';
 import NMButton from '../../../components/common/NMButton';
 import PaymentMethodAddModal from '../../../components/user/PaymentMethodAddModal';
+import StripePaymentScreen from '../../../components/user/StripModal';
 
-const PaymentMethod: React.FC = () => {
+const PaymentMethod: React.FC = ({ navigation, route }: any) => {
+
+    const {
+        propertyDetails,
+        checkIn,
+        checkOut,
+        guest,
+    } = route.params || {};
     const [paymentMethodAddModalVisible, setPaymentMethodAddModalVisible] = useState(false);
     const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(null);
+    const [showPayment, setShowPayment] = useState<boolean>(false);
 
     const paymentMethods = [
         {
@@ -25,6 +34,7 @@ const PaymentMethod: React.FC = () => {
             image: require('../../../assets/images/card2.png'),
         },
     ];
+
 
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
@@ -50,7 +60,7 @@ const PaymentMethod: React.FC = () => {
                             Amount
                         </NMText>
                         <NMText fontSize={20} fontFamily="bold" color={Colors.primary}>
-                            4587.SAR
+                            $ {propertyDetails.price}
                         </NMText>
                     </View>
 
@@ -119,14 +129,25 @@ const PaymentMethod: React.FC = () => {
                         fontFamily="semiBold"
                         borderRadius={8}
                         height={44}
-                        backgroundColor={selectedCardIndex !== null ? Colors.primary : Colors.textLight}
-                        disabled={selectedCardIndex === null}
+                        backgroundColor={Colors.primary}
+                        // backgroundColor={selectedCardIndex !== null ? Colors.primary : Colors.textLight}
+                        // disabled={selectedCardIndex === null}
+                        // navigation.navigate('StripePaymentModal')
+                        onPress={() => setShowPayment(true)}
+                    // onPress={() => navigation.navigate('StripePaymentModal')}
                     />
                 </View>
 
                 <PaymentMethodAddModal
                     visible={paymentMethodAddModalVisible}
                     onClose={() => setPaymentMethodAddModalVisible(false)}
+                />
+
+                <StripePaymentScreen
+                    visible={showPayment}
+                    propertyDetails={propertyDetails}
+                    bookingDetails={{ check_in: checkIn, check_out: checkOut, guests: guest }}
+                    onClose={() => setShowPayment(false)}
                 />
             </ScrollView>
         </NMSafeAreaWrapper>

@@ -14,11 +14,11 @@ import { useForm } from '../../../hooks/useForm';
 import { showErrorToast, showSuccessToast } from '../../../utils/toastService';
 import ConfirmationModal from '../../../components/user/ConfirmationModal';
 import NMLoaderModal from '../../../components/common/NMLoaderModal';
+import NMRadioButton from '../../../components/common/NMRadioButton';
+import NMDateRangePicker from '../../../components/common/NMDateRangePicker';
 
 const AddProperties: React.FC = ({ navigation, route }: any) => {
     const { property } = route.params || {};
-    console.log('print property param', JSON.stringify(property));
-
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
     const [fieldOption, setFieldOption] = useState<any>({});
@@ -47,6 +47,9 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
         price: '',
         terms: '',
         amenities: [] as string[],
+        booking_type: '',
+        availability_start_date: '',
+        availability_end_date: '',
     });
 
     const selectImages = async () => {
@@ -116,9 +119,9 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
             }
 
             // Create year_built date object if exists
-            let yearBuiltDate = '';
+            let yearBuiltValue = '';
             if (property.year_built) {
-                yearBuiltDate = new Date(property.year_built, 0, 1).toISOString();
+                yearBuiltValue = String(property.year_built);
             }
 
             // Set all form values
@@ -134,7 +137,7 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                 bathrooms: property.bathrooms?.toString() || '',
                 garages: property.garages?.toString() || '',
                 garage_size: property.garage_size?.toString() || '',
-                year_built: yearBuiltDate,
+                year_built: yearBuiltValue || '',
                 address: property.address || '',
                 zip_code: property.zip_code || '',
                 city: property.city || '',
@@ -143,6 +146,9 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                 price: property.price?.toString() || '',
                 terms: property.terms || '',
                 amenities: amenitiesList,
+                booking_type: property.booking_type || 'instant',
+                availability_start_date: property.availability_start_date || '',
+                availability_end_date: property.availability_end_date || '',
             });
 
             // Set images from media
@@ -184,6 +190,14 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
             city: (val) => !val ? 'City is required' : null,
             state: (val) => !val ? 'State is required' : null,
             location: (val) => !val ? 'Location is required' : null,
+            availability_start_date: (val) =>
+                values.property_category !== 'Sell' && !val
+                    ? 'Availability Start Date is required'
+                    : null,
+            availability_end_date: (val) =>
+                values.property_category !== 'Sell' && !val
+                    ? 'Availability End Date is required'
+                    : null,
         });
 
         // Validate images
@@ -225,6 +239,12 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
         }
     };
 
+    const isEmpty = (val: any) =>
+        val === null ||
+        val === undefined ||
+        val === '' ||
+        (Array.isArray(val) && val.length === 0);
+
     const handleSubmit = async () => {
         const data = new FormData();
 
@@ -236,7 +256,7 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                 if (key === "year_built" && value) {
                     value = new Date(value).getFullYear();
                 }
-
+                if (isEmpty(value)) return;
                 data.append(key, value ? value : "");
             }
         });
@@ -257,6 +277,8 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
             });
         }
 
+        console.log('print data', JSON.stringify(data));
+
         try {
             setLoading(true);
             const endPointCheck = property ? `v1/properties/${property.id}` : 'v1/properties';
@@ -273,11 +295,14 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
 
             if (result) {
                 showSuccessToast('Property added successfully!');
+                navigation.goBack();
             }
 
             if (error) {
                 showErrorToast(error || 'Failed to add property');
             }
+            console.log('any', error, 'right', result);
+
         } catch (error) {
             showErrorToast('An unexpected error occurred');
         } finally {
@@ -396,6 +421,7 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                                 label="Year Built"
                                 placeholder="Select"
                                 value={values.year_built}
+                                mode="year"
                                 onChange={(value) => handleChange('year_built', value)}
                                 isRequired
                                 mHorizontal={0}
@@ -403,6 +429,19 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                                 error={errors.year_built}
                             />
                         </View>
+                        {values.property_category !== 'Sell' && (<NMDateRangePicker
+                            label="Set Availability"
+                            placeholder="Select date range"
+                            startDate={values.availability_start_date}
+                            endDate={values.availability_end_date}
+                            isRequired
+                            onChangeRange={(start, end) => {
+                                handleChange('availability_start_date', start);
+                                handleChange('availability_end_date', end);
+                            }}
+                            mHorizontal={0}
+                            error={errors.availability_end_date || errors.availability_start_date}
+                        />)}
                         <NMTextInput
                             label='Full Address'
                             placeholder='Enter'
@@ -455,6 +494,31 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                             required
                             error={errors.location}
                         />
+                        {values.property_category !== 'Sell' && (<>
+                            <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                Booking Options
+                            </NMText>
+                            <View style={[styles.inRow, { justifyContent: 'space-between', marginVertical: 10 }]}>
+                                <NMRadioButton
+                                    label="Instant Booking"
+                                    selected={values.booking_type === 'instant booking'}
+                                    onPress={() => {
+                                        handleChange('booking_type', 'instant booking');
+                                    }}
+                                    activeOuterColor={Colors.primary}
+                                    innerColor={Colors.primary}
+                                />
+                                <NMRadioButton
+                                    label="Approval Needed"
+                                    selected={values.booking_type === 'approval needed'}
+                                    onPress={() => {
+                                        handleChange('booking_type', 'approval needed');
+                                    }}
+                                    activeOuterColor={Colors.primary}
+                                    innerColor={Colors.primary}
+                                />
+                            </View>
+                        </>)}
                         <NMButton
                             title='Next'
                             textColor={Colors.primary}

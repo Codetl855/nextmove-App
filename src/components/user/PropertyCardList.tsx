@@ -181,8 +181,8 @@ const PropertyCardList: React.FC<{ properties: any[] }> = ({ properties }) => {
                         sqft={property.size || 0}
                         beds={property.bedrooms || 0}
                         baths={property.bathrooms || 0}
-                        agentName={'Unknown Agent'}
-                        agentImage={'https://i.pravatar.cc/150?img=47'}
+                        agentName={property.owner.first_name + ' ' + property.owner.last_name}
+                        agentImage={property.owner.profile_image_url}
                         price={property.price}
                         isFavorite={property.is_favourite || favoriteStates[property.id] || false}
                         onPress={() => navigation.navigate('PropertyDetailScreen', { property })}
@@ -284,6 +284,7 @@ const styles = StyleSheet.create({
         width: 28,
         height: 28,
         borderRadius: 28 / 2,
+        backgroundColor: Colors.border,
     },
 });
 

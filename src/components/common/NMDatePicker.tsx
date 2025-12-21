@@ -19,8 +19,10 @@ interface NMDatePickerProps {
     onChange?: (date: string) => void;
     mHorizontal?: number | `${number}%`;
     customTextStyle?: TextStyle;
-    mainView?: ViewStyle,
-    error?: string
+    mainView?: ViewStyle;
+    error?: string;
+    mode?: 'date' | 'year';
+    minDate?: 'today' | string;
 }
 
 const NMDatePicker: React.FC<NMDatePickerProps> = ({
@@ -32,21 +34,31 @@ const NMDatePicker: React.FC<NMDatePickerProps> = ({
     mHorizontal,
     customTextStyle,
     mainView,
-    error
+    error,
+    mode = 'date',
+    minDate,
 }) => {
-
     const [open, setOpen] = useState(false);
 
+    const resolvedMinDate =
+        minDate === 'today'
+            ? new Date().toISOString().split('T')[0]
+            : minDate;
+
     return (
-        <View style={[styles.container, mainView, { marginHorizontal: mHorizontal ?? '5%' }
-        ]}>
-            {/* LABEL */}
+        <View
+            style={[
+                styles.container,
+                mainView,
+                { marginHorizontal: mHorizontal ?? '5%' },
+            ]}
+        >
             {label && (
                 <View style={styles.infoContainer}>
                     <NMText
                         fontSize={14}
                         fontWeight="medium"
-                        fontFamily='medium'
+                        fontFamily="medium"
                         color={Colors.textPrimary}
                         style={customTextStyle}
                     >
@@ -56,10 +68,12 @@ const NMDatePicker: React.FC<NMDatePickerProps> = ({
                 </View>
             )}
 
-            {/* TOUCHABLE INPUT */}
             <TouchableOpacity
-                style={[styles.inputBox,
-                error ? { borderColor: Colors.error } : { borderColor: Colors.border }
+                style={[
+                    styles.inputBox,
+                    error
+                        ? { borderColor: Colors.error }
+                        : { borderColor: Colors.border },
                 ]}
                 activeOpacity={0.8}
                 onPress={() => setOpen(true)}
@@ -72,6 +86,7 @@ const NMDatePicker: React.FC<NMDatePickerProps> = ({
                     {value || placeholder}
                 </NMText>
             </TouchableOpacity>
+
             {error && (
                 <NMText
                     fontSize={12}
@@ -82,7 +97,6 @@ const NMDatePicker: React.FC<NMDatePickerProps> = ({
                 </NMText>
             )}
 
-            {/* CALENDAR MODAL */}
             <Modal
                 transparent
                 animationType="slide"
@@ -92,20 +106,29 @@ const NMDatePicker: React.FC<NMDatePickerProps> = ({
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>
                         <Calendar
+                            minDate={mode === 'date' ? resolvedMinDate : undefined}
                             markedDates={
-                                value
-                                    ? { [value]: { selected: true, selectedColor: Colors.primary } }
+                                mode === 'date' && value
+                                    ? {
+                                        [value]: {
+                                            selected: true,
+                                            selectedColor: Colors.primary,
+                                        },
+                                    }
                                     : {}
                             }
                             onDayPress={(day) => {
-                                onChange?.(day.dateString);
+                                if (mode === 'year') {
+                                    onChange?.(day.dateString.split('-')[0]);
+                                } else {
+                                    onChange?.(day.dateString);
+                                }
                                 setOpen(false);
                             }}
                         />
                     </View>
                 </View>
             </Modal>
-
         </View>
     );
 };
@@ -131,7 +154,6 @@ const styles = StyleSheet.create({
         minHeight: 48,
         justifyContent: 'center',
     },
-
     modalOverlay: {
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.4)',

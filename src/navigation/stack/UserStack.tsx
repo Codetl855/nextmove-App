@@ -29,6 +29,7 @@ import PaymentMethod from '../../screens/user/paymentMethod';
 import NotificationsScreen from '../../screens/user/notifications';
 import AddProperties from '../../screens/user/addProperties';
 import ChatScreen from '../../screens/user/chat';
+import StripePaymentModal from '../../components/user/StripModal';
 
 const Stack = createStackNavigator();
 
@@ -69,6 +70,7 @@ const UserStack: React.FC = () => {
                 <Stack.Screen name="NotificationsScreen" component={NotificationsScreen} />
                 <Stack.Screen name="AddProperties" component={AddProperties} />
                 <Stack.Screen name="ChatScreen" component={ChatScreen} />
+                <Stack.Screen name="StripePaymentModal" component={StripePaymentModal} />
             </Stack.Navigator>
         </NavigationContainer>
     );

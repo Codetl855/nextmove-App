@@ -7,7 +7,14 @@ import { ChevronLeft, Edit3Icon, SquareCheckIcon } from 'lucide-react-native'
 import NMTextInput from '../../../components/common/NMTextInput';
 import NMButton from '../../../components/common/NMButton';
 import NMRadioButton from '../../../components/common/NMRadioButton';
-const BookingPayment: React.FC = ({ navigation }: any) => {
+const BookingPayment: React.FC = ({ navigation, route }: any) => {
+
+    const {
+        propertyDetails,
+        checkIn,
+        checkOut,
+        guest,
+    } = route.params || {};
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
             <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
@@ -36,7 +43,7 @@ const BookingPayment: React.FC = ({ navigation }: any) => {
                             </NMText>
                             <View style={[styles.inRow, { gap: 6 }]}>
                                 <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-                                    08/08/2025
+                                    {checkIn}
                                 </NMText>
                                 <View style={styles.editView}>
                                     <Edit3Icon color={Colors.primary} size={18} strokeWidth={2} />
@@ -50,7 +57,7 @@ const BookingPayment: React.FC = ({ navigation }: any) => {
                             </NMText>
                             <View style={[styles.inRow, { gap: 6 }]}>
                                 <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-                                    08/08/2025
+                                    {checkOut}
                                 </NMText>
                                 <View style={styles.editView}>
                                     <Edit3Icon color={Colors.primary} size={18} strokeWidth={2} />
@@ -64,7 +71,7 @@ const BookingPayment: React.FC = ({ navigation }: any) => {
                             </NMText>
                             <View style={[styles.inRow, { gap: 6 }]}>
                                 <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-                                    2
+                                    {guest}
                                 </NMText>
                                 <View style={styles.editView}>
                                     <Edit3Icon color={Colors.primary} size={18} strokeWidth={2} />
@@ -97,7 +104,7 @@ const BookingPayment: React.FC = ({ navigation }: any) => {
                                     Total
                                 </NMText>
                                 <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-                                    500SAR
+                                    {propertyDetails?.price}
                                 </NMText>
                             </View>
 
@@ -205,7 +212,7 @@ const BookingPayment: React.FC = ({ navigation }: any) => {
                         fontFamily='semiBold'
                         width={'90%'}
                         style={{ alignSelf: 'center', marginVertical: 10 }}
-                        onPress={() => navigation.navigate('PaymentMethod')}
+                        onPress={() => navigation.navigate('PaymentMethod', { propertyDetails: propertyDetails, checkIn: checkIn, checkOut: checkOut, guest: guest })}
                     />
 
                 </View>

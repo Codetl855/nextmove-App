@@ -9,7 +9,6 @@ import PropertyCardList from '../../../components/user/PropertyCardList'
 import PostAnAd from '../../../components/user/PostAnAd'
 import FeatureAgencies from '../../../components/user/FeatureAgencies'
 import BlogCardList from '../../../components/user/BlogCardList'
-import { SheetProvider, SheetManager } from 'react-native-actions-sheet';
 import FilterSheet from '../../../components/user/FilterSheet';
 import { useNavigation } from '@react-navigation/native'
 import { apiRequest } from '../../../services/apiClient'
@@ -22,7 +21,7 @@ const HomeScreen: React.FC = () => {
     const [selectedTab, setSelectedTab] = useState('1');
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(false);
-
+    const [filterVisible, setFilterVisible] = useState(false);
     const tabs = [
         { id: '1', label: 'House' },
         { id: '2', label: 'Apartment' },
@@ -31,11 +30,7 @@ const HomeScreen: React.FC = () => {
     ];
 
     const showFilterSheet = () => {
-        SheetManager.show('filter-sheet');
-    };
-
-    const hideFilterSheet = () => {
-        SheetManager.hide('filter-sheet');
+        setFilterVisible(true);
     };
 
     const getPropertyList = async () => {
@@ -64,69 +59,76 @@ const HomeScreen: React.FC = () => {
         }
     };
 
+    const handleApplyFilter = (filters: any) => {
+        console.log('Applied Filters:', filters);
+        navigation.navigate('Home', { screen: 'FilterList', params: { selectedCategory: filters.category, selectedFilters: filters } });
+    };
+
     useEffect(() => {
         getPropertyList();
     }, [selectedTab]);
 
     return (
-        <SheetProvider>
-            <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
-                <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
-                    <View style={styles.container}>
-                        <View style={styles.headerView}>
-                            <TouchableOpacity onPress={() => navigation?.openDrawer()} >
-                                <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
-                            </TouchableOpacity>
-                            <Image source={require('../../../assets/images/HomeLogo.png')} style={styles.headerLogo} />
-                            <TouchableOpacity onPress={() => navigation.navigate('NotificationsScreen')}>
-                                <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.filterView}>
-                            <NMTextInput
-                                placeholder='Search here'
-                                rightIcon={
-                                    <Image source={require('../../../assets/icons/search.png')} style={styles.searchIcon} />
-                                }
-                                containerStyle={styles.inputContainer}
-                                mainViewStyle={{ width: '76%' }}
-                            />
-                            <TouchableOpacity style={styles.filterSlider} onPress={showFilterSheet} activeOpacity={0.7}>
-                                <Image source={require('../../../assets/icons/slidersBold.png')} style={styles.filterIcon} />
-                            </TouchableOpacity>
-                        </View>
-                        <NMText fontSize={18} fontFamily='medium' style={styles.textStyle}>
-                            Recommended For You
-                        </NMText>
-
-                        <NMTabs
-                            tabs={tabs}
-                            onTabSelect={(tabId) => setSelectedTab(tabId)}
-                            defaultSelected="1"
-                        />
-
-                        <PropertyCardList properties={properties} />
-
-                        <PostAnAd />
-
-                        <FeatureAgencies />
-
-                        <View style={styles.blogView}>
-                            <NMText fontSize={16} fontFamily='medium' color={Colors.textPrimary}>
-                                Our Latest Blogs
-                            </NMText>
-                            <NMText fontSize={14} fontFamily='medium' color={Colors.primary} onPress={() => navigation.navigate('BlogsList')}>
-                                View All
-                            </NMText>
-                        </View>
-
-                        <BlogCardList />
+        <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
+            <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
+                <View style={styles.container}>
+                    <View style={styles.headerView}>
+                        <TouchableOpacity onPress={() => navigation?.openDrawer()} >
+                            <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                        </TouchableOpacity>
+                        <Image source={require('../../../assets/images/HomeLogo.png')} style={styles.headerLogo} />
+                        <TouchableOpacity onPress={() => navigation.navigate('NotificationsScreen')}>
+                            <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
+                        </TouchableOpacity>
                     </View>
-                </ScrollView>
-                <FilterSheet sheetId="filter-sheet" />
-                <LoaderModal visible={loading} />
-            </NMSafeAreaWrapper>
-        </SheetProvider>
+                    <View style={styles.filterView}>
+                        <NMTextInput
+                            placeholder='Search here'
+                            rightIcon={
+                                <Image source={require('../../../assets/icons/search.png')} style={styles.searchIcon} />
+                            }
+                            containerStyle={styles.inputContainer}
+                            mainViewStyle={{ width: '76%' }}
+                        />
+                        <TouchableOpacity style={styles.filterSlider} onPress={showFilterSheet} activeOpacity={0.7}>
+                            <Image source={require('../../../assets/icons/slidersBold.png')} style={styles.filterIcon} />
+                        </TouchableOpacity>
+                    </View>
+                    <NMText fontSize={18} fontFamily='medium' style={styles.textStyle}>
+                        Recommended For You
+                    </NMText>
+
+                    <NMTabs
+                        tabs={tabs}
+                        onTabSelect={(tabId) => setSelectedTab(tabId)}
+                        defaultSelected="1"
+                    />
+
+                    <PropertyCardList properties={properties} />
+
+                    <PostAnAd />
+
+                    <FeatureAgencies />
+
+                    <View style={styles.blogView}>
+                        <NMText fontSize={16} fontFamily='medium' color={Colors.textPrimary}>
+                            Our Latest Blogs
+                        </NMText>
+                        <NMText fontSize={14} fontFamily='medium' color={Colors.primary} onPress={() => navigation.navigate('BlogsList')}>
+                            View All
+                        </NMText>
+                    </View>
+
+                    <BlogCardList />
+                </View>
+            </ScrollView>
+            <FilterSheet
+                visible={filterVisible}
+                onClose={() => setFilterVisible(false)}
+                onApplyFilter={handleApplyFilter}
+            />
+            <LoaderModal visible={loading} />
+        </NMSafeAreaWrapper>
     )
 }
 

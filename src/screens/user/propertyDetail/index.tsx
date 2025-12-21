@@ -13,6 +13,7 @@ import CommentSheetModal from '../../../components/user/CommentSheetModal';
 import { apiRequest } from '../../../services/apiClient';
 import { showErrorToast, showSuccessToast } from '../../../utils/toastService';
 import LoaderModal from '../../../components/common/NMLoaderModal';
+import FloatingChatButton from '../../../components/user/FloatingChatButton';
 
 const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
     const { SelectedCategory, property } = route.params;
@@ -293,7 +294,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                                     <NMText fontSize={18} fontFamily='medium' color={Colors.textPrimary}>
                                         Guest Reviews
                                     </NMText>
-                                    <NMButton
+                                    {detailData?.canAddReview && (<NMButton
                                         title='Add Review'
                                         leftIcon={<PlusIcon color={Colors.black} size={16} strokeWidth={2} fill={Colors.black} />}
                                         width={'36%'}
@@ -305,15 +306,17 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                                         fontSize={14}
                                         style={{ borderWidth: 1, borderColor: Colors.black }}
                                         onPress={() => setCommentSheetVisible(true)}
-                                    />
+                                    />)}
                                 </View>
                                 <View style={{ height: 15 }} />
-                                {/* {[1, 2, 3, 4, 5].map((item, index, arr) => (
-                                    <CommentView
-                                        key={index}
-                                        widthSet={index === arr.length - 1 ? 0 : 1}
-                                    />
-                                ))} */}
+
+                                {detailData?.latest_reviews?.length == 0 && (
+                                    <View style={styles.noReviewContainer}>
+                                        <NMText fontSize={16} fontFamily='medium' color={Colors.textLight}>
+                                            No Reviews
+                                        </NMText>
+                                    </View>
+                                )}
                                 {detailData?.latest_reviews?.map((review, index, arr) => (
                                     <CommentView
                                         key={review.id}
@@ -377,9 +380,17 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                 showTabINBuy={SelectedCategory == 'BUY'}
             />
             <BookKnowModal
+                propertyDetails={detailData}
                 visible={bookModalVisible}
                 onClose={() => setBookModalVisible(false)}
             />
+
+            <FloatingChatButton
+                navigation={navigation}
+                screenName="ChatScreen"
+                params={{ property: detailData }}
+            />
+
             <LoaderModal visible={loader} />
         </NMSafeAreaWrapper>
     );
@@ -442,6 +453,11 @@ const styles = StyleSheet.create({
     },
     inRow: {
         flexDirection: 'row',
+    },
+    noReviewContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 100,
     },
     adjuestTitle: {
         width: '65%',
