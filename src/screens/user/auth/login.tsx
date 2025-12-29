@@ -34,19 +34,19 @@ const LoginScreen: React.FC = () => {
     });
 
     const handleLogin = async () => {
-        const isValid = validate({
-            email: (v) =>
-                selectedOption === "email" && !v.includes("@")
-                    ? "Invalid email address"
-                    : null,
-            mobile: (v) =>
-                selectedOption === "mobile" && v.length < 10
-                    ? "Invalid mobile number"
-                    : null,
-            password: validatePassword,
-        });
+        // const isValid = validate({
+        //     email: (v) =>
+        //         selectedOption === "email" && !v.includes("@")
+        //             ? "Invalid email address"
+        //             : null,
+        //     mobile: (v) =>
+        //         selectedOption === "mobile" && v.length < 10
+        //             ? "Invalid mobile number"
+        //             : null,
+        //     password: validatePassword,
+        // });
 
-        if (!isValid) return;
+        // if (!isValid) return;
 
         const payload =
             selectedOption === "email"

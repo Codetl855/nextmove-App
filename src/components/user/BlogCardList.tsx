@@ -14,6 +14,7 @@ import { ArrowRight } from 'lucide-react-native'
 interface BlogCardProps {
     image: string;
     title: string;
+    category: string;
     date: string;
     time: string;
     onPress?: () => void;
@@ -24,6 +25,7 @@ interface BlogCardProps {
 const BlogCard: React.FC<BlogCardProps> = ({
     image,
     title,
+    category,
     date,
     time,
     onPress,
@@ -34,8 +36,17 @@ const BlogCard: React.FC<BlogCardProps> = ({
         <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
             <View style={styles.imageContainer}>
                 <Image source={{ uri: image }} style={styles.image} />
-
-                <TouchableOpacity
+                <View style={styles.categoryContainer}>
+                    <NMText
+                        fontSize={14}
+                        fontFamily='medium'
+                        color={Colors.textPrimary}
+                        numberOfLines={2}
+                    >
+                        {category}
+                    </NMText>
+                </View>
+                {/* <TouchableOpacity
                     style={styles.favoriteButton}
                     onPress={onFavoritePress}
                     activeOpacity={0.7}
@@ -46,7 +57,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
                         fill={isFavorite ? Colors.primary : Colors.border}
                         strokeWidth={2}
                     />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
 
             <View style={styles.DTCard}>
@@ -68,7 +79,8 @@ const BlogCard: React.FC<BlogCardProps> = ({
                         style={styles.featureIcon}
                     />
                     <NMText fontSize={12} fontFamily='regular' color={Colors.textLight}>
-                        {time}
+                        {/* {time} */}
+                        5 Min Read
                     </NMText>
                 </View>
             </View>
@@ -94,33 +106,18 @@ const BlogCard: React.FC<BlogCardProps> = ({
     );
 };
 
-const BlogCardList: React.FC = () => {
-    const blogs = [
-        {
-            id: '1',
-            image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
-            title: 'Skills That You Can Learn In The Real Estate Market',
-            date: '15 Jun, 2025',
-            time: '5 Min Read',
-        },
-        {
-            id: '2',
-            image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800',
-            title: 'Skills That You Can Learn In The Real Estate Market',
-            date: '15 Jun, 2025',
-            time: '5 Min Read',
-        },
-        {
-            id: '3',
-            image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800',
-            title: 'Skills That You Can Learn In The Real Estate Market',
-            date: '15 Jun, 2025',
-            time: '5 Min Read',
-        },
-    ];
+const BlogCardList: React.FC<{ blogs: any[] }> = ({ blogs }) => {
 
     const screenWidth = Dimensions.get('window').width;
     const marginHorizontal = screenWidth * 0.05;
+
+    const formatDate = (isoDate) => {
+        return new Intl.DateTimeFormat("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        }).format(new Date(isoDate));
+    };
 
     return (
         <View style={styles.container}>
@@ -135,12 +132,13 @@ const BlogCardList: React.FC = () => {
                     },
                 ]}
             >
-                {blogs.map((blog) => (
+                {blogs?.data?.map((blog) => (
                     <BlogCard
                         key={blog.id}
-                        image={blog.image}
-                        title={blog.title}
-                        date={blog.date}
+                        image={blog?.cover_photo}
+                        title={blog?.title}
+                        category={blog?.category}
+                        date={formatDate(blog?.created_at)}
                         time={blog.time}
                         onPress={() => console.log('Blog pressed:', blog.id)}
                         onFavoritePress={() => console.log('Favorite pressed:', blog.id)}
@@ -181,6 +179,15 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         resizeMode: 'cover',
+    },
+    categoryContainer: {
+        position: 'absolute',
+        top: 8,
+        left: 8,
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 8,
     },
     favoriteButton: {
         position: 'absolute',

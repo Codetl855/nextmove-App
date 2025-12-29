@@ -22,6 +22,7 @@ const HomeScreen: React.FC = () => {
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(false);
     const [filterVisible, setFilterVisible] = useState(false);
+    const [bogsData, setBlogsData] = useState([]);
     const tabs = [
         { id: '1', label: 'House' },
         { id: '2', label: 'Apartment' },
@@ -42,13 +43,38 @@ const HomeScreen: React.FC = () => {
             });
 
             if (result) {
-                console.log("Properties List:", JSON.stringify(result.data));
+                // console.log("Properties List:", JSON.stringify(result.data));
                 setProperties(result.data);
             }
 
             if (error) {
                 console.log("Error:", error);
                 showErrorToast(`Get Properties Error: ${error}`);
+            }
+
+        } catch (err) {
+            console.error("Unexpected Error:", err);
+            showErrorToast(`Unexpected Error: ${err}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getBlogs = async () => {
+        try {
+            setLoading(true);
+            const { result, error } = await apiRequest({
+                endpoint: `v1/blogs/`,
+                method: 'GET',
+            });
+
+            if (result) {
+                setBlogsData(result.data);
+            }
+
+            if (error) {
+                console.log("Error:", error);
+                showErrorToast(`Get Blogs Error: ${error}`);
             }
 
         } catch (err) {
@@ -66,6 +92,7 @@ const HomeScreen: React.FC = () => {
 
     useEffect(() => {
         getPropertyList();
+        getBlogs();
     }, [selectedTab]);
 
     return (
@@ -119,7 +146,7 @@ const HomeScreen: React.FC = () => {
                         </NMText>
                     </View>
 
-                    <BlogCardList />
+                    <BlogCardList blogs={bogsData} />
                 </View>
             </ScrollView>
             <FilterSheet

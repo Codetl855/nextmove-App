@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import {
     DrawerContentScrollView,
@@ -10,6 +10,8 @@ import NMText from '../../components/common/NMText';
 import NMButton from '../../components/common/NMButton';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { getLoginUser } from '../../services/apiClient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface MenuItem {
     id: number;
@@ -20,6 +22,18 @@ interface MenuItem {
 
 const CustomDrawer: React.FC<DrawerContentComponentProps> = (props) => {
     const navigation = useNavigation();
+    const [loginUser, setLoginUser] = useState<any>(null);
+    const loadUser = async () => {
+        const user = await getLoginUser();
+        if (user) {
+            setLoginUser(user?.user);
+        } else {
+            console.log('No user found');
+        }
+    };
+    useEffect(() => {
+        loadUser();
+    }, []);
     const menuItems: MenuItem[] = [
         { id: 1, label: 'Property Listing', icon: require('../../assets/icons/property.png'), route: 'PropertyListing' },
         { id: 2, label: 'Booking Request', icon: require('../../assets/icons/booking.png'), route: 'BookingRequestsScreen' },
@@ -35,8 +49,12 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = (props) => {
         navigation.navigate(route as never);
     };
 
-    const handleLogout = () => {
-        console.log('Logout pressed');
+    const handleLogout = async () => {
+        await AsyncStorage.clear();
+        navigation.reset({
+            index: 0,
+            routes: [{ name: 'loginScreen' as never }],
+        });
     };
 
     return (
@@ -62,7 +80,7 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = (props) => {
 
                         <View style={styles.profileSection}>
                             <Image
-                                source={{ uri: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400' }}
+                                source={{ uri: loginUser?.profile_image || 'https://via.placeholder.com/80' }}
                                 style={styles.profileImage}
                                 resizeMode="cover"
                             />
@@ -71,7 +89,7 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = (props) => {
                                     Greetings
                                 </NMText>
                                 <NMText fontSize={20} fontFamily="semiBold" color={Colors.textPrimary}>
-                                    Daavid Nummi
+                                    {`${loginUser?.first_name || 'User'} ${loginUser?.last_name || ''}`}
                                 </NMText>
                                 <NMButton
                                     title="View Profile"

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0C80B921A6F3F58F76C31292 /* libPods-NextMove.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-NextMove.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		178A1B916F0C47119A7535D0 /* Outfit-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6BB27412390849D7952C16A3 /* Outfit-Light.ttf */; };
 		4B7F12CC16FC463E811CFC11 /* Outfit-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 28C7644AEDD9497C9939E0C2 /* Outfit-Bold.ttf */; };
@@ -20,19 +19,20 @@
 		CFD71270D033458EB21F9A63 /* Outfit-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 575BA8A401F84F6B849794D1 /* Outfit-ExtraLight.ttf */; };
 		D316735D2521E2790662A43A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		DCE8D63B3D51466086BD7057 /* Outfit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B1227BA4E90D4F8CAA9AE1C4 /* Outfit-Medium.ttf */; };
+		E810B35CE5FB84B498B37058 /* libPods-NextMove.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FAFD4FCE97F702B7FFF25DC /* libPods-NextMove.a */; };
 		F97B9361CDB04DD5BA1FA6D1 /* Outfit-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 65E67D14A53F49239B20B814 /* Outfit-ExtraBold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0C057B838B3F2822D5E31B20 /* Pods-NextMove.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NextMove.debug.xcconfig"; path = "Target Support Files/Pods-NextMove/Pods-NextMove.debug.xcconfig"; sourceTree = "<group>"; };
+		0FAFD4FCE97F702B7FFF25DC /* libPods-NextMove.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NextMove.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* NextMove.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NextMove.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = NextMove/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = NextMove/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = NextMove/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1C750C1C4C3E3315BC8FB278 /* Pods-NextMove.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NextMove.release.xcconfig"; path = "Target Support Files/Pods-NextMove/Pods-NextMove.release.xcconfig"; sourceTree = "<group>"; };
 		28C7644AEDD9497C9939E0C2 /* Outfit-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Outfit-Bold.ttf"; path = "../src/assets/fonts/Outfit-Bold.ttf"; sourceTree = "<group>"; };
-		3B4392A12AC88292D35C810B /* Pods-NextMove.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NextMove.debug.xcconfig"; path = "Target Support Files/Pods-NextMove/Pods-NextMove.debug.xcconfig"; sourceTree = "<group>"; };
-		5709B34CF0A7D63546082F79 /* Pods-NextMove.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-NextMove.release.xcconfig"; path = "Target Support Files/Pods-NextMove/Pods-NextMove.release.xcconfig"; sourceTree = "<group>"; };
 		575BA8A401F84F6B849794D1 /* Outfit-ExtraLight.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Outfit-ExtraLight.ttf"; path = "../src/assets/fonts/Outfit-ExtraLight.ttf"; sourceTree = "<group>"; };
-		5DCACB8F33CDC322A6C60F78 /* libPods-NextMove.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-NextMove.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		65E67D14A53F49239B20B814 /* Outfit-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Outfit-ExtraBold.ttf"; path = "../src/assets/fonts/Outfit-ExtraBold.ttf"; sourceTree = "<group>"; };
 		6BB27412390849D7952C16A3 /* Outfit-Light.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Outfit-Light.ttf"; path = "../src/assets/fonts/Outfit-Light.ttf"; sourceTree = "<group>"; };
 		6C03FCB925814586B33D099A /* Outfit-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Outfit-Regular.ttf"; path = "../src/assets/fonts/Outfit-Regular.ttf"; sourceTree = "<group>"; };
@@ -50,7 +50,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0C80B921A6F3F58F76C31292 /* libPods-NextMove.a in Frameworks */,
+				E810B35CE5FB84B498B37058 /* libPods-NextMove.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -89,7 +89,7 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				5DCACB8F33CDC322A6C60F78 /* libPods-NextMove.a */,
+				0FAFD4FCE97F702B7FFF25DC /* libPods-NextMove.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -127,8 +127,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				3B4392A12AC88292D35C810B /* Pods-NextMove.debug.xcconfig */,
-				5709B34CF0A7D63546082F79 /* Pods-NextMove.release.xcconfig */,
+				0C057B838B3F2822D5E31B20 /* Pods-NextMove.debug.xcconfig */,
+				1C750C1C4C3E3315BC8FB278 /* Pods-NextMove.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -140,13 +140,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "NextMove" */;
 			buildPhases = (
-				C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */,
+				DB4A93B6E2E2645C7F814640 /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */,
-				E235C05ADACE081382539298 /* [CP] Copy Pods Resources */,
+				C9FAF17B35AAE19E29FBD66C /* [CP] Embed Pods Frameworks */,
+				54C0F0A18305CFDE413B6093 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -227,7 +227,28 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */ = {
+		54C0F0A18305CFDE413B6093 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-NextMove/Pods-NextMove-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-NextMove/Pods-NextMove-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-NextMove/Pods-NextMove-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C9FAF17B35AAE19E29FBD66C /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -248,7 +269,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-NextMove/Pods-NextMove-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */ = {
+		DB4A93B6E2E2645C7F814640 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -270,27 +291,6 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E235C05ADACE081382539298 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-NextMove/Pods-NextMove-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-NextMove/Pods-NextMove-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-NextMove/Pods-NextMove-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -307,11 +307,11 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3B4392A12AC88292D35C810B /* Pods-NextMove.debug.xcconfig */;
+			baseConfigurationReference = 0C057B838B3F2822D5E31B20 /* Pods-NextMove.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 1.2;
+				CURRENT_PROJECT_VERSION = 1.5;
 				DEVELOPMENT_TEAM = 7HH6MH8A8Z;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = NextMove/Info.plist;
@@ -337,11 +337,11 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5709B34CF0A7D63546082F79 /* Pods-NextMove.release.xcconfig */;
+			baseConfigurationReference = 1C750C1C4C3E3315BC8FB278 /* Pods-NextMove.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 1.2;
+				CURRENT_PROJECT_VERSION = 1.5;
 				DEVELOPMENT_TEAM = 7HH6MH8A8Z;
 				INFOPLIST_FILE = NextMove/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;

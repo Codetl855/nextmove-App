@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Image, ScrollView, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { MapPin, Download, ChevronLeft, Edit3Icon, StarIcon } from 'lucide-react-native';
 import { Colors } from '../../../theme/colors';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import NMText from '../../../components/common/NMText';
+import { apiRequest, getLoginUser } from '../../../services/apiClient';
 
 const ProfileScreen: React.FC = ({ navigation }) => {
     const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'agents'>('overview');
-
+    const [userData, setUserData] = useState<any>(null);
+    const [agencyAgents, setAgencyAgents] = useState<any[]>([]);
     const renderOverview = () => (
         <View style={styles.tabContent}>
             <NMText fontSize={16} fontFamily='light' color={Colors.textLight}>
@@ -45,15 +47,47 @@ const ProfileScreen: React.FC = ({ navigation }) => {
         </View>
     );
 
+    const loadUser = async () => {
+        const user = await getLoginUser();
+        if (user) {
+            setUserData(user?.user);
+        } else {
+            console.log('No user found');
+        }
+    };
+
+    const getAllAgencyAgents = async () => {
+        try {
+            const { result, error } = await apiRequest({
+                endpoint: 'v1/agency-agents',
+                method: 'GET',
+            });
+            if (error) {
+                console.error('Error fetching agents:', error);
+            } else {
+                setAgencyAgents(result?.data?.data || []);
+            }
+        } catch (err) {
+            console.error('Failed to fetch agency agents', err);
+        }
+    }
+
+    useEffect(() => {
+        loadUser();
+        getAllAgencyAgents();
+    }, []);
+
     const renderAgents = () => (
         <View style={styles.tabContent}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {[
-                    "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400",
-                    "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400",
-                    "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400"
-                ].map((img, i) => (
-                    <AgentCard key={i} image={img} name="Chris Matial" role="Sales Agent" />
+                {agencyAgents?.map((agent) => (
+                    <AgentCard
+                        key={agent.id}
+                        image={agent.user.profile_image_url}
+                        name={`${agent.user.first_name}${agent.user.last_name ? ' ' + agent.user.last_name : ''}`}
+                        role={agent.user.role}
+                        onPress={() => navigation.navigate('AddAgent', { agent: agent, isEdit: true })}
+                    />
                 ))}
             </ScrollView>
             <TouchableOpacity style={styles.addButton}>
@@ -88,7 +122,15 @@ const ProfileScreen: React.FC = ({ navigation }) => {
 
                 <View style={styles.headerCard}>
                     <View style={styles.logoContainer}>
-                        <View style={styles.logo} />
+                        {userData?.profile_image_url ? (
+                            <Image
+                                source={{ uri: userData.profile_image_url }}
+                                style={styles.logo}
+                                resizeMode="cover"
+                            />
+                        ) : (
+                            <View style={styles.logo} />
+                        )}
                     </View>
 
                     <View style={styles.ratingContainer}>
@@ -106,20 +148,21 @@ const ProfileScreen: React.FC = ({ navigation }) => {
                     </View>
 
                     <NMText fontSize={16} fontFamily='semiBold' color={Colors.textPrimary}>
-                        Avenue Realty
+                        {/* Avenue Realty */}
+                        {userData ? `${userData.first_name} ${userData.last_name ?? ""}` : 'Avenue Realty'}
                     </NMText>
 
                     <View style={styles.addressRow}>
                         <MapPin color={Colors.primary} size={16} strokeWidth={2} />
                         <NMText fontSize={14} fontFamily='regular' color={Colors.primary}>
-                            102 Ingraham St, Brooklyn, NY 11237
+                            {userData?.address}
                         </NMText>
                     </View>
 
                     <InfoRow label="Agency" value="Universo Realtors" />
                     <InfoRow label="Agent Licens" value="LC-5758-2048-3944" />
-                    <InfoRow label="Phone" value="+21 456 987 330" />
-                    <InfoRow label="Email" value="avenuerealty@demo.com" />
+                    <InfoRow label="Phone" value={userData?.mobile} />
+                    <InfoRow label="Email" value={userData?.email} />
                     <InfoRow label="Website" value="www.rainbowinc.com" />
 
                     <View style={styles.tabsContainer}>
@@ -151,7 +194,7 @@ const ProfileScreen: React.FC = ({ navigation }) => {
 
 const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
     <View style={styles.infoRow}>
-        <NMText fontSize={16} fontFamily="regular" color={Colors.textLight} style={{ width: '46%' }}>
+        <NMText fontSize={16} fontFamily="regular" color={Colors.textLight} style={{ width: '40%' }}>
             {label}
         </NMText>
         <NMText fontSize={16} fontFamily="medium" color={Colors.textPrimary}>
@@ -181,8 +224,8 @@ const DocumentItem: React.FC<{ title: string; size: string }> = ({ title, size }
     </View>
 );
 
-const AgentCard: React.FC<{ image: string; name: string; role: string }> = ({ image, name, role }) => (
-    <View style={styles.agentCard}>
+const AgentCard: React.FC<{ image: string; name: string; role: string; onPress?: () => void }> = ({ image, name, role, onPress }) => (
+    <TouchableOpacity style={styles.agentCard} activeOpacity={.8} onPress={onPress}>
         <Image source={{ uri: image }} style={styles.agentImage} />
         <NMText fontSize={16} fontFamily='semiBold' color={Colors.textPrimary}>
             {name}
@@ -190,7 +233,7 @@ const AgentCard: React.FC<{ image: string; name: string; role: string }> = ({ im
         <NMText fontSize={14} fontFamily='regular' color={Colors.textLight}>
             {role}
         </NMText>
-    </View>
+    </TouchableOpacity>
 );
 
 const styles = StyleSheet.create({
@@ -264,6 +307,7 @@ const styles = StyleSheet.create({
     },
     infoRow: {
         flexDirection: 'row',
+        overflow: 'hidden',
         paddingVertical: 12,
         borderBottomWidth: 1,
         borderBottomColor: Colors.border,

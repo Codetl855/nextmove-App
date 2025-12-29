@@ -1,15 +1,49 @@
 import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper'
 import NMTextInput from '../../../components/common/NMTextInput'
 import { Colors } from '../../../theme/colors'
 import NMText from '../../../components/common/NMText'
 import BlogListCard from '../../../components/user/BlogListCard'
 import BlogFilterModal from '../../../components/user/BlogFilterModal'
+import { showErrorToast } from '../../../utils/toastService'
+import { apiRequest } from '../../../services/apiClient'
+import LoaderModal from '../../../components/common/NMLoaderModal'
+import { useNavigation } from '@react-navigation/native'
 
-const BlogsList: React.FC = ({ navigation }) => {
-
+const BlogsList: React.FC = () => {
+    const navigation = useNavigation();
     const [blogModalVisible, setBlogModalVisible] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [blogsData, setBlogsData] = useState([]);
+    const getBlogs = async () => {
+        try {
+            setLoading(true);
+            const { result, error } = await apiRequest({
+                endpoint: `v1/blogs/`,
+                method: 'GET',
+            });
+
+            if (result) {
+                setBlogsData(result.data);
+            }
+
+            if (error) {
+                console.log("Error:", error);
+                showErrorToast(`Get Blogs Error: ${error}`);
+            }
+
+        } catch (err) {
+            console.error("Unexpected Error:", err);
+            showErrorToast(`Unexpected Error: ${err}`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        getBlogs();
+    }, []);
 
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
@@ -42,8 +76,8 @@ const BlogsList: React.FC = ({ navigation }) => {
                         </TouchableOpacity>
                     </View>
 
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item, index) => (
-                        <BlogListCard key={index} />
+                    {blogsData?.data?.map((blog) => (
+                        <BlogListCard key={blog.id} item={blog} />
                     ))}
                 </View>
                 <BlogFilterModal
@@ -51,6 +85,7 @@ const BlogsList: React.FC = ({ navigation }) => {
                     onClose={() => setBlogModalVisible(false)}
                 />
             </ScrollView>
+            <LoaderModal visible={loading} />
         </NMSafeAreaWrapper>
     )
 }
