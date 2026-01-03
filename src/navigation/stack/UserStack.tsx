@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import SplashScreen from '../../screens/user/splash';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, NavigationContainerRef } from '@react-navigation/native';
 import LoginScreen from '../../screens/user/auth/login';
 import SignUpScreen from '../../screens/user/auth/signUp';
 import VerificationCodeScreen from '../../screens/user/auth/verificationCode';
@@ -30,12 +30,33 @@ import NotificationsScreen from '../../screens/user/notifications';
 import AddProperties from '../../screens/user/addProperties';
 import ChatScreen from '../../screens/user/chat';
 import StripePaymentModal from '../../components/user/StripModal';
+import { setLogoutListener } from '../../services/apiClient';
+import UserHistoryScreen from '../../screens/user/userHistory';
 
 const Stack = createStackNavigator();
 
 const UserStack: React.FC = () => {
+    const navigationRef = useRef<NavigationContainerRef<any>>(null);
+
+    useEffect(() => {
+        // Set up logout listener for token expiration
+        setLogoutListener(() => {
+            if (navigationRef.current) {
+                navigationRef.current.reset({
+                    index: 0,
+                    routes: [{ name: 'loginScreen' }],
+                });
+            }
+        });
+
+        // Cleanup on unmount
+        return () => {
+            setLogoutListener(() => { });
+        };
+    }, []);
+
     return (
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
             <Stack.Navigator
                 initialRouteName="Splash"
                 screenOptions={{
@@ -71,6 +92,7 @@ const UserStack: React.FC = () => {
                 <Stack.Screen name="AddProperties" component={AddProperties} />
                 <Stack.Screen name="ChatScreen" component={ChatScreen} />
                 <Stack.Screen name="StripePaymentModal" component={StripePaymentModal} />
+                <Stack.Screen name="UserHistoryScreen" component={UserHistoryScreen} />
             </Stack.Navigator>
         </NavigationContainer>
     );

@@ -12,6 +12,7 @@ import { Colors } from '../../theme/colors';
 interface ConfirmationModalProps {
     visible: boolean;
     onClose: () => void;
+    onConfirm: () => void;
     title: string;
     message: string;
     buttonName?: string;
@@ -20,13 +21,14 @@ interface ConfirmationModalProps {
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     visible,
     onClose,
+    onConfirm,
     title,
     message,
     buttonName
 }) => {
 
     const handleApply = () => {
-        onClose();
+        onConfirm();
     };
 
     return (

@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native'
 
 const BlogsList: React.FC = () => {
     const navigation = useNavigation();
+    const drawerNavigation = navigation.getParent('drawer') || navigation.getParent();
     const [blogModalVisible, setBlogModalVisible] = useState(false);
     const [loading, setLoading] = useState(false);
     const [blogsData, setBlogsData] = useState([]);
@@ -51,7 +52,15 @@ const BlogsList: React.FC = () => {
                 <View style={styles.container}>
                     <View style={styles.headerView}>
                         <View style={styles.inRow}>
-                            <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                            <TouchableOpacity onPress={() => {
+                                if (drawerNavigation && 'openDrawer' in drawerNavigation) {
+                                    drawerNavigation.openDrawer();
+                                } else if (navigation && 'openDrawer' in navigation) {
+                                    (navigation as any).openDrawer();
+                                }
+                            }}>
+                                <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                            </TouchableOpacity>
                             <View style={styles.titleView}>
                                 <NMText fontSize={20} fontFamily='semiBold' color={Colors.textSecondary}>
                                     Our Latest Blogs

@@ -7,15 +7,17 @@ import NMText from '../../../components/common/NMText'
 import FilterListCard from '../../../components/user/FilterListCard'
 import FilterSheet from '../../../components/user/FilterSheet'
 
-const FilterList: React.FC = ({ route, navigation }) => {
+const FilterList: React.FC = ({ route, navigation }: any) => {
+    const drawerNavigation = navigation?.getParent?.('drawer') || navigation?.getParent?.();
 
     const { params } = route;
-    const { selectedCategory } = params || {};
-    const [filterVisible, setFilterVisible] = useState(false);
-    const [filterData, setFilterData] = useState(null);
+    const { selectedCategory, fiterList } = params || {};
 
-    const handleApplyFilter = (filters: any) => {
-        console.log('Applied Filters result:', filters);
+    const [filterVisible, setFilterVisible] = useState(false);
+    const [filterData, setFilterData] = useState(fiterList || []);
+
+    const handleApplyFilter = (filters: any, fieldOption: any) => {
+        // console.log('Applied Filters result:', filters);
         setFilterData(filters);
     };
 
@@ -25,14 +27,22 @@ const FilterList: React.FC = ({ route, navigation }) => {
                 <View style={styles.container}>
                     <View style={styles.headerView}>
                         <View style={styles.inRow}>
-                            <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                            <TouchableOpacity onPress={() => {
+                                if (drawerNavigation && 'openDrawer' in drawerNavigation) {
+                                    drawerNavigation.openDrawer();
+                                } else if (navigation && 'openDrawer' in navigation) {
+                                    (navigation as any).openDrawer();
+                                }
+                            }}>
+                                <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                            </TouchableOpacity>
                             <View style={styles.titleView}>
                                 <NMText fontSize={20} fontFamily='semiBold' color={Colors.textSecondary}>
-                                    Villas for Sale
+                                    {/* Villas for Sale */}{selectedCategory}
                                 </NMText>
-                                <NMText fontSize={14} fontFamily='regular' color={Colors.textSecondary}>
+                                {/* <NMText fontSize={14} fontFamily='regular' color={Colors.textSecondary}>
                                     1,142 Ads in Rayadh
-                                </NMText>
+                                </NMText> */}
                             </View>
                         </View>
                         <View style={styles.inRow}>

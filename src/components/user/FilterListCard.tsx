@@ -26,8 +26,8 @@ const FilterListCard: React.FC<Props> = ({ item, SelectedCategory, onFavoritePre
             activeOpacity={0.8}
             onPress={() =>
                 navigation.navigate('PropertyDetailScreen', {
-                    property_id: item.property_id,
-                    SelectedCategory
+                    property: item,
+                    SelectedCategory: SelectedCategory,
                 })
             }
         >
@@ -59,21 +59,21 @@ const FilterListCard: React.FC<Props> = ({ item, SelectedCategory, onFavoritePre
                     <View style={styles.feature}>
                         <Image source={require('../../assets/icons/sqf.png')} style={styles.featureIcon} />
                         <NMText fontSize={12} fontFamily='regular' color={Colors.textPrimary}>
-                            0sqf
+                            {item?.size || 0}sqf
                         </NMText>
                     </View>
 
                     <View style={styles.feature}>
                         <Image source={require('../../assets/icons/bed.png')} style={styles.featureIcon} />
                         <NMText fontSize={12} fontFamily='regular' color={Colors.textPrimary}>
-                            0 Beds
+                            {item?.bedrooms || 0} Beds
                         </NMText>
                     </View>
 
                     <View style={styles.feature}>
                         <Image source={require('../../assets/icons/bath.png')} style={styles.featureIcon} />
                         <NMText fontSize={12} fontFamily='regular' color={Colors.textPrimary}>
-                            0 Baths
+                            {item?.bathrooms || 0} Baths
                         </NMText>
                     </View>
                 </View>

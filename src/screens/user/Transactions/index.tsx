@@ -1,4 +1,4 @@
-import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, View, TouchableOpacity } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import NMTextInput from '../../../components/common/NMTextInput';
@@ -7,31 +7,35 @@ import NMText from '../../../components/common/NMText';
 import TransactionCard from '../../../components/user/TransactionCard';
 import { apiRequest } from '../../../services/apiClient';
 import LoaderModal from '../../../components/common/NMLoaderModal';
+import { useNavigation } from '@react-navigation/native';
+import InvoiceDetailsModal from '../../../components/user/InvoiceDetailsModal';
 
 interface TransactionData {
-    property_id: number;
-    property_title: string;
-    property_address: string;
-    property_price: string;
-    property_type: string;
-    property_created_at: string;
-    booking_created_at: string;
-    booking_id: number;
-    reference: string;
-    status: string;
-    amount: string;
-    currency: string;
-    gateway: string;
-    created_at: string;
-    user_email: string;
-    user_mobile: string;
-    primary_image: string;
+    property_id?: number;
+    property_title?: string;
+    property_address?: string;
+    property_price?: string;
+    property_type?: string;
+    property_created_at?: string;
+    booking_created_at?: string;
+    booking_id?: number;
+    reference?: string;
+    status?: string;
+    amount?: string;
+    currency?: string;
+    gateway?: string;
+    created_at?: string;
+    user_email?: string;
+    user_mobile?: string;
+    primary_image?: string;
 }
 
 const Transactions: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [transactionData, setTransactionData] = useState<TransactionData[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isInvoiceModalVisible, setIsInvoiceModalVisible] = useState(false);
+    const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(null);
 
     const getTransactions = async () => {
         try {
@@ -42,11 +46,20 @@ const Transactions: React.FC = () => {
             });
             if (error) {
                 console.log('Error fetching transactions:', error);
+                setTransactionData([]);
                 return;
             }
-            setTransactionData(result.data.data);
+            // Safely access nested data with optional chaining
+            const transactions = result?.data?.data;
+            if (Array.isArray(transactions)) {
+                setTransactionData(transactions);
+            } else {
+                console.log('Invalid transaction data format:', transactions);
+                setTransactionData([]);
+            }
         } catch (err) {
             console.log('Error fetching transactions:', err);
+            setTransactionData([]);
         } finally {
             setIsLoading(false);
         }
@@ -56,11 +69,22 @@ const Transactions: React.FC = () => {
         getTransactions();
     }, []);
 
-    const filteredTransactions = transactionData.filter(transaction =>
-        transaction.property_title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        transaction.reference.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        transaction.amount.includes(searchQuery)
-    );
+    const navigation = useNavigation();
+    const drawerNavigation = navigation.getParent('drawer') || navigation.getParent();
+
+    // Safe filter with null checks and optional chaining
+    const filteredTransactions = transactionData.filter(transaction => {
+        if (!transaction) return false;
+
+        const query = searchQuery.toLowerCase();
+        const title = transaction.property_title?.toLowerCase() || '';
+        const reference = transaction.reference?.toLowerCase() || '';
+        const amount = transaction.amount?.toString() || '';
+
+        return title.includes(query) ||
+            reference.includes(query) ||
+            amount.includes(searchQuery);
+    });
 
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
@@ -69,7 +93,15 @@ const Transactions: React.FC = () => {
 
                     <View style={styles.headerView}>
                         <View style={styles.inRow}>
-                            <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                            <TouchableOpacity onPress={() => {
+                                if (drawerNavigation && 'openDrawer' in drawerNavigation) {
+                                    drawerNavigation.openDrawer();
+                                } else if (navigation && 'openDrawer' in navigation) {
+                                    (navigation as any).openDrawer();
+                                }
+                            }}>
+                                <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                            </TouchableOpacity>
                             <View style={styles.titleView}>
                                 <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary}>
                                     Transactions
@@ -96,9 +128,22 @@ const Transactions: React.FC = () => {
                     </View>
 
                     {filteredTransactions.length > 0 ? (
-                        filteredTransactions.map((transaction, index) => (
-                            <TransactionCard key={transaction.booking_id || index} data={transaction} />
-                        ))
+                        filteredTransactions.map((transaction, index) => {
+                            // Only render if transaction data exists
+                            if (!transaction) return null;
+                            return (
+                                <TransactionCard
+                                    key={transaction.booking_id || `transaction-${index}`}
+                                    data={transaction}
+                                    onPress={() => {
+                                        if (transaction.booking_id) {
+                                            setSelectedInvoiceId(transaction.booking_id);
+                                            setIsInvoiceModalVisible(true);
+                                        }
+                                    }}
+                                />
+                            );
+                        })
                     ) : (
                         <View style={styles.emptyState}>
                             <NMText fontSize={16} fontFamily="medium" color={Colors.textLight}>
@@ -109,6 +154,14 @@ const Transactions: React.FC = () => {
                 </View>
             </ScrollView>
             <LoaderModal visible={isLoading} />
+            <InvoiceDetailsModal
+                visible={isInvoiceModalVisible}
+                onClose={() => {
+                    setIsInvoiceModalVisible(false);
+                    setSelectedInvoiceId(null);
+                }}
+                invoiceId={selectedInvoiceId}
+            />
         </NMSafeAreaWrapper>
     );
 };

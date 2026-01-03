@@ -1,77 +1,139 @@
-import { Image, StyleSheet, View } from 'react-native'
+import { Image, StyleSheet, View, TouchableOpacity } from 'react-native'
 import React from 'react'
 import NMText from '../common/NMText'
 import { Colors } from '../../theme/colors'
 
 interface TransactionCardProps {
     data: {
-        property_id: number;
-        property_title: string;
-        property_address: string;
-        property_price: string;
-        property_type: string;
-        property_created_at: string;
-        booking_created_at: string;
-        booking_id: number;
-        reference: string;
-        status: string;
-        amount: string;
-        currency: string;
-        gateway: string;
-        created_at: string;
-        user_email: string;
-        user_mobile: string;
-        primary_image: string;
-    }
+        property_id?: number;
+        property_title?: string;
+        property_address?: string;
+        property_price?: string;
+        property_type?: string;
+        property_created_at?: string;
+        booking_created_at?: string;
+        booking_id?: number;
+        reference?: string;
+        status?: string;
+        amount?: string;
+        currency?: string;
+        gateway?: string;
+        created_at?: string;
+        user_email?: string;
+        user_mobile?: string;
+        primary_image?: string;
+    };
+    onPress?: () => void;
 }
 
-const TransactionCard: React.FC<TransactionCardProps> = ({ data }) => {
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            month: '2-digit',
-            day: '2-digit',
-            year: 'numeric'
-        });
-    };
+const TransactionCard: React.FC<TransactionCardProps> = ({ data, onPress }) => {
+    // Early return if data is not provided
+    if (!data) {
+        return null;
+    }
 
-    const formatAmount = (amount: string, currency: string) => {
-        return `${currency} ${parseFloat(amount).toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        })}`;
-    };
-
-    const getStatusColor = (status: string) => {
-        switch (status.toLowerCase()) {
-            case 'succeeded':
-            case 'completed':
-                return Colors.statusBg;
-            case 'pending':
-                return '#FFF4E6';
-            case 'failed':
-                return '#FFE6E6';
-            default:
-                return Colors.statusBg;
+    const formatDate = (dateString?: string) => {
+        if (!dateString) return 'N/A';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return 'Invalid Date';
+            }
+            return date.toLocaleDateString('en-US', {
+                month: '2-digit',
+                day: '2-digit',
+                year: 'numeric'
+            });
+        } catch (error) {
+            console.log('Error formatting date:', error);
+            return 'N/A';
         }
     };
 
-    const getStatusTextColor = (status: string) => {
-        switch (status.toLowerCase()) {
-            case 'succeeded':
-            case 'completed':
-                return Colors.statusText;
-            case 'pending':
-                return '#FF8C00';
-            case 'failed':
-                return '#DC2626';
-            default:
-                return Colors.statusText;
+    const formatAmount = (amount?: string, currency?: string) => {
+        if (!amount || !currency) return 'N/A';
+        try {
+            const numAmount = parseFloat(amount);
+            if (isNaN(numAmount)) {
+                return `${currency} 0.00`;
+            }
+            return `${currency} ${numAmount.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            })}`;
+        } catch (error) {
+            console.log('Error formatting amount:', error);
+            return `${currency || ''} ${amount || '0.00'}`;
         }
     };
 
-    return (
-        <View style={styles.mainContainer}>
+    const getStatusColor = (status?: string) => {
+        if (!status) return Colors.statusBg;
+        try {
+            switch (status.toLowerCase()) {
+                case 'succeeded':
+                case 'completed':
+                    return Colors.statusBg;
+                case 'pending':
+                    return '#FFF4E6';
+                case 'failed':
+                    return '#FFE6E6';
+                default:
+                    return Colors.statusBg;
+            }
+        } catch (error) {
+            return Colors.statusBg;
+        }
+    };
+
+    const getStatusTextColor = (status?: string) => {
+        if (!status) return Colors.statusText;
+        try {
+            switch (status.toLowerCase()) {
+                case 'succeeded':
+                case 'completed':
+                    return Colors.statusText;
+                case 'pending':
+                    return '#FF8C00';
+                case 'failed':
+                    return '#DC2626';
+                default:
+                    return Colors.statusText;
+            }
+        } catch (error) {
+            return Colors.statusText;
+        }
+    };
+
+    const formatGateway = (gateway?: string) => {
+        if (!gateway) return 'N/A';
+        try {
+            return gateway.charAt(0).toUpperCase() + gateway.slice(1);
+        } catch (error) {
+            return gateway;
+        }
+    };
+
+    const formatReference = (reference?: string) => {
+        if (!reference) return 'N/A';
+        try {
+            return reference.slice(0, 8);
+        } catch (error) {
+            return reference;
+        }
+    };
+
+    const formatStatus = (status?: string) => {
+        if (!status) return 'Unknown';
+        try {
+            return status.charAt(0).toUpperCase() + status.slice(1);
+        } catch (error) {
+            return status;
+        }
+    };
+
+    const CardContent = (
+        <>
             {data.primary_image ? (
                 <Image
                     source={{ uri: data.primary_image }}
@@ -82,10 +144,10 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ data }) => {
             )}
             <View style={styles.textContainer}>
                 <NMText fontSize={16} fontFamily='medium' color={Colors.textPrimary}>
-                    {data.property_title}
+                    {data.property_title || 'Untitled Property'}
                 </NMText>
                 <NMText fontSize={14} fontFamily='regular' color={Colors.textPrimary}>
-                    {data.gateway.charAt(0).toUpperCase() + data.gateway.slice(1)} • Ref: {data.reference.slice(0, 8)}
+                    {formatGateway(data.gateway)} • Ref: {formatReference(data.reference)}
                 </NMText>
                 <View style={styles.inRow}>
                     <NMText fontSize={12} fontFamily='regular' color={Colors.textLight}>
@@ -102,9 +164,27 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ data }) => {
                     fontFamily='regular'
                     color={getStatusTextColor(data.status)}
                 >
-                    {data.status.charAt(0).toUpperCase() + data.status.slice(1)}
+                    {formatStatus(data.status)}
                 </NMText>
             </View>
+        </>
+    );
+
+    if (onPress) {
+        return (
+            <TouchableOpacity
+                style={styles.mainContainer}
+                onPress={onPress}
+                activeOpacity={0.7}
+            >
+                {CardContent}
+            </TouchableOpacity>
+        );
+    }
+
+    return (
+        <View style={styles.mainContainer}>
+            {CardContent}
         </View>
     )
 }

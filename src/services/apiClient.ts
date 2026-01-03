@@ -61,7 +61,7 @@ const requiresToken = (url?: string) => {
 
 const api = axios.create({
     baseURL: BASE_URL,
-    timeout: 15000,
+    // timeout: 15000,
 });
 
 api.interceptors.request.use(
@@ -98,7 +98,7 @@ export const apiRequest = async <T = any>({
         const response = await api.request<T>({
             url: endpoint,
             method: method as Method,
-            data: method === 'POST' ? data : undefined,
+            data: method === 'POST' || method === 'PUT' ? data : undefined,
             params: method === 'GET' ? data : undefined,
             ...config,
         });

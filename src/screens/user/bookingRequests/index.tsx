@@ -20,6 +20,7 @@ interface Property {
 
 const BookingRequestsScreen: React.FC = () => {
     const navigation = useNavigation();
+    const drawerNavigation = navigation.getParent('drawer') || navigation.getParent();
     const [activeTab, setActiveTab] = useState<TabType>('Upcoming');
 
     const allProperties: Property[] = [
@@ -145,7 +146,15 @@ const BookingRequestsScreen: React.FC = () => {
                 {/* Header */}
                 <View style={styles.headerView}>
                     <View style={styles.inRow}>
-                        <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                        <TouchableOpacity onPress={() => {
+                            if (drawerNavigation && 'openDrawer' in drawerNavigation) {
+                                drawerNavigation.openDrawer();
+                            } else if (navigation && 'openDrawer' in navigation) {
+                                (navigation as any).openDrawer();
+                            }
+                        }}>
+                            <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                        </TouchableOpacity>
                         <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary} style={{ marginLeft: 10 }}>
                             Booking Requests
                         </NMText>

@@ -8,6 +8,7 @@ import EditReviewModal from '../../../components/user/EditReviewModal';
 import { showErrorToast } from '../../../utils/toastService';
 import { apiRequest } from '../../../services/apiClient';
 import LoaderModal from '../../../components/common/NMLoaderModal';
+import { useNavigation } from '@react-navigation/native';
 
 interface ReviewListCardProps {
     review: any;
@@ -46,6 +47,8 @@ const ReviewListCard: React.FC<ReviewListCardProps> = ({ review: item, onEdit })
 );
 
 const ReviewsScreen: React.FC = () => {
+    const navigation = useNavigation();
+    const drawerNavigation = navigation.getParent('drawer') || navigation.getParent();
     const [editModalVisible, setEditModalVisible] = useState<boolean>(false);
     const handleCloseEdit = () => setEditModalVisible(false);
     const [loading, setLoading] = useState<boolean>(false);
@@ -127,9 +130,18 @@ const ReviewsScreen: React.FC = () => {
                 {/* Header */}
                 <View style={styles.header}>
                     <View style={styles.headerLeft}>
-                        <Image
-                            source={require('../../../assets/icons/drawer.png')}
-                            style={styles.headerIcon}
+                        <TouchableOpacity onPress={() => {
+                            if (drawerNavigation && 'openDrawer' in drawerNavigation) {
+                                drawerNavigation.openDrawer();
+                            } else if (navigation && 'openDrawer' in navigation) {
+                                (navigation as any).openDrawer();
+                            }
+                        }}>
+                            <Image
+                                source={require('../../../assets/icons/drawer.png')}
+                                style={styles.headerIcon}
+                            />
+                        </TouchableOpacity>
                         />
                         <NMText
                             fontSize={20}

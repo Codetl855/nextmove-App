@@ -1,8 +1,9 @@
 import React from 'react';
-import { Image, ScrollView, StyleSheet, View, ImageSourcePropType } from 'react-native';
+import { Image, ScrollView, StyleSheet, View, ImageSourcePropType, TouchableOpacity } from 'react-native';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import NMText from '../../../components/common/NMText';
 import { Colors } from '../../../theme/colors';
+import { useNavigation } from '@react-navigation/native';
 
 interface SavedListCardProps {
     title: string;
@@ -45,6 +46,7 @@ const SavedListCard: React.FC<SavedListCardProps> = ({ title, status, province, 
 );
 
 const SavedSearch: React.FC = () => {
+    const navigation = useNavigation();
     const bookmarkIcon = require('../../../assets/icons/bookMark.png');
     const drawerIcon = require('../../../assets/icons/drawer.png');
     const notificationIcon = require('../../../assets/icons/notification.png');
@@ -62,7 +64,15 @@ const SavedSearch: React.FC = () => {
 
                 <View style={styles.header}>
                     <View style={styles.row}>
-                        <Image source={drawerIcon} style={styles.headerIcon} />
+                        <TouchableOpacity onPress={() => {
+                            if (drawerNavigation && 'openDrawer' in drawerNavigation) {
+                                drawerNavigation.openDrawer();
+                            } else if (navigation && 'openDrawer' in navigation) {
+                                (navigation as any).openDrawer();
+                            }
+                        }}>
+                            <Image source={drawerIcon} style={styles.headerIcon} />
+                        </TouchableOpacity>
                         <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary} style={styles.headerTitle}>
                             Saved Searches
                         </NMText>

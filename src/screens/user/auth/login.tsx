@@ -69,7 +69,7 @@ const LoginScreen: React.FC = () => {
 
             await AsyncStorage.setItem("loginUser", JSON.stringify(result));
             showSuccessToast("Login successful!");
-            navigation.navigate("UserBottomTab" as never);
+            navigation.replace("UserBottomTab" as never);
 
         } catch (err) {
             showErrorToast("Something went wrong!");

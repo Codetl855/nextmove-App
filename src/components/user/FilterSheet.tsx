@@ -7,6 +7,7 @@ import {
     ScrollView,
     Modal,
     Dimensions,
+    ActivityIndicator,
 } from 'react-native';
 import { X } from 'lucide-react-native';
 import MultiRangeSlider from '../common/NMultiRangeSlider';
@@ -21,11 +22,10 @@ const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 interface FilterSheetProps {
     visible: boolean;
     onClose: () => void;
-    onApplyFilter: (filters: any) => void;
+    onApplyFilter: (filters: any, fieldOption: any) => void;
 }
 
 const FilterSheet: React.FC<FilterSheetProps> = ({ visible, onClose, onApplyFilter }) => {
-    // State Management - Initialize with null/empty for optional fields
     const [selectedCategory, setSelectedCategory] = useState('BUY');
     const [city, setCity] = useState('');
     const [location, setLocation] = useState('');
@@ -82,7 +82,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({ visible, onClose, onApplyFilt
         });
         if (result) {
             const data = result.data;
-            const propertyTypes = data.propertyTypes.map((item: string) => ({
+            const propertyTypes = data?.propertyTypes?.map((item: string) => ({
                 label: item,
                 value: item,
             }));
@@ -90,9 +90,9 @@ const FilterSheet: React.FC<FilterSheetProps> = ({ visible, onClose, onApplyFilt
             setFieldOption({ propertyTypes, ameneties });
 
             // Set first property type as default if available
-            if (propertyTypes.length > 0) {
-                setSelectedPropertySubType(propertyTypes[0].label);
-            }
+            // if (propertyTypes.length > 0) {
+            //     setSelectedPropertySubType(propertyTypes[0].label);
+            // }
         }
         if (error) {
             console.warn("Failed:", error);
@@ -144,7 +144,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({ visible, onClose, onApplyFilt
             payload.rating = selectedRating;
         }
 
-        console.log('payload', payload);
+        //
 
         try {
             const { result, error } = await apiRequest({
@@ -154,7 +154,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({ visible, onClose, onApplyFilt
             });
 
             if (result) {
-                onApplyFilter(result.data);
+                onApplyFilter(result.data, payload);
                 onClose();
                 console.log("Filter API Result:", JSON.stringify(result.data));
             }
@@ -392,10 +392,11 @@ const FilterSheet: React.FC<FilterSheetProps> = ({ visible, onClose, onApplyFilt
                             style={styles.applyButton}
                             onPress={handleApplyFilter}
                             activeOpacity={0.7}
+                            disabled={loading}
                         >
-                            <NMText fontSize={14} fontFamily='regular' color={Colors.white}>
+                            {loading ? <ActivityIndicator color={Colors.white} /> : <NMText fontSize={14} fontFamily='regular' color={Colors.white}>
                                 Apply Filter
-                            </NMText>
+                            </NMText>}
                         </TouchableOpacity>
                     </View>
                 </View>

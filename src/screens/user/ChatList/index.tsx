@@ -1,4 +1,4 @@
-import { Image, ScrollView, StyleSheet, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import { Colors } from '../../../theme/colors';
@@ -8,6 +8,8 @@ import { chatService, type Conversation } from '../../../services/chatService';
 import LoaderModal from '../../../components/common/NMLoaderModal';
 
 const ChatList: React.FC = ({ navigation }: any) => {
+    // Get drawer navigation from parent
+    const drawerNavigation = navigation?.getParent?.('drawer') || navigation?.getParent?.();
 
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [loading, setLoading] = useState(true);
@@ -40,7 +42,15 @@ const ChatList: React.FC = ({ navigation }: any) => {
                     {/* Header */}
                     <View style={styles.headerView}>
                         <View style={styles.inRow}>
-                            <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                            <TouchableOpacity onPress={() => {
+                                if (drawerNavigation && 'openDrawer' in drawerNavigation) {
+                                    drawerNavigation.openDrawer();
+                                } else if (navigation && 'openDrawer' in navigation) {
+                                    (navigation as any).openDrawer();
+                                }
+                            }}>
+                                <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                            </TouchableOpacity>
                             <View style={styles.titleView}>
                                 <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary}>
                                     Messages

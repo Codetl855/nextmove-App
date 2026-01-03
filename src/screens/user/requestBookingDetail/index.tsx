@@ -1,14 +1,98 @@
-import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { ScrollView, StyleSheet, TouchableOpacity, View, Image } from 'react-native'
 import React, { useState } from 'react'
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper'
 import { Colors } from '../../../theme/colors'
 import NMText from '../../../components/common/NMText'
 import { ChevronLeft } from 'lucide-react-native'
 import NMButton from '../../../components/common/NMButton'
-import RejectBookingModal from '../../../components/user/RejectBookingModal'
+import { useNavigation, useRoute } from '@react-navigation/native'
+import { apiRequest } from '../../../services/apiClient'
+import { showErrorToast, showSuccessToast } from '../../../utils/toastService'
+import ConfirmationModal from '../../../components/user/ConfirmationModal'
+
+interface BookingRequest {
+    booking_id: number
+    property_id: number
+    property_title: string
+    property_address: string
+    property_price: string
+    property_type: string
+    property_created_at: string
+    booking_created_at: string
+    check_in: string
+    check_out: string
+    guests: number
+    duration_days: number
+    status: string
+    user_name: string
+    user_first_name: string
+    user_last_name: string
+    user_email: string
+    user_mobile: string
+    primary_image: string
+}
 
 const RequestBookingDetail: React.FC = () => {
-    const [rejectModalVisible, setRejectModalVisible] = useState(false)
+    const navigation = useNavigation()
+    const route = useRoute()
+    const routeParams = route.params as any
+    const booking: BookingRequest = routeParams?.booking
+
+    const [loading, setLoading] = useState(false)
+    const [showCancelModal, setShowCancelModal] = useState(false)
+    if (!booking) {
+        return (
+            <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
+                <View style={[styles.container, { justifyContent: 'center', alignItems: 'center', padding: 20 }]}>
+                    <NMText fontSize={16} color={Colors.textPrimary}>
+                        Booking not found
+                    </NMText>
+                </View>
+            </NMSafeAreaWrapper>
+        )
+    }
+
+    const formatDate = (dateString: string): string => {
+        if (!dateString) return ''
+        try {
+            const date = new Date(dateString)
+            if (isNaN(date.getTime())) {
+                return dateString
+            }
+            return date.toLocaleDateString('en-GB')
+        } catch (error) {
+            return dateString
+        }
+    }
+
+    const handleCancel = async () => {
+        try {
+            setLoading(true)
+            const { result, error } = await apiRequest({
+                endpoint: `v1/booking-requests/${booking.booking_id}/reject`,
+                method: 'POST',
+            })
+
+            if (result) {
+                showSuccessToast('Booking cancelled successfully')
+                navigation.goBack()
+            }
+
+            if (error) {
+                showErrorToast(`Error cancelling booking: ${error}`)
+            }
+        } catch (err) {
+            console.error('Error cancelling booking:', err)
+            showErrorToast('Failed to cancel booking')
+        } finally {
+            setLoading(false)
+            setShowCancelModal(false)
+        }
+    }
+
+    const totalPrice = parseFloat(booking.property_price) * booking.duration_days
+    const serviceFee = totalPrice * 0.1
+    const finalTotal = totalPrice + serviceFee
 
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
@@ -16,15 +100,20 @@ const RequestBookingDetail: React.FC = () => {
                 {/* HEADER */}
                 <View style={styles.headerView}>
                     <View style={styles.inRow}>
-                        <TouchableOpacity style={styles.backBox}>
+                        <TouchableOpacity style={styles.backBox} onPress={() => navigation.goBack()}>
                             <ChevronLeft color={Colors.black} size={24} strokeWidth={2} />
                         </TouchableOpacity>
                         <View style={styles.titleView}>
                             <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary}>
-                                Approval
+                                Booking Details
                             </NMText>
                         </View>
                     </View>
+                </View>
+
+                {/* Property Image */}
+                <View style={styles.imageContainer}>
+                    <Image source={{ uri: booking.primary_image }} style={styles.propertyImage} />
                 </View>
 
                 <View style={styles.contentBox}>
@@ -32,13 +121,37 @@ const RequestBookingDetail: React.FC = () => {
                         Booking Details
                     </NMText>
 
-                    {/* Checkin */}
+                    {/* Property Title */}
                     <View style={[styles.checkInBox, { marginTop: 26 }]}>
                         <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary} style={{ width: '34%' }}>
-                            Checkin
+                            Property
+                        </NMText>
+                        <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary} style={{ flex: 1 }}>
+                            {booking.property_title}
+                        </NMText>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Property Address */}
+                    <View style={styles.checkInBox}>
+                        <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary} style={{ width: '34%' }}>
+                            Address
+                        </NMText>
+                        <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary} style={{ flex: 1 }}>
+                            {booking.property_address}
+                        </NMText>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Checkin */}
+                    <View style={styles.checkInBox}>
+                        <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary} style={{ width: '34%' }}>
+                            Check-in
                         </NMText>
                         <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-                            08/08/2025
+                            {formatDate(booking.check_in)}
                         </NMText>
                     </View>
 
@@ -47,10 +160,10 @@ const RequestBookingDetail: React.FC = () => {
                     {/* Checkout */}
                     <View style={styles.checkInBox}>
                         <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary} style={{ width: '34%' }}>
-                            Checkout
+                            Check-out
                         </NMText>
                         <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-                            08/08/2025
+                            {formatDate(booking.check_out)}
                         </NMText>
                     </View>
 
@@ -59,10 +172,56 @@ const RequestBookingDetail: React.FC = () => {
                     {/* Guest */}
                     <View style={styles.checkInBox}>
                         <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary} style={{ width: '34%' }}>
-                            Guest
+                            Guests
                         </NMText>
                         <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-                            2
+                            {booking.guests}
+                        </NMText>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* Duration */}
+                    <View style={styles.checkInBox}>
+                        <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary} style={{ width: '34%' }}>
+                            Duration
+                        </NMText>
+                        <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
+                            {booking.duration_days} {booking.duration_days === 1 ? 'day' : 'days'}
+                        </NMText>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    {/* User Info */}
+                    <View style={styles.checkInBox}>
+                        <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary} style={{ width: '34%' }}>
+                            Guest Name
+                        </NMText>
+                        <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary} style={{ flex: 1 }}>
+                            {booking.user_name}
+                        </NMText>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    <View style={styles.checkInBox}>
+                        <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary} style={{ width: '34%' }}>
+                            Email
+                        </NMText>
+                        <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary} style={{ flex: 1 }}>
+                            {booking.user_email}
+                        </NMText>
+                    </View>
+
+                    <View style={styles.divider} />
+
+                    <View style={styles.checkInBox}>
+                        <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary} style={{ width: '34%' }}>
+                            Mobile
+                        </NMText>
+                        <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
+                            {booking.user_mobile}
                         </NMText>
                     </View>
 
@@ -74,10 +233,10 @@ const RequestBookingDetail: React.FC = () => {
 
                         <View style={styles.rentalFeeBox}>
                             <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary}>
-                                Rental Fee
+                                Rental Fee ({booking.duration_days} {booking.duration_days === 1 ? 'day' : 'days'})
                             </NMText>
                             <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-                                00SAR
+                                SAR {totalPrice.toFixed(2)}
                             </NMText>
                         </View>
 
@@ -86,59 +245,46 @@ const RequestBookingDetail: React.FC = () => {
                                 Service Fee
                             </NMText>
                             <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-                                00SAR
+                                SAR {serviceFee.toFixed(2)}
                             </NMText>
                         </View>
 
                         <View style={styles.rentalFeeBox}>
-                            <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary}>
+                            <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
                                 Total
                             </NMText>
-                            <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-                                500SAR
-                            </NMText>
-                        </View>
-
-                        <NMText fontSize={16} fontFamily="medium" color={Colors.textPrimary} style={{ marginTop: 10 }}>
-                            Special Requests
-                        </NMText>
-
-                        <View style={styles.rentalFeeBox}>
-                            <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary}>
-                                This cozy and well-maintained apartment is located in the heart of Gulberg, one of the most
-                                central and secure areas.
+                            <NMText fontSize={16} fontFamily="semiBold" color={Colors.primary}>
+                                SAR {finalTotal.toFixed(2)}
                             </NMText>
                         </View>
                     </View>
 
-                    {/* Action Buttons */}
-                    <View style={[styles.inRow, { marginTop: 10, justifyContent: 'space-between' }]}>
+                    {/* Cancel Button */}
+                    {booking.status !== "cancelled" && (<View style={{ marginTop: 20 }}>
                         <NMButton
-                            title="Reject"
-                            backgroundColor={Colors.white}
-                            textColor={Colors.primary}
-                            fontSize={14}
-                            fontFamily="semiBold"
-                            borderRadius={8}
-                            height={44}
-                            width="46%"
-                            style={{ borderColor: Colors.primary, borderWidth: 1 }}
-                            onPress={() => setRejectModalVisible(true)}
-                        />
-                        <NMButton
-                            title="Approve"
+                            title="Cancel Booking"
+                            backgroundColor={Colors.error}
                             textColor={Colors.white}
                             fontSize={14}
                             fontFamily="semiBold"
                             borderRadius={8}
                             height={44}
-                            width="46%"
+                            width="100%"
+                            onPress={() => setShowCancelModal(true)}
+                            loading={loading}
+                            disabled={loading}
                         />
-                    </View>
+                    </View>)}
                 </View>
-
-                <RejectBookingModal visible={rejectModalVisible} onClose={() => setRejectModalVisible(false)} />
             </ScrollView>
+            <ConfirmationModal
+                visible={showCancelModal}
+                onClose={() => setShowCancelModal(false)}
+                onConfirm={() => handleCancel()}
+                title="Cancel Booking Request?"
+                message="Are you sure you want to cancel this booking request? This action cannot be undone."
+                buttonName="Delete"
+            />
         </NMSafeAreaWrapper>
     )
 }
@@ -208,5 +354,16 @@ const styles = StyleSheet.create({
         padding: 14,
         borderRadius: 8,
         backgroundColor: Colors.white,
+    },
+    imageContainer: {
+        marginTop: 10,
+        marginHorizontal: '5%',
+        borderRadius: 8,
+        overflow: 'hidden',
+    },
+    propertyImage: {
+        width: '100%',
+        height: 200,
+        resizeMode: 'cover',
     },
 })

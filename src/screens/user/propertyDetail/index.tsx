@@ -10,20 +10,24 @@ import PropertyDescriptionModal from '../../../components/user/PropertyDescripti
 import BookKnowModal from '../../../components/user/BookKnowModal';
 import CommentView from '../../../components/user/CommentView';
 import CommentSheetModal from '../../../components/user/CommentSheetModal';
+import PropertyAuctionModal from '../../../components/user/PropertyAuctionModal';
 import { apiRequest } from '../../../services/apiClient';
 import { showErrorToast, showSuccessToast } from '../../../utils/toastService';
 import LoaderModal from '../../../components/common/NMLoaderModal';
 import FloatingChatButton from '../../../components/user/FloatingChatButton';
 
-const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
+const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
     const { SelectedCategory, property } = route.params;
 
     const [modalVisible, setModalVisible] = useState(false);
     const [commentSheetVisible, setCommentSheetVisible] = useState(false);
     const [bookModalVisible, setBookModalVisible] = useState(false);
+    const [auctionModalVisible, setAuctionModalVisible] = useState(false);
     const [isFavourite, setIsFavourite] = useState(false);
     const [loader, setLoader] = useState(false);
     const [detailData, setDetailData] = useState<any>({});
+    const [bidAmount, setBidAmount] = useState('');
+    const [error, setError] = useState('');
     const propertyImages = [
         'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
         'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800',
@@ -125,6 +129,61 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
         }
     };
 
+    const handleSubmit = async () => {
+        if (!bidAmount || bidAmount.trim() === '') {
+            setError('Please enter a bid amount');
+            showErrorToast('Please enter a bid amount');
+            return;
+        }
+
+        const amount = parseFloat(bidAmount);
+        if (isNaN(amount) || amount <= 0) {
+            setError('Please enter a valid bid amount');
+            showErrorToast('Please enter a valid bid amount');
+            return;
+        }
+
+        if (amount > parseFloat(property.price)) {
+            setError('Bid amount cannot be greater than the property price');
+            showErrorToast('Bid amount cannot be greater than the property price');
+            return;
+        }
+
+        try {
+            setLoader(true);
+            setError('');
+
+            const { result, error: apiError } = await apiRequest({
+                endpoint: 'v1/bids',
+                method: 'POST',
+                data: {
+                    amount: amount,
+                    property_id: property.id,
+                },
+            });
+
+            if (result) {
+                console.log('Bid submitted successfully:', JSON.stringify(result));
+                showSuccessToast('Bid placed successfully');
+                setBidAmount('');
+            }
+
+            if (apiError) {
+                console.log('Error:', apiError);
+                const errorMsg = typeof apiError === 'string' ? apiError : apiError?.message || 'Failed to place bid';
+                setError(errorMsg);
+                showErrorToast(errorMsg);
+            }
+        } catch (err) {
+            console.error('Unexpected Error:', err);
+            const errorMsg = err?.message || String(err) || 'An unexpected error occurred';
+            setError(errorMsg);
+            showErrorToast(errorMsg);
+        } finally {
+            setLoader(false);
+        }
+    };
+
 
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.black} statusBarStyle="light-content">
@@ -139,7 +198,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                         />
 
                         <View style={styles.topNav}>
-                            <TouchableOpacity style={styles.iconButton}>
+                            <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
                                 <ChevronLeft color="#000" size={24} strokeWidth={2} />
                             </TouchableOpacity>
                             <View style={styles.rightIcons}>
@@ -153,9 +212,9 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                                         size={20}
                                         strokeWidth={2} />
                                 </TouchableOpacity>
-                                <TouchableOpacity style={styles.iconButton}>
+                                {/* <TouchableOpacity style={styles.iconButton}>
                                     <Share2 color="#000" size={20} strokeWidth={2} />
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
                             </View>
                         </View>
                     </View>
@@ -177,7 +236,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                                 </NMText>
                                 <View style={styles.inRow}>
                                     <NMText fontSize={16} fontFamily='bold' color={Colors.primary}>
-                                        $ {detailData?.price}
+                                        SAR {detailData?.price}
                                     </NMText>
                                     <NMText fontSize={12} fontFamily='medium' color={Colors.primary}>/Month</NMText>
                                 </View>
@@ -238,7 +297,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
 
                         <Image source={require('../../../assets/images/mapImage.png')} style={styles.mapStyle} />
 
-                        <View style={styles.adBox}>
+                        {/* <View style={styles.adBox}>
                             <NMText fontSize={16} fontFamily='regular' color={Colors.textLight}>
                                 Ad Posted by
                             </NMText>
@@ -264,7 +323,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                                 </NMText>
                                 <ChevronRight size={20} color={Colors.primary} />
                             </View>
-                        </View>
+                        </View> */}
 
                         {SelectedCategory == 'BUY' ? (
                             <View style={styles.AuctionBox}>
@@ -277,8 +336,12 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                                 <View style={[styles.inRow, { alignItems: 'center', justifyContent: 'space-between' }]}>
                                     <NMTextInput
                                         placeholder='Enter'
+                                        keyboardType='numeric'
                                         mainViewStyle={styles.inputStyle}
-
+                                        required
+                                        error={error}
+                                        value={bidAmount}
+                                        onChangeText={(text) => setBidAmount(text)}
                                     />
                                     <NMButton
                                         title='Place a Bid'
@@ -286,6 +349,10 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                                         backgroundColor={Colors.black}
                                         borderRadius={8}
                                         height={44}
+                                        style={{ marginBottom: error ? 36 : 0 }}
+                                        onPress={handleSubmit}
+                                        disabled={bidAmount == '' || loader}
+                                        loading={loader}
                                     />
                                 </View>
                             </View>) : (
@@ -384,7 +451,6 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }) => {
                 visible={bookModalVisible}
                 onClose={() => setBookModalVisible(false)}
             />
-
             <FloatingChatButton
                 navigation={navigation}
                 screenName="ChatScreen"

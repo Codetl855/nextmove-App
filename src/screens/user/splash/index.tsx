@@ -1,14 +1,40 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import { useNavigation } from '@react-navigation/native';
 import { Colors } from '../../../theme/colors';
 import NMText from '../../../components/common/NMText';
 import NMButton from '../../../components/common/NMButton';
+import { getLoginUser } from '../../../services/apiClient';
 
 const SplashScreen: React.FC = () => {
 
     const navigation = useNavigation();
+
+    useEffect(() => {
+        checkAuthStatus();
+    }, []);
+
+    const checkAuthStatus = async () => {
+        try {
+            const userData = await getLoginUser();
+            if (userData && userData.token) {
+                // Token exists, navigate to home screen
+                navigation?.replace('UserBottomTab' as never);
+            } else {
+                // No token found, navigate to login
+                navigation?.replace('loginScreen' as never);
+            }
+        } catch (error) {
+            console.error('Error checking auth status:', error);
+            // If error, go to login
+            navigation?.replace('loginScreen' as never);
+        }
+    };
+
+    const handleGetStarted = () => {
+        navigation?.replace('loginScreen' as never);
+    };
 
     return (
         <NMSafeAreaWrapper
@@ -32,7 +58,7 @@ const SplashScreen: React.FC = () => {
                     fontFamily='semiBold'
                     textColor={Colors.btnTextPrimary}
                     backgroundColor={Colors.white}
-                    onPress={() => navigation?.replace('loginScreen')}
+                    onPress={handleGetStarted}
                 />
             </View>
         </NMSafeAreaWrapper>

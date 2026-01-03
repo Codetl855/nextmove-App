@@ -18,6 +18,9 @@ import LoaderModal from '../../../components/common/NMLoaderModal'
 const HomeScreen: React.FC = () => {
 
     const navigation = useNavigation();
+
+    // Get drawer navigation from parent
+    const drawerNavigation = navigation.getParent('drawer') || navigation.getParent();
     const [selectedTab, setSelectedTab] = useState('1');
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -85,9 +88,9 @@ const HomeScreen: React.FC = () => {
         }
     };
 
-    const handleApplyFilter = (filters: any) => {
-        console.log('Applied Filters:', filters);
-        navigation.navigate('Home', { screen: 'FilterList', params: { selectedCategory: filters.category, selectedFilters: filters } });
+    const handleApplyFilter = (filters: any, fieldOption: any) => {
+        console.log('Applied Filters:', fieldOption);
+        navigation.navigate('Home', { screen: 'FilterList', params: { selectedCategory: fieldOption.property_category, fiterList: filters } });
     };
 
     useEffect(() => {
@@ -100,7 +103,13 @@ const HomeScreen: React.FC = () => {
             <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
                 <View style={styles.container}>
                     <View style={styles.headerView}>
-                        <TouchableOpacity onPress={() => navigation?.openDrawer()} >
+                        <TouchableOpacity onPress={() => {
+                            if (drawerNavigation && 'openDrawer' in drawerNavigation) {
+                                drawerNavigation.openDrawer();
+                            } else if (navigation && 'openDrawer' in navigation) {
+                                (navigation as any).openDrawer();
+                            }
+                        }}>
                             <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
                         </TouchableOpacity>
                         <Image source={require('../../../assets/images/HomeLogo.png')} style={styles.headerLogo} />

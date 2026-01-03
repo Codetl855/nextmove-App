@@ -49,6 +49,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ imageUrl, title, location, 
 
 const BookFunActivities: React.FC = () => {
     const navigation = useNavigation();
+    const drawerNavigation = navigation.getParent('drawer') || navigation.getParent();
     const activities = Array(10).fill({
         imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400',
         title: 'Desert Safari Camp',
@@ -62,9 +63,18 @@ const BookFunActivities: React.FC = () => {
                 {/* Header */}
                 <View style={styles.header}>
                     <View style={styles.headerLeft}>
-                        <Image
-                            source={require('../../../assets/icons/drawer.png')}
-                            style={styles.headerIcon}
+                        <TouchableOpacity onPress={() => {
+                            if (drawerNavigation && 'openDrawer' in drawerNavigation) {
+                                drawerNavigation.openDrawer();
+                            } else if (navigation && 'openDrawer' in navigation) {
+                                (navigation as any).openDrawer();
+                            }
+                        }}>
+                            <Image
+                                source={require('../../../assets/icons/drawer.png')}
+                                style={styles.headerIcon}
+                            />
+                        </TouchableOpacity>
                         />
                         <NMText
                             fontSize={20}

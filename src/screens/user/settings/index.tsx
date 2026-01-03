@@ -42,6 +42,7 @@ const SettingToggleItem: React.FC<SettingToggleItemProps> = ({ icon, title, valu
 );
 
 const SettingScreen: React.FC = ({ navigation }: any) => {
+    const drawerNavigation = navigation?.getParent?.('drawer') || navigation?.getParent?.();
     const [isMultiFactor, setIsMultiFactor] = useState(false);
     const [isBiometric, setIsBiometric] = useState(false);
 
@@ -51,7 +52,15 @@ const SettingScreen: React.FC = ({ navigation }: any) => {
 
                 <View style={styles.header}>
                     <View style={styles.headerLeft}>
-                        <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                        <TouchableOpacity onPress={() => {
+                            if (drawerNavigation && 'openDrawer' in drawerNavigation) {
+                                drawerNavigation.openDrawer();
+                            } else if (navigation && 'openDrawer' in navigation) {
+                                (navigation as any).openDrawer();
+                            }
+                        }}>
+                            <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                        </TouchableOpacity>
                         <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary} style={styles.headerTitle}>
                             Settings
                         </NMText>

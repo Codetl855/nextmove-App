@@ -10,7 +10,8 @@ import {
 import { Heart } from 'lucide-react-native';
 import { Colors } from '../../theme/colors';
 import NMText from '../common/NMText';
-import { ArrowRight } from 'lucide-react-native'
+import { ArrowRight } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
 interface BlogCardProps {
     image: string;
     title: string;
@@ -106,18 +107,22 @@ const BlogCard: React.FC<BlogCardProps> = ({
     );
 };
 
-const BlogCardList: React.FC<{ blogs: any[] }> = ({ blogs }) => {
-
+const BlogCardList: React.FC<{ blogs: any }> = ({ blogs }) => {
+    const navigation = useNavigation();
     const screenWidth = Dimensions.get('window').width;
     const marginHorizontal = screenWidth * 0.05;
 
     const formatDate = (isoDate) => {
+        if (!isoDate) return '';
         return new Intl.DateTimeFormat("en-GB", {
             day: "2-digit",
             month: "short",
             year: "numeric",
         }).format(new Date(isoDate));
     };
+
+    // Handle different data structures: blogs can be array, or object with data property
+    const blogsArray = Array.isArray(blogs) ? blogs : (blogs?.data || []);
 
     return (
         <View style={styles.container}>
@@ -132,18 +137,26 @@ const BlogCardList: React.FC<{ blogs: any[] }> = ({ blogs }) => {
                     },
                 ]}
             >
-                {blogs?.data?.map((blog) => (
-                    <BlogCard
-                        key={blog.id}
-                        image={blog?.cover_photo}
-                        title={blog?.title}
-                        category={blog?.category}
-                        date={formatDate(blog?.created_at)}
-                        time={blog.time}
-                        onPress={() => console.log('Blog pressed:', blog.id)}
-                        onFavoritePress={() => console.log('Favorite pressed:', blog.id)}
-                    />
-                ))}
+                {blogsArray?.map((blog) => {
+                    if (!blog || !blog.id) return null;
+                    return (
+                        <BlogCard
+                            key={blog.id}
+                            image={blog?.cover_photo}
+                            title={blog?.title}
+                            category={blog?.category}
+                            date={formatDate(blog?.created_at)}
+                            time={blog.time}
+                            onPress={() => {
+                                console.log('Navigating to BlogDetail with blog:', blog);
+                                console.log('Blog ID:', blog.id);
+                                console.log('Blog Title:', blog.title);
+                                navigation.navigate('BlogDetail', { blog });
+                            }}
+                            onFavoritePress={() => console.log('Favorite pressed:', blog.id)}
+                        />
+                    );
+                })}
             </ScrollView>
         </View>
     );

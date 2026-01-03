@@ -18,6 +18,7 @@ import NMRadioButton from '../../../components/common/NMRadioButton';
 import NMDateRangePicker from '../../../components/common/NMDateRangePicker';
 
 const AddProperties: React.FC = ({ navigation, route }: any) => {
+    const drawerNavigation = navigation?.getParent?.('drawer') || navigation?.getParent?.();
     const { property } = route.params || {};
     const [step, setStep] = useState(1);
     const [loading, setLoading] = useState(false);
@@ -654,6 +655,11 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
         setShowDelModal(true);
     };
 
+    const handleCloseDeleteModal = () => {
+        setShowDelModal(false);
+        setSelectedImage(null);
+    };
+
     const handleYesPress = async () => {
         setLoading(true);
         if (selectedImage) {
@@ -690,8 +696,17 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
 
                 <View style={styles.headerView}>
                     <View style={styles.headerLeft}>
-                        <Image
-                            source={require('../../../assets/icons/drawer.png')}
+                        <TouchableOpacity onPress={() => {
+                            if (drawerNavigation && 'openDrawer' in drawerNavigation) {
+                                drawerNavigation.openDrawer();
+                            } else if (navigation && 'openDrawer' in navigation) {
+                                (navigation as any).openDrawer();
+                            }
+                        }}>
+                            <Image
+                                source={require('../../../assets/icons/drawer.png')}
+                            />
+                        </TouchableOpacity>
                             style={styles.headerIcon}
                         />
                         <NMText
@@ -768,7 +783,8 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
 
                 <ConfirmationModal
                     visible={showDelModal}
-                    onClose={() => handleYesPress()}
+                    onClose={handleCloseDeleteModal}
+                    onConfirm={handleYesPress}
                     title="Delete Image"
                     message="Are you sure you want to delete this image? This action cannot be undone."
                     buttonName="Yes, Delete"

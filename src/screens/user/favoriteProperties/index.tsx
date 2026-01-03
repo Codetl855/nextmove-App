@@ -1,4 +1,4 @@
-import { Image, ScrollView, StyleSheet, View } from 'react-native'
+import { Image, ScrollView, StyleSheet, View, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper'
 import { Colors } from '../../../theme/colors'
@@ -7,9 +7,11 @@ import FilterListCard from '../../../components/user/FilterListCard'
 import { showErrorToast, showSuccessToast } from '../../../utils/toastService'
 import { apiRequest } from '../../../services/apiClient'
 import LoaderModal from '../../../components/common/NMLoaderModal'
+import { useNavigation } from '@react-navigation/native'
 
 const FavoriteProperties: React.FC = () => {
-
+    const navigation = useNavigation();
+    const drawerNavigation = navigation.getParent('drawer') || navigation.getParent();
     const [favList, setFavList] = useState([]);
     const [loader, setLoader] = useState(false);
     const getFavList = async () => {
@@ -76,7 +78,15 @@ const FavoriteProperties: React.FC = () => {
 
                 <View style={styles.headerView}>
                     <View style={styles.inRow}>
-                        <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                        <TouchableOpacity onPress={() => {
+                            if (drawerNavigation && 'openDrawer' in drawerNavigation) {
+                                drawerNavigation.openDrawer();
+                            } else if (navigation && 'openDrawer' in navigation) {
+                                (navigation as any).openDrawer();
+                            }
+                        }}>
+                            <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                        </TouchableOpacity>
                         <View style={styles.titleView}>
                             <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary}>
                                 Favorite Properties
