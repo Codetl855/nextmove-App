@@ -130,7 +130,7 @@ const ForgotPasswordScreen: React.FC = () => {
                             ) : (
                                 <NMTextInput
                                     label="Phone"
-                                    placeholder="+92 303 55566545"
+                                    placeholder="123456789"
                                     value={values.phone}
                                     onChangeText={(text) => handleChange("phone", text)}
                                     keyboardType="phone-pad"

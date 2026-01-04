@@ -395,7 +395,16 @@ const PropertyListingScreen: React.FC = () => {
                                                 : Colors.statusPendingText
                                     }
                                 >
-                                    {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                                    {(() => {
+                                        const status = booking.status || '';
+                                        const displayStatus = status.includes('_')
+                                            ? status.split('_')[0]
+                                            : status;
+
+                                        return (
+                                            displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)
+                                        );
+                                    })()}
                                 </NMText>
                             </View>
                         </TouchableOpacity>

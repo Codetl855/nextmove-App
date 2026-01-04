@@ -445,28 +445,28 @@ const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
                                         ) : null}
 
                                         {/* Remaining Amount */}
-                                        {invoiceData?.payment?.status?.trim().toLowerCase() !== 'succeeded' && 
-                                         invoiceData?.co_payers?.some(payer => payer.status === 'pending') && (
-                                            <>
-                                                <View style={styles.remainingRow}>
-                                                    <NMText fontSize={14} fontFamily="medium" color={Colors.textPrimary}>
-                                                        Remaining Amount
-                                                    </NMText>
-                                                    <NMText fontSize={16} fontFamily="semiBold" color={Colors.error}>
-                                                        {formatAmount(calculateRemaining(), invoiceData.payment?.currency)}
-                                                    </NMText>
-                                                </View>
+                                        {invoiceData?.payment?.status?.trim().toLowerCase() !== 'succeeded' ||
+                                            invoiceData?.co_payers?.some(payer => payer.status === 'pending') && (
+                                                <>
+                                                    <View style={styles.remainingRow}>
+                                                        <NMText fontSize={14} fontFamily="medium" color={Colors.textPrimary}>
+                                                            Remaining Amount
+                                                        </NMText>
+                                                        <NMText fontSize={16} fontFamily="semiBold" color={Colors.error}>
+                                                            {formatAmount(calculateRemaining(), invoiceData.payment?.currency)}
+                                                        </NMText>
+                                                    </View>
 
-                                                <TouchableOpacity
-                                                    style={styles.sendReminderButton}
-                                                    onPress={handleSendReminder}
-                                                >
-                                                    <NMText fontSize={14} fontFamily="medium" color={Colors.white}>
-                                                        Send Reminder
-                                                    </NMText>
-                                                </TouchableOpacity>
-                                            </>
-                                        )}
+                                                    <TouchableOpacity
+                                                        style={styles.sendReminderButton}
+                                                        onPress={handleSendReminder}
+                                                    >
+                                                        <NMText fontSize={14} fontFamily="medium" color={Colors.white}>
+                                                            Send Reminder
+                                                        </NMText>
+                                                    </TouchableOpacity>
+                                                </>
+                                            )}
                                     </View>
 
                                     {/* Payment Details */}

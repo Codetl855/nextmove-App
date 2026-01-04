@@ -72,7 +72,7 @@ const SettingScreen: React.FC = ({ navigation }: any) => {
                 <SettingItem icon={require('../../../assets/icons/termsCondition.png')} title="Terms & Condition" />
                 <SettingItem icon={require('../../../assets/icons/lock.png')} title="Reset Password" onPress={() => navigation.navigate("ResetPasswordScreen")} />
 
-                <SettingToggleItem
+                {/* <SettingToggleItem
                     icon={require('../../../assets/icons/multiFactor.png')}
                     title="Multi-Factor Authentication"
                     value={isMultiFactor}
@@ -86,7 +86,7 @@ const SettingScreen: React.FC = ({ navigation }: any) => {
                     onToggle={setIsBiometric}
                 />
 
-                <SettingItem icon={require('../../../assets/icons/support.png')} title="Support" />
+                <SettingItem icon={require('../../../assets/icons/support.png')} title="Support" /> */}
             </ScrollView>
         </NMSafeAreaWrapper>
     );

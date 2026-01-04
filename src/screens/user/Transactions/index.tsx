@@ -9,6 +9,7 @@ import { apiRequest } from '../../../services/apiClient';
 import LoaderModal from '../../../components/common/NMLoaderModal';
 import { useNavigation } from '@react-navigation/native';
 import InvoiceDetailsModal from '../../../components/user/InvoiceDetailsModal';
+import { showWarningToast } from '../../../utils/toastService';
 
 interface TransactionData {
     property_id?: number;
@@ -136,9 +137,11 @@ const Transactions: React.FC = () => {
                                     key={transaction.booking_id || `transaction-${index}`}
                                     data={transaction}
                                     onPress={() => {
-                                        if (transaction.booking_id) {
+                                        if (transaction.booking_id && transaction?.status == "succeeded") {
                                             setSelectedInvoiceId(transaction.booking_id);
                                             setIsInvoiceModalVisible(true);
+                                        } else if (transaction.booking_id && transaction?.status == "pending_approval") {
+                                            showWarningToast("Your transaction is pending approval. Please wait for the approval to complete.");
                                         }
                                     }}
                                 />

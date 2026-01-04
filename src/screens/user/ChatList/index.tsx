@@ -60,6 +60,15 @@ const ChatList: React.FC = ({ navigation }: any) => {
                         <Image source={require('../../../assets/icons/chatAdd.png')} style={styles.headerIcon} />
                     </View>
 
+                    {/* No conversations */}
+                    {conversations.length === 0 && (
+                        <View style={{ alignItems: 'center', marginTop: '46%' }}>
+                            <NMText fontSize={16} fontFamily="regular" color={Colors.textSecondary}>
+                                No conversations yet
+                            </NMText>
+                        </View>
+                    )}
+
                     {/* Conversations List */}
                     {conversations?.map((item) => (
                         <ChatListCard

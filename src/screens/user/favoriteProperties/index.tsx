@@ -98,6 +98,14 @@ const FavoriteProperties: React.FC = () => {
                     </View>
                 </View>
 
+                {favList?.length === 0 && (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: '46%' }}>
+                        <NMText fontSize={20} fontFamily="medium" color={Colors.textSecondary}>
+                            No Favorite Properties
+                        </NMText>
+                    </View>
+                )}
+
 
                 {favList?.map(item => (
                     <FilterListCard

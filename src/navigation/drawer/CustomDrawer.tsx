@@ -108,6 +108,12 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = (props) => {
                                     borderRadius={8}
                                     width="80%"
                                     height={40}
+                                    onPress={() =>
+                                        (navigation as any).navigate('UserBottomTab', {
+                                            screen: 'HomeDrawer',
+                                            params: { screen: 'Profile' },
+                                        })
+                                    }
                                 />
                             </View>
                         </View>

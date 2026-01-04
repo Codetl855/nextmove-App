@@ -69,41 +69,53 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ data, onPress }) => {
 
     const getStatusColor = (status?: string) => {
         if (!status) return Colors.statusBg;
-        try {
-            switch (status.toLowerCase()) {
-                case 'succeeded':
-                case 'completed':
-                    return Colors.statusBg;
-                case 'pending':
-                    return '#FFF4E6';
-                case 'failed':
-                    return '#FFE6E6';
-                default:
-                    return Colors.statusBg;
-            }
-        } catch (error) {
-            return Colors.statusBg;
+
+        const cleanStatus = status
+            .toLowerCase()
+            .split('_')[0];
+
+        switch (cleanStatus) {
+            case 'succeeded':
+            case 'completed':
+                return Colors.statusBg;
+
+            case 'pending':
+                return Colors.statusPendingBg;
+
+            case 'failed':
+            case 'cancelled':
+                return '#FFE6E6';
+
+            default:
+                return Colors.statusBg;
         }
     };
 
+
     const getStatusTextColor = (status?: string) => {
         if (!status) return Colors.statusText;
-        try {
-            switch (status.toLowerCase()) {
-                case 'succeeded':
-                case 'completed':
-                    return Colors.statusText;
-                case 'pending':
-                    return '#FF8C00';
-                case 'failed':
-                    return '#DC2626';
-                default:
-                    return Colors.statusText;
-            }
-        } catch (error) {
-            return Colors.statusText;
+
+        const cleanStatus = status
+            .toLowerCase()
+            .split('_')[0];
+
+        switch (cleanStatus) {
+            case 'succeeded':
+            case 'completed':
+                return Colors.statusText;
+
+            case 'pending':
+                return Colors.statusPendingText;
+
+            case 'failed':
+            case 'cancelled':
+                return '#DC2626';
+
+            default:
+                return Colors.statusText;
         }
     };
+
 
     const formatGateway = (gateway?: string) => {
         if (!gateway) return 'N/A';

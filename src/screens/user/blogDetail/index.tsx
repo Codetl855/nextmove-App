@@ -86,7 +86,7 @@ const BlogDetail: React.FC = () => {
                 <View style={styles.container}>
                     <View style={styles.headerView}>
                         <View style={styles.inRow}>
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 style={styles.backBox}
                                 onPress={() => navigation.goBack()}
                             >
@@ -98,22 +98,22 @@ const BlogDetail: React.FC = () => {
                                 </NMText>
                             </View>
                         </View>
-                        <View style={styles.inRow}>
+                        {/* <View style={styles.inRow}>
                             <TouchableOpacity style={[styles.backBox, { marginRight: 10 }]}>
                                 <Heart color={Colors.black} size={18} strokeWidth={1.5} />
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.backBox}>
                                 <Share2 color={Colors.black} size={18} strokeWidth={1.5} />
                             </TouchableOpacity>
-                        </View>
+                        </View> */}
                     </View>
 
                     <View style={styles.contentContainer}>
                         <NMText fontSize={18} fontFamily='bold' color={Colors.textPrimary}>
                             {blog.title}
                         </NMText>
-                        
-                        <View style={styles.ratingBox}>
+
+                        {/* <View style={styles.ratingBox}>
                             <NMText fontSize={14} fontFamily='regular' color={Colors.textSecondary}>
                                 0 <NMText fontSize={14} fontFamily='bold' color={Colors.textSecondary}>Reviews</NMText>
                             </NMText>
@@ -128,7 +128,7 @@ const BlogDetail: React.FC = () => {
                                     0.0
                                 </NMText>
                             </View>
-                        </View>
+                        </View> */}
 
                         <NMText fontSize={16} fontFamily='regular' color={Colors.textPrimary} style={{ marginTop: 10 }}>
                             Category: <NMText fontSize={16} fontFamily='semiBold' color={Colors.primary}>{blog.category}</NMText>
@@ -142,9 +142,9 @@ const BlogDetail: React.FC = () => {
                             </NMText>
                         </NMText>
 
-                        <NMText fontSize={16} fontFamily='regular' color={Colors.textPrimary} style={{ marginTop: 10 }}>
+                        {/* <NMText fontSize={16} fontFamily='regular' color={Colors.textPrimary} style={{ marginTop: 10 }}>
                             Comments: <NMText fontSize={16} fontFamily='semiBold' color={Colors.primary}>0</NMText>
-                        </NMText>
+                        </NMText> */}
 
                         {blog.cover_photo && (
                             <Image source={{ uri: blog.cover_photo }} style={styles.blogImage} />
@@ -153,7 +153,8 @@ const BlogDetail: React.FC = () => {
                         {blog.description && (
                             <View style={styles.descriptionContainer}>
                                 <WebView
-                                    source={{ html: `
+                                    source={{
+                                        html: `
                                         <!DOCTYPE html>
                                         <html>
                                             <head>
@@ -505,7 +506,7 @@ const BlogDetail: React.FC = () => {
                         )}
                     </View>
 
-                    <View style={styles.contentContainer}>
+                    {/* <View style={styles.contentContainer}>
                         <View style={[styles.inRow, { justifyContent: 'space-between' }]}>
                             <NMText fontSize={18} fontFamily='medium' color={Colors.textPrimary}>
                                 Guest Reviews
@@ -536,7 +537,7 @@ const BlogDetail: React.FC = () => {
                             visible={commentSheetVisible}
                             onClose={() => setCommentSheetVisible(false)}
                         />
-                    </View>
+                    </View> */}
                 </View>
             </ScrollView>
         </NMSafeAreaWrapper>

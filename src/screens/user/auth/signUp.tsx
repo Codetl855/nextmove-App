@@ -231,7 +231,7 @@ const SignUpScreen: React.FC = () => {
                                     />
                                     <NMTextInput
                                         label="Phone"
-                                        placeholder="+92 303 55566545"
+                                        placeholder="123456789"
                                         value={values.phone}
                                         onChangeText={(text) => handleChange("phone", text)}
                                         keyboardType="phone-pad"
@@ -287,7 +287,7 @@ const SignUpScreen: React.FC = () => {
                                     />
                                     <NMTextInput
                                         label="Agency Contact Number"
-                                        placeholder="+92 303 55566545"
+                                        placeholder="123456789"
                                         value={values.agencyPhone}
                                         onChangeText={(text) => handleChange("agencyPhone", text)}
                                         keyboardType="phone-pad"
@@ -349,7 +349,7 @@ const SignUpScreen: React.FC = () => {
                                         style={styles.socialIcon}
                                     />
                                 </TouchableOpacity>
-                                <TouchableOpacity>
+                                {/* <TouchableOpacity>
                                     <Image
                                         source={require('../../../assets/images/Instagram.png')}
                                         style={styles.socialIcon}
@@ -366,7 +366,7 @@ const SignUpScreen: React.FC = () => {
                                         source={require('../../../assets/images/Apple.png')}
                                         style={styles.socialIcon}
                                     />
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
                                 <TouchableOpacity>
                                     <Image
                                         source={require('../../../assets/images/Google.png')}

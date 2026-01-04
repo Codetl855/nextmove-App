@@ -154,7 +154,7 @@ const LoginScreen: React.FC = () => {
                                 <>
                                     <NMTextInput
                                         label="Mobile Number"
-                                        placeholder="+92 303 55566545"
+                                        placeholder="123456789"
                                         value={values.mobile}
                                         onChangeText={(text) => handleChange("mobile", text)}
                                         keyboardType="phone-pad"
@@ -240,7 +240,7 @@ const LoginScreen: React.FC = () => {
                                         style={styles.socialIcon}
                                     />
                                 </TouchableOpacity>
-                                <TouchableOpacity>
+                                {/* <TouchableOpacity>
                                     <Image
                                         source={require('../../../assets/images/Instagram.png')}
                                         style={styles.socialIcon}
@@ -257,7 +257,7 @@ const LoginScreen: React.FC = () => {
                                         source={require('../../../assets/images/Apple.png')}
                                         style={styles.socialIcon}
                                     />
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
                                 <TouchableOpacity>
                                     <Image
                                         source={require('../../../assets/images/Google.png')}
