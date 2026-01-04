@@ -50,6 +50,7 @@ const ProfileScreen: React.FC = ({ navigation }) => {
     const loadUser = async () => {
         const user = await getLoginUser();
         if (user) {
+            console.log('User found:===>', user);
             setUserData(user?.user);
         } else {
             console.log('No user found');
@@ -77,6 +78,8 @@ const ProfileScreen: React.FC = ({ navigation }) => {
         getAllAgencyAgents();
     }, []);
 
+    const roles = ["seller", "customer", "agent"];
+
     const renderAgents = () => (
         <View style={styles.tabContent}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -98,12 +101,20 @@ const ProfileScreen: React.FC = ({ navigation }) => {
         </View>
     );
 
+    const handleNavigation = () => {
+        if (!roles.includes(userData?.role)) {
+            navigation.navigate('AddAgent')
+            return
+        }
+        navigation.navigate('EditUserProfie');
+    };
+
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
             <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
                 <View style={styles.headerView}>
                     <View style={styles.inRow}>
-                        <TouchableOpacity style={styles.backBox}>
+                        <TouchableOpacity style={styles.backBox} onPress={() => navigation.goBack()}>
                             <ChevronLeft color={Colors.black} size={24} strokeWidth={2} />
                         </TouchableOpacity>
                         <View style={styles.titleView}>
@@ -113,7 +124,7 @@ const ProfileScreen: React.FC = ({ navigation }) => {
                         </View>
                     </View>
                     <View style={styles.inRow}>
-                        <TouchableOpacity style={[styles.backBox, { marginRight: 10 }]} onPress={() => navigation.navigate('AddAgent')}>
+                        <TouchableOpacity style={[styles.backBox, { marginRight: 10 }]} onPress={() => handleNavigation()}>
                             <Edit3Icon color={Colors.black} size={18} strokeWidth={1.5} />
                         </TouchableOpacity>
                         <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
@@ -133,7 +144,7 @@ const ProfileScreen: React.FC = ({ navigation }) => {
                         )}
                     </View>
 
-                    <View style={styles.ratingContainer}>
+                    {/* <View style={styles.ratingContainer}>
                         <View style={styles.starsRow}>
                             {[1, 2, 3, 4, 5].map((_, i) => (
                                 <StarIcon key={i} color={Colors.star} size={16} fill={Colors.star} />
@@ -145,47 +156,49 @@ const ProfileScreen: React.FC = ({ navigation }) => {
                         <NMText fontSize={14} fontFamily='regular' color={Colors.textSecondary}>
                             60 <NMText fontSize={14} fontFamily='bold' color={Colors.textSecondary}>Reviews</NMText>
                         </NMText>
-                    </View>
+                    </View> */}
 
                     <NMText fontSize={16} fontFamily='semiBold' color={Colors.textPrimary}>
                         {/* Avenue Realty */}
                         {userData ? `${userData.first_name} ${userData.last_name ?? ""}` : 'Avenue Realty'}
                     </NMText>
 
-                    <View style={styles.addressRow}>
+                    {userData?.address && (<View style={styles.addressRow}>
                         <MapPin color={Colors.primary} size={16} strokeWidth={2} />
                         <NMText fontSize={14} fontFamily='regular' color={Colors.primary}>
                             {userData?.address}
                         </NMText>
-                    </View>
+                    </View>)}
 
-                    <InfoRow label="Agency" value="Universo Realtors" />
-                    <InfoRow label="Agent Licens" value="LC-5758-2048-3944" />
+                    {!roles.includes(userData?.role) && (<InfoRow label="Agency" value="Universo Realtors" />)}
+                    {!roles.includes(userData?.role) && (<InfoRow label="Agent Licens" value="LC-5758-2048-3944" />)}
                     <InfoRow label="Phone" value={userData?.mobile} />
                     <InfoRow label="Email" value={userData?.email} />
-                    <InfoRow label="Website" value="www.rainbowinc.com" />
+                    {!roles.includes(userData?.role) && (<InfoRow label="Website" value="www.rainbowinc.com" />)}
 
-                    <View style={styles.tabsContainer}>
-                        {['overview', 'documents', 'agents'].map(tab => (
-                            <TouchableOpacity
-                                key={tab}
-                                style={[styles.tab, activeTab === tab && styles.activeTab]}
-                                onPress={() => setActiveTab(tab as any)}
-                            >
-                                <NMText
-                                    fontSize={16}
-                                    fontFamily={activeTab === tab ? 'semiBold' : 'regular'}
-                                    color={activeTab === tab ? Colors.primary : Colors.textLight}
+                    {!roles.includes(userData?.role) && (<>
+                        <View style={styles.tabsContainer}>
+                            {['overview', 'documents', 'agents'].map(tab => (
+                                <TouchableOpacity
+                                    key={tab}
+                                    style={[styles.tab, activeTab === tab && styles.activeTab]}
+                                    onPress={() => setActiveTab(tab as any)}
                                 >
-                                    {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                                </NMText>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                                    <NMText
+                                        fontSize={16}
+                                        fontFamily={activeTab === tab ? 'semiBold' : 'regular'}
+                                        color={activeTab === tab ? Colors.primary : Colors.textLight}
+                                    >
+                                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                    </NMText>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
 
-                    {activeTab === 'overview' && renderOverview()}
-                    {activeTab === 'documents' && renderDocuments()}
-                    {activeTab === 'agents' && renderAgents()}
+                        {activeTab === 'overview' && renderOverview()}
+                        {activeTab === 'documents' && renderDocuments()}
+                        {activeTab === 'agents' && renderAgents()}
+                    </>)}
                 </View>
             </ScrollView>
         </NMSafeAreaWrapper>

@@ -32,6 +32,7 @@ import ChatScreen from '../../screens/user/chat';
 import StripePaymentModal from '../../components/user/StripModal';
 import { setLogoutListener } from '../../services/apiClient';
 import UserHistoryScreen from '../../screens/user/userHistory';
+import EditUserProfie from '../../screens/user/editUserProfile';
 
 const Stack = createStackNavigator();
 
@@ -93,6 +94,7 @@ const UserStack: React.FC = () => {
                 <Stack.Screen name="ChatScreen" component={ChatScreen} />
                 <Stack.Screen name="StripePaymentModal" component={StripePaymentModal} />
                 <Stack.Screen name="UserHistoryScreen" component={UserHistoryScreen} />
+                <Stack.Screen name="EditUserProfie" component={EditUserProfie} />
             </Stack.Navigator>
         </NavigationContainer>
     );

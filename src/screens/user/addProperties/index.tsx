@@ -3,7 +3,7 @@ import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-nat
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import NMText from '../../../components/common/NMText';
 import { Colors } from '../../../theme/colors';
-import { UploadCloud, Trash2Icon, CheckSquare2 } from 'lucide-react-native';
+import { UploadCloud, Trash2Icon, CheckSquare2, ChevronLeft } from 'lucide-react-native';
 import NMTextInput from '../../../components/common/NMTextInput';
 import NMButton from '../../../components/common/NMButton';
 import NMDropdown from '../../../components/common/NMDropdown';
@@ -696,19 +696,9 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
 
                 <View style={styles.headerView}>
                     <View style={styles.headerLeft}>
-                        <TouchableOpacity onPress={() => {
-                            if (drawerNavigation && 'openDrawer' in drawerNavigation) {
-                                drawerNavigation.openDrawer();
-                            } else if (navigation && 'openDrawer' in navigation) {
-                                (navigation as any).openDrawer();
-                            }
-                        }}>
-                            <Image
-                                source={require('../../../assets/icons/drawer.png')}
-                            />
+                        <TouchableOpacity style={styles.backBox} onPress={() => navigation.goBack()}>
+                            <ChevronLeft color={Colors.black} size={24} strokeWidth={2} />
                         </TouchableOpacity>
-                            style={styles.headerIcon}
-                        />
                         <NMText
                             fontSize={20}
                             fontFamily="semiBold"
@@ -802,6 +792,14 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: Colors.background,
+    },
+    backBox: {
+        width: 30,
+        height: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 8,
+        backgroundColor: Colors.background
     },
     headerView: {
         width: '100%',

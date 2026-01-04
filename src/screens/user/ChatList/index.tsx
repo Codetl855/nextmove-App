@@ -57,7 +57,7 @@ const ChatList: React.FC = ({ navigation }: any) => {
                                 </NMText>
                             </View>
                         </View>
-                        <Image source={require('../../../assets/icons/chatAdd.png')} style={styles.headerIcon} />
+                        {/* <Image source={require('../../../assets/icons/chatAdd.png')} style={styles.headerIcon} /> */}
                     </View>
 
                     {/* No conversations */}

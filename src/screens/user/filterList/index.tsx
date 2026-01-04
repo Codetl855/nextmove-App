@@ -6,6 +6,7 @@ import { Colors } from '../../../theme/colors'
 import NMText from '../../../components/common/NMText'
 import FilterListCard from '../../../components/user/FilterListCard'
 import FilterSheet from '../../../components/user/FilterSheet'
+import { ChevronLeft } from 'lucide-react-native'
 
 const FilterList: React.FC = ({ route, navigation }: any) => {
     const drawerNavigation = navigation?.getParent?.('drawer') || navigation?.getParent?.();
@@ -27,14 +28,8 @@ const FilterList: React.FC = ({ route, navigation }: any) => {
                 <View style={styles.container}>
                     <View style={styles.headerView}>
                         <View style={styles.inRow}>
-                            <TouchableOpacity onPress={() => {
-                                if (drawerNavigation && 'openDrawer' in drawerNavigation) {
-                                    drawerNavigation.openDrawer();
-                                } else if (navigation && 'openDrawer' in navigation) {
-                                    (navigation as any).openDrawer();
-                                }
-                            }}>
-                                <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                            <TouchableOpacity style={styles.backBox} onPress={() => navigation.goBack()}>
+                                <ChevronLeft color={Colors.black} size={24} strokeWidth={2} />
                             </TouchableOpacity>
                             <View style={styles.titleView}>
                                 <NMText fontSize={20} fontFamily='semiBold' color={Colors.textSecondary}>
@@ -95,6 +90,14 @@ const styles = StyleSheet.create({
         paddingVertical: 20,
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
+    },
+    backBox: {
+        width: 30,
+        height: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 8,
+        backgroundColor: Colors.background
     },
     headerIcon: {
         width: 30,

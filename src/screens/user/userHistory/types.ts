@@ -44,3 +44,5 @@ export interface AuctionBid {
     updated_at: string;
 }
 
+
+

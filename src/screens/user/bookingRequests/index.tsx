@@ -4,6 +4,7 @@ import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import { Colors } from '../../../theme/colors';
 import NMText from '../../../components/common/NMText';
 import { useNavigation } from '@react-navigation/native';
+import { ChevronLeft } from 'lucide-react-native';
 
 type TabType = 'Upcoming' | 'Previous';
 type StatusType = 'Pending' | 'Approved' | 'Completed' | 'Cancelled';
@@ -146,14 +147,8 @@ const BookingRequestsScreen: React.FC = () => {
                 {/* Header */}
                 <View style={styles.headerView}>
                     <View style={styles.inRow}>
-                        <TouchableOpacity onPress={() => {
-                            if (drawerNavigation && 'openDrawer' in drawerNavigation) {
-                                drawerNavigation.openDrawer();
-                            } else if (navigation && 'openDrawer' in navigation) {
-                                (navigation as any).openDrawer();
-                            }
-                        }}>
-                            <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
+                        <TouchableOpacity style={styles.backBox} onPress={() => navigation.goBack()}>
+                            <ChevronLeft color={Colors.black} size={24} strokeWidth={2} />
                         </TouchableOpacity>
                         <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary} style={{ marginLeft: 10 }}>
                             Booking Requests
@@ -202,6 +197,14 @@ const styles = StyleSheet.create({
         paddingVertical: 20,
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
+    },
+    backBox: {
+        width: 30,
+        height: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 8,
+        backgroundColor: Colors.background
     },
     headerIcon: {
         width: 30,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { HistoryIcon, MapPinIcon } from 'lucide-react-native';
+import { ChevronLeft, HistoryIcon, MapPinIcon } from 'lucide-react-native';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import NMText from '../../../components/common/NMText';
 import NMTabs from '../../../components/common/NMTab';
@@ -63,19 +63,9 @@ const BookFunActivities: React.FC = () => {
                 {/* Header */}
                 <View style={styles.header}>
                     <View style={styles.headerLeft}>
-                        <TouchableOpacity onPress={() => {
-                            if (drawerNavigation && 'openDrawer' in drawerNavigation) {
-                                drawerNavigation.openDrawer();
-                            } else if (navigation && 'openDrawer' in navigation) {
-                                (navigation as any).openDrawer();
-                            }
-                        }}>
-                            <Image
-                                source={require('../../../assets/icons/drawer.png')}
-                                style={styles.headerIcon}
-                            />
+                        <TouchableOpacity style={styles.backBox} onPress={() => navigation.goBack()}>
+                            <ChevronLeft color={Colors.black} size={24} strokeWidth={2} />
                         </TouchableOpacity>
-                        />
                         <NMText
                             fontSize={20}
                             fontFamily="semiBold"
@@ -137,6 +127,14 @@ const styles = StyleSheet.create({
         paddingVertical: 20,
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
+    },
+    backBox: {
+        width: 30,
+        height: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 8,
+        backgroundColor: Colors.background
     },
     headerLeft: {
         flexDirection: 'row',

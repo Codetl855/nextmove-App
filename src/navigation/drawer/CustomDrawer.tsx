@@ -87,7 +87,7 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = (props) => {
 
                         <View style={styles.profileSection}>
                             <Image
-                                source={{ uri: loginUser?.profile_image || 'https://via.placeholder.com/80' }}
+                                source={{ uri: loginUser?.profile_image_url || 'https://via.placeholder.com/80' }}
                                 style={styles.profileImage}
                                 resizeMode="cover"
                             />

@@ -4,6 +4,7 @@ import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import NMText from '../../../components/common/NMText';
 import { Colors } from '../../../theme/colors';
 import { useNavigation } from '@react-navigation/native';
+import { ChevronLeft } from 'lucide-react-native';
 
 interface SavedListCardProps {
     title: string;
@@ -48,7 +49,6 @@ const SavedListCard: React.FC<SavedListCardProps> = ({ title, status, province, 
 const SavedSearch: React.FC = () => {
     const navigation = useNavigation();
     const bookmarkIcon = require('../../../assets/icons/bookMark.png');
-    const drawerIcon = require('../../../assets/icons/drawer.png');
     const notificationIcon = require('../../../assets/icons/notification.png');
 
     const savedItems = Array(10).fill({
@@ -64,14 +64,8 @@ const SavedSearch: React.FC = () => {
 
                 <View style={styles.header}>
                     <View style={styles.row}>
-                        <TouchableOpacity onPress={() => {
-                            if (drawerNavigation && 'openDrawer' in drawerNavigation) {
-                                drawerNavigation.openDrawer();
-                            } else if (navigation && 'openDrawer' in navigation) {
-                                (navigation as any).openDrawer();
-                            }
-                        }}>
-                            <Image source={drawerIcon} style={styles.headerIcon} />
+                        <TouchableOpacity style={styles.backBox} onPress={() => navigation.goBack()}>
+                            <ChevronLeft color={Colors.black} size={24} strokeWidth={2} />
                         </TouchableOpacity>
                         <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary} style={styles.headerTitle}>
                             Saved Searches
@@ -113,6 +107,14 @@ const styles = StyleSheet.create({
         paddingVertical: 20,
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
+    },
+    backBox: {
+        width: 30,
+        height: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 8,
+        backgroundColor: Colors.background
     },
     headerIcon: {
         width: 30,
