@@ -38,7 +38,7 @@ const ResetPasswordScreen: React.FC = () => {
                             Reset Password
                         </NMText>
                     </View>
-                    <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
+                    {/* <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} /> */}
                 </View>
 
                 <View style={styles.contentBox}>

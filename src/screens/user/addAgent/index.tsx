@@ -257,9 +257,9 @@ const AddAgent: React.FC<Props> = ({ route }) => {
                             </NMText>
                         </View>
                     </View>
-                    <View style={styles.inRow}>
+                    {/* <View style={styles.inRow}>
                         <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
-                    </View>
+                    </View> */}
                 </View>
                 <View style={styles.contentBox}>
                     <NMText fontSize={20} fontFamily='semiBold' color={Colors.textPrimary}>

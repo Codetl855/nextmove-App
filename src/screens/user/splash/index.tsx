@@ -18,13 +18,13 @@ const SplashScreen: React.FC = () => {
     const checkAuthStatus = async () => {
         try {
             const userData = await getLoginUser();
-            // if (userData && userData.token) {
-            //     // Token exists, navigate to home screen
-            //     navigation?.replace('UserBottomTab' as never);
-            // } else {
-            // No token found, navigate to login
-            navigation?.replace('loginScreen' as never);
-            // }
+            if (userData && userData.token) {
+                // Token exists, navigate to home screen
+                navigation?.replace('UserBottomTab' as never);
+            } else {
+                // No token found, navigate to login
+                navigation?.replace('loginScreen' as never);
+            }
         } catch (error) {
             console.error('Error checking auth status:', error);
             // If error, go to login

@@ -42,7 +42,7 @@ const FilterList: React.FC = ({ route, navigation }: any) => {
                         </View>
                         <View style={styles.inRow}>
                             <Image source={require('../../../assets/icons/bookMark.png')} style={[styles.headerIcon, { marginRight: 10 }]} />
-                            <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
+                            {/* <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} /> */}
                         </View>
                     </View>
                     <View style={styles.filterView}>

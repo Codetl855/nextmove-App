@@ -88,9 +88,9 @@ const FavoriteProperties: React.FC = () => {
                             </NMText>
                         </View>
                     </View>
-                    <View style={styles.inRow}>
+                    {/* <View style={styles.inRow}>
                         <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
-                    </View>
+                    </View> */}
                 </View>
 
                 {favList?.length === 0 && (

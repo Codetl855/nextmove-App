@@ -72,10 +72,17 @@ const SavedSearch: React.FC = () => {
                         </NMText>
                     </View>
 
-                    <Image source={notificationIcon} style={styles.headerIcon} />
+                    {/* <Image source={notificationIcon} style={styles.headerIcon} /> */}
                 </View>
 
-                {savedItems.map((item, index) => (
+
+                <View style={styles.cardContainer}>
+                    <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
+                        No saved searches found
+                    </NMText>
+                </View>
+
+                {/* {savedItems.map((item, index) => (
                     <SavedListCard
                         key={index}
                         title={item.title}
@@ -84,7 +91,7 @@ const SavedSearch: React.FC = () => {
                         date={item.date}
                         icon={bookmarkIcon}
                     />
-                ))}
+                ))} */}
             </ScrollView>
         </NMSafeAreaWrapper>
     );

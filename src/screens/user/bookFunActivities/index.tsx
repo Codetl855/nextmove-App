@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ChevronLeft, HistoryIcon, MapPinIcon } from 'lucide-react-native';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
@@ -6,17 +6,28 @@ import NMText from '../../../components/common/NMText';
 import NMTabs from '../../../components/common/NMTab';
 import { Colors } from '../../../theme/colors';
 import { useNavigation } from '@react-navigation/native';
+import { apiRequest } from '../../../services/apiClient';
+import { showErrorToast } from '../../../utils/toastService';
+import LoaderModal from '../../../components/common/NMLoaderModal';
 
 interface ActivityCardProps {
-    imageUrl: string;
+    imageUrl: any;
     title: string;
     location: string;
     price: string;
 }
 
-const ActivityCard: React.FC<ActivityCardProps> = ({ imageUrl, title, location, price }) => (
-    <View style={styles.card}>
-        <Image source={{ uri: imageUrl }} style={styles.image} />
+interface ActivityCardPropsWithNavigation extends ActivityCardProps {
+    activity: Activity;
+    onPress: (activity: Activity) => void;
+}
+
+const ActivityCard: React.FC<ActivityCardPropsWithNavigation> = ({ imageUrl, title, location, price, activity, onPress }) => (
+    <TouchableOpacity style={styles.card} onPress={() => onPress(activity)} activeOpacity={0.8}>
+        <Image
+            source={{ uri: imageUrl }}
+            style={styles.image}
+        />
 
         <View style={styles.textContainer}>
             {/* Title */}
@@ -44,21 +55,123 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ imageUrl, title, location, 
                 </NMText>
             </View>
         </View>
-    </View>
+    </TouchableOpacity>
 );
+
+interface Activity {
+    id: number;
+    title: string;
+    location: string;
+    price: number;
+    primary_image: string | null;
+    images: string[];
+}
+
+interface TabOption {
+    id: string;
+    label: string;
+}
 
 const BookFunActivities: React.FC = () => {
     const navigation = useNavigation();
     const drawerNavigation = navigation.getParent('drawer') || navigation.getParent();
-    const activities = Array(10).fill({
-        imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400',
-        title: 'Desert Safari Camp',
-        location: 'Riyadh Desert Safari Camp, Khurais Road, Riyadh 13872, Saudi Arabia',
-        price: 'SAR 150',
-    });
+
+    const [tabs, setTabs] = useState<TabOption[]>([]);
+    const [activities, setActivities] = useState<Activity[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [categoriesLoading, setCategoriesLoading] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
+    const [defaultTab, setDefaultTab] = useState<string>('');
+
+    // Fetch categories/tabs on mount
+    useEffect(() => {
+        fetchCategories();
+    }, []);
+
+    // Fetch activities when category changes
+    useEffect(() => {
+        if (selectedCategory) {
+            fetchActivities(selectedCategory);
+        }
+    }, [selectedCategory]);
+
+    const fetchCategories = async () => {
+        try {
+            setCategoriesLoading(true);
+            const { result, error } = await apiRequest({
+                endpoint: 'v1/fun-activity-field-options',
+                method: 'GET',
+            });
+
+            if (error) {
+                showErrorToast(error);
+                return;
+            }
+
+            if (result?.data?.categories) {
+                const categories = result.data.categories;
+                const tabsData = categories.map((category: string, index: number) => ({
+                    id: String(index + 1),
+                    label: category,
+                }));
+                setTabs(tabsData);
+
+                // Set default selected category to first tab
+                if (categories.length > 0) {
+                    setDefaultTab('1');
+                    setSelectedCategory(categories[0]);
+                }
+            }
+        } catch (err) {
+            console.error('Error fetching categories:', err);
+            showErrorToast('Failed to load categories');
+        } finally {
+            setCategoriesLoading(false);
+        }
+    };
+
+    const fetchActivities = async (category: string) => {
+        try {
+            setLoading(true);
+            const encodedCategory = encodeURIComponent(category);
+            const { result, error } = await apiRequest({
+                endpoint: `v1/public-fun-activities-list?category=${encodedCategory}&fetch=all`,
+                method: 'GET',
+            });
+
+            if (error) {
+                showErrorToast(error);
+                return;
+            }
+
+            if (result?.data) {
+                setActivities(result.data);
+            } else {
+                setActivities([]);
+            }
+        } catch (err) {
+            console.error('Error fetching activities:', err);
+            showErrorToast('Failed to load activities');
+            setActivities([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleTabSelect = (tabId: string) => {
+        const selectedTab = tabs.find(tab => tab.id === tabId);
+        if (selectedTab) {
+            setSelectedCategory(selectedTab.label);
+        }
+    };
+
+    const handleActivityPress = (activity: Activity) => {
+        navigation.navigate('FunActivityDetail' as never, { activityId: activity.id } as never);
+    };
 
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
+            <LoaderModal visible={loading || categoriesLoading} />
             <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
                 {/* Header */}
                 <View style={styles.header}>
@@ -85,26 +198,36 @@ const BookFunActivities: React.FC = () => {
                 </View>
 
                 {/* Tabs */}
-                <NMTabs
-                    tabs={[
-                        { id: '1', label: 'Desert Safari' },
-                        { id: '2', label: 'Theme Park' },
-                        { id: '3', label: 'Water Activities' },
-                    ]}
-                    onTabSelect={(tabId) => console.log('Selected:', tabId)}
-                    defaultSelected="1"
-                />
+                {tabs.length > 0 && (
+                    <NMTabs
+                        tabs={tabs}
+                        onTabSelect={handleTabSelect}
+                        defaultSelected={defaultTab}
+                    />
+                )}
 
                 {/* Activity Cards */}
-                {activities.map((activity, index) => (
-                    <ActivityCard
-                        key={index}
-                        imageUrl={activity.imageUrl}
-                        title={activity.title}
-                        location={activity.location}
-                        price={activity.price}
-                    />
-                ))}
+                {activities.length > 0 ? (
+                    activities.map((activity) => (
+                        <ActivityCard
+                            key={activity.id}
+                            imageUrl={activity.primary_image}
+                            title={activity.title}
+                            location={activity.location}
+                            price={`SAR ${activity.price}`}
+                            activity={activity}
+                            onPress={handleActivityPress}
+                        />
+                    ))
+                ) : (
+                    !loading && (
+                        <View style={styles.emptyContainer}>
+                            <NMText fontSize={14} fontFamily="regular" color={Colors.textLight}>
+                                No activities found
+                            </NMText>
+                        </View>
+                    )
+                )}
             </ScrollView>
         </NMSafeAreaWrapper>
     );
@@ -170,6 +293,7 @@ const styles = StyleSheet.create({
         width: 90,
         height: 90,
         borderRadius: 8,
+        backgroundColor: Colors.background,
         resizeMode: 'cover',
     },
     textContainer: {
@@ -188,5 +312,10 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 8,
         backgroundColor: Colors.background,
+    },
+    emptyContainer: {
+        padding: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });

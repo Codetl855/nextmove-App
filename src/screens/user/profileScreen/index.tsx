@@ -127,7 +127,7 @@ const ProfileScreen: React.FC = ({ navigation }) => {
                         <TouchableOpacity style={[styles.backBox, { marginRight: 10 }]} onPress={() => handleNavigation()}>
                             <Edit3Icon color={Colors.black} size={18} strokeWidth={1.5} />
                         </TouchableOpacity>
-                        <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
+                        {/* <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} /> */}
                     </View>
                 </View>
 

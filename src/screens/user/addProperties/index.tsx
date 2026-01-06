@@ -474,7 +474,7 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                                 error={errors.city}
                             />
                         </View>
-                        <NMDropdown
+                        {/* <NMDropdown
                             label="State"
                             placeholder="Select"
                             data={stateOptions}
@@ -482,6 +482,15 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                             onChange={(value) => handleChange('state', value)}
                             mHorizontal={0}
                             isRequired
+                            error={errors.state}
+                        /> */}
+                        <NMTextInput
+                            label='State/Province'
+                            placeholder='Enter'
+                            value={values.state}
+                            onChangeText={(text) => handleChange('state', text)}
+                            mainViewStyle={{ marginVertical: 10 }}
+                            required
                             error={errors.state}
                         />
                         <NMTextInput
@@ -707,10 +716,10 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                             {property ? 'Edit Property' : 'Add Property'}
                         </NMText>
                     </View>
-                    <Image
+                    {/* <Image
                         source={require('../../../assets/icons/notification.png')}
                         style={styles.headerIcon}
-                    />
+                    /> */}
                 </View>
 
                 <View style={styles.contentBox}>

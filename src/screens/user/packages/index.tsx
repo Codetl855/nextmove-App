@@ -91,7 +91,7 @@ const PackagesScreen: React.FC = () => {
                             Packages
                         </NMText>
                     </View>
-                    <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
+                    {/* <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} /> */}
                 </View>
 
                 {/* Current Plan */}

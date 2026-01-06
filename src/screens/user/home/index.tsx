@@ -113,9 +113,10 @@ const HomeScreen: React.FC = () => {
                             <Image source={require('../../../assets/icons/drawer.png')} style={styles.headerIcon} />
                         </TouchableOpacity>
                         <Image source={require('../../../assets/images/HomeLogo.png')} style={styles.headerLogo} />
-                        <TouchableOpacity onPress={() => navigation.navigate('NotificationsScreen')}>
+                        <View style={styles.headerIcon} />
+                        {/* <TouchableOpacity onPress={() => navigation.navigate('NotificationsScreen')}>
                             <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
                     <View style={styles.filterView}>
                         <NMTextInput

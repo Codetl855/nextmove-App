@@ -60,7 +60,7 @@ const SettingScreen: React.FC = ({ navigation }: any) => {
                             Settings
                         </NMText>
                     </View>
-                    <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
+                    {/* <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} /> */}
                 </View>
                 <View style={{ height: 20 }} />
                 <SettingItem icon={require('../../../assets/icons/privacypolicy.png')} title="Privacy Policy" onPress={() => navigation.navigate("PrivacyPolicyScreen")} />

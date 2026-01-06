@@ -20,24 +20,24 @@ const Header: React.FC = () => {
         <View style={styles.headerView}>
             <View style={styles.inRow}>
                 <TouchableOpacity onPress={handleDrawerOpen}>
-                    <Image 
-                        source={require('../../../assets/icons/drawer.png')} 
-                        style={styles.headerIcon} 
+                    <Image
+                        source={require('../../../assets/icons/drawer.png')}
+                        style={styles.headerIcon}
                     />
                 </TouchableOpacity>
-                <NMText 
-                    fontSize={20} 
-                    fontFamily="semiBold" 
-                    color={Colors.textSecondary} 
+                <NMText
+                    fontSize={20}
+                    fontFamily="semiBold"
+                    color={Colors.textSecondary}
                     style={styles.headerTitle}
                 >
                     History
                 </NMText>
             </View>
-            <Image 
+            {/* <Image 
                 source={require('../../../assets/icons/notification.png')} 
                 style={styles.headerIcon} 
-            />
+            /> */}
         </View>
     );
 };

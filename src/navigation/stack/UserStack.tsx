@@ -20,6 +20,7 @@ import FavoriteProperties from '../../screens/user/favoriteProperties';
 import SavedSearch from '../../screens/user/savedSearch';
 import ReviewsScreen from '../../screens/user/reviews';
 import BookFunActivities from '../../screens/user/bookFunActivities';
+import FunActivityDetail from '../../screens/user/funActivityDetail';
 import HistoryScreen from '../../screens/user/history';
 import SettingScreen from '../../screens/user/settings';
 import ResetPasswordScreen from '../../screens/user/resetPassword';
@@ -83,6 +84,7 @@ const UserStack: React.FC = () => {
                 <Stack.Screen name='SavedSearch' component={SavedSearch} />
                 <Stack.Screen name="ReviewsScreen" component={ReviewsScreen} />
                 <Stack.Screen name="BookFunActivities" component={BookFunActivities} />
+                <Stack.Screen name="FunActivityDetail" component={FunActivityDetail} />
                 <Stack.Screen name="HistoryScreen" component={HistoryScreen} />
                 <Stack.Screen name="SettingScreen" component={SettingScreen} />
                 <Stack.Screen name="ResetPasswordScreen" component={ResetPasswordScreen} />

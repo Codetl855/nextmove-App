@@ -38,34 +38,88 @@ interface PaymentData {
     booking_details: BookingDetails;
 }
 
+export interface FunActivityDetails {
+    id: string;
+    price: number;
+    currency: string;
+}
+
+export interface FunActivityBookingDetails {
+    date: string;
+    tickets: number;
+    adults: number;
+    children: number;
+    total_amount: number;
+}
+
 export interface StripePaymentScreenProps {
     propertyDetails?: PropertyDetails;
     bookingDetails?: BookingDetails;
+    funActivityDetails?: FunActivityDetails;
+    funActivityBookingDetails?: FunActivityBookingDetails;
+    paymentType?: 'property' | 'fun_activity';
     visible: boolean;
     onClose: () => void;
 }
 
 const StripePaymentScreen: React.FC<StripePaymentScreenProps> = (props) => {
-    const { propertyDetails, bookingDetails, visible, onClose } = props;
+    const { 
+        propertyDetails, 
+        bookingDetails, 
+        funActivityDetails,
+        funActivityBookingDetails,
+        paymentType = 'property',
+        visible, 
+        onClose 
+    } = props;
     const navigation = useNavigation();
     const [loading, setLoading] = useState<boolean>(false);
     const [cardDetails, setCardDetails] = useState<any>(null);
     const { confirmPayment } = useStripe();
 
-    // Use provided details or fall back to static values for testing
-    const paymentData: PaymentData = {
-        property_details: {
-            id: propertyDetails?.id || '1',
-            price: propertyDetails?.price || '1000',
-            currency: 'SAR',
-        },
-        booking_details: {
-            check_in: bookingDetails?.check_in || '2025-12-01',
-            check_out: bookingDetails?.check_out || '2025-12-02',
-            guests: bookingDetails?.guests || '2',
-            split_rent: false,
-        },
+    // Construct payment payload based on type
+    const getPaymentPayload = () => {
+        if (paymentType === 'fun_activity' && funActivityDetails && funActivityBookingDetails) {
+            return {
+                booking_details: {
+                    date: funActivityBookingDetails.date,
+                    tickets: funActivityBookingDetails.tickets,
+                    adults: funActivityBookingDetails.adults,
+                    children: funActivityBookingDetails.children,
+                    total_amount: funActivityBookingDetails.total_amount,
+                },
+                adults: funActivityBookingDetails.adults,
+                children: funActivityBookingDetails.children,
+                date: funActivityBookingDetails.date,
+                tickets: funActivityBookingDetails.tickets,
+                total_amount: funActivityBookingDetails.total_amount,
+                fun_activity_details: {
+                    id: funActivityDetails.id,
+                    price: funActivityDetails.price,
+                    currency: funActivityDetails.currency,
+                },
+                currency: funActivityDetails.currency,
+                type: 'fun_activity',
+            };
+        } else {
+            // Default property booking payload
+            return {
+                property_details: {
+                    id: propertyDetails?.id || '1',
+                    price: propertyDetails?.price || '1000',
+                    currency: propertyDetails?.currency || 'SAR',
+                },
+                booking_details: {
+                    check_in: bookingDetails?.check_in || '2025-12-01',
+                    check_out: bookingDetails?.check_out || '2025-12-02',
+                    guests: bookingDetails?.guests || '2',
+                    split_rent: false,
+                },
+            };
+        }
     };
+
+    const paymentData = getPaymentPayload();
 
     const handlePayment = async (): Promise<void> => {
         // Additional validation
@@ -93,8 +147,12 @@ const StripePaymentScreen: React.FC<StripePaymentScreenProps> = (props) => {
             }
 
             // Step 1: Create payment intent
+            const apiUrl = paymentType === 'fun_activity' 
+                ? 'https://uat.nextmove.estate/backend/api/v1/payments/create'
+                : 'https://uat.nextmove.estate/backend/api/v1/payments/create';
+            
             const createResponse = await fetch(
-                'https://uat.nextmove.estate/backend/api/v1/payments/create',
+                apiUrl,
                 {
                     method: 'POST',
                     headers: {
@@ -275,38 +333,78 @@ const StripePaymentScreen: React.FC<StripePaymentScreenProps> = (props) => {
                                     #{paymentData.property_details.id}
                                 </NMText>
                             </View> */}
-                            <View style={styles.summaryRow}>
-                                <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
-                                    Check-in:
-                                </NMText>
-                                <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
-                                    {paymentData.booking_details.check_in}
-                                </NMText>
-                            </View>
-                            <View style={styles.summaryRow}>
-                                <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
-                                    Check-out:
-                                </NMText>
-                                <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
-                                    {paymentData.booking_details.check_out}
-                                </NMText>
-                            </View>
-                            <View style={styles.summaryRow}>
-                                <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
-                                    Guests:
-                                </NMText>
-                                <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
-                                    {paymentData.booking_details.guests}
-                                </NMText>
-                            </View>
+                            {paymentType === 'fun_activity' && funActivityBookingDetails ? (
+                                <>
+                                    <View style={styles.summaryRow}>
+                                        <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                            Date:
+                                        </NMText>
+                                        <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                            {funActivityBookingDetails.date}
+                                        </NMText>
+                                    </View>
+                                    <View style={styles.summaryRow}>
+                                        <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                            Tickets:
+                                        </NMText>
+                                        <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                            {funActivityBookingDetails.tickets}
+                                        </NMText>
+                                    </View>
+                                    <View style={styles.summaryRow}>
+                                        <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                            Adults:
+                                        </NMText>
+                                        <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                            {funActivityBookingDetails.adults}
+                                        </NMText>
+                                    </View>
+                                    <View style={styles.summaryRow}>
+                                        <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                            Children:
+                                        </NMText>
+                                        <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                            {funActivityBookingDetails.children}
+                                        </NMText>
+                                    </View>
+                                </>
+                            ) : (
+                                <>
+                                    <View style={styles.summaryRow}>
+                                        <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                            Check-in:
+                                        </NMText>
+                                        <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                            {paymentData.booking_details?.check_in}
+                                        </NMText>
+                                    </View>
+                                    <View style={styles.summaryRow}>
+                                        <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                            Check-out:
+                                        </NMText>
+                                        <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                            {paymentData.booking_details?.check_out}
+                                        </NMText>
+                                    </View>
+                                    <View style={styles.summaryRow}>
+                                        <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                            Guests:
+                                        </NMText>
+                                        <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                            {paymentData.booking_details?.guests}
+                                        </NMText>
+                                    </View>
+                                </>
+                            )}
                             <View style={styles.divider} />
                             <View style={styles.summaryRow}>
                                 <NMText fontSize={14} fontFamily="bold" color={Colors.textPrimary}>
                                     Total Amount:
                                 </NMText>
                                 <NMText fontSize={14} fontFamily="bold" color={Colors.primary}>
-                                    {paymentData.property_details.currency || 'SAR'}{' '}
-                                    {paymentData.property_details.price}
+                                    {paymentType === 'fun_activity' && funActivityDetails
+                                        ? `${funActivityDetails.currency} ${funActivityBookingDetails?.total_amount || 0}`
+                                        : `${paymentData.property_details?.currency || 'SAR'} ${paymentData.property_details?.price || 0}`}
                                 </NMText>
                             </View>
                         </View>
@@ -370,8 +468,9 @@ const StripePaymentScreen: React.FC<StripePaymentScreenProps> = (props) => {
                                 </View>
                             ) : (
                                 <Text style={styles.payButtonText}>
-                                    Pay {paymentData.property_details.currency}{' '}
-                                    {paymentData.property_details.price}
+                                    Pay {paymentType === 'fun_activity' && funActivityDetails
+                                        ? `${funActivityDetails.currency} ${funActivityBookingDetails?.total_amount || 0}`
+                                        : `${paymentData.property_details?.currency || 'SAR'} ${paymentData.property_details?.price || 0}`}
                                 </Text>
                             )}
                         </TouchableOpacity>

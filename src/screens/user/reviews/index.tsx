@@ -142,10 +142,10 @@ const ReviewsScreen: React.FC = () => {
                             Reviews
                         </NMText>
                     </View>
-                    <Image
+                    {/* <Image
                         source={require('../../../assets/icons/notification.png')}
                         style={styles.headerIcon}
-                    />
+                    /> */}
                 </View>
 
                 {/* Reviews List */}

@@ -22,7 +22,7 @@ const PrivacyPolicyScreen: React.FC = () => {
                             Privacy Policy
                         </NMText>
                     </View>
-                    <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} />
+                    {/* <Image source={require('../../../assets/icons/notification.png')} style={styles.headerIcon} /> */}
                 </View>
 
                 {/* Content */}
