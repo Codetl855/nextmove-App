@@ -21,32 +21,72 @@ const HomeScreen: React.FC = () => {
 
     // Get drawer navigation from parent
     const drawerNavigation = navigation.getParent('drawer') || navigation.getParent();
-    const [selectedTab, setSelectedTab] = useState('1');
+    const [selectedTab, setSelectedTab] = useState('0');
     const [properties, setProperties] = useState([]);
     const [loading, setLoading] = useState(false);
     const [filterVisible, setFilterVisible] = useState(false);
     const [bogsData, setBlogsData] = useState([]);
+    const [propertiesTab, setPropertiesTab] = useState([]);
     const tabs = [
-        { id: '1', label: 'House' },
-        { id: '2', label: 'Apartment' },
-        { id: '3', label: 'Villa' },
-        { id: '4', label: 'Studio' },
+        { id: '0', label: 'House' },
+        { id: '1', label: 'Apartment' },
+        { id: '2', label: 'Villa' },
+        { id: '3', label: 'Studio' },
     ];
 
     const showFilterSheet = () => {
         setFilterVisible(true);
     };
+    const loadFieldOptions = async () => {
+        setLoading(true);
+        const { result, error } = await apiRequest({
+            endpoint: 'v1/property-field-options',
+            method: 'GET',
+        });
+        if (result) {
+            const data = result.data;
+            const propertyTypes = data?.propertyTypes?.map(
+                (item: string, index: number) => ({
+                    label: item,
+                    value: item,
+                    id: index.toString(),
+                })
+            );
+
+            setPropertiesTab(propertyTypes || []);
+
+            if (propertyTypes.length > 0) {
+                setSelectedTab(propertyTypes[0].id);
+            }
+        }
+        if (error) {
+            console.warn("Failed:", error);
+            showErrorToast(`loadFieldOptions: ${error}`);
+        }
+        setLoading(false);
+    };
 
     const getPropertyList = async () => {
+        // Don't call API if propertiesTab is empty or selectedTab doesn't exist
+        if (!propertiesTab || propertiesTab.length === 0 || !selectedTab) {
+            return;
+        }
+
+        // Find the selected tab by ID
+        const selectedTabData = propertiesTab.find((tab: any) => tab.id === selectedTab);
+        if (!selectedTabData || !selectedTabData.label) {
+            return;
+        }
+
         try {
             setLoading(true);
             const { result, error } = await apiRequest({
-                endpoint: `v1/featured-properties/?type=${tabs[selectedTab - 1].label}`,
+                endpoint: `v1/featured-properties/?type=${selectedTabData.label}`,
                 method: 'GET',
             });
 
             if (result) {
-                // console.log("Properties List:", JSON.stringify(result.data));
+                console.log("Properties List:", JSON.stringify(result.data));
                 setProperties(result.data);
             }
 
@@ -94,9 +134,15 @@ const HomeScreen: React.FC = () => {
     };
 
     useEffect(() => {
-        getPropertyList();
+        loadFieldOptions();
         getBlogs();
-    }, [selectedTab]);
+    }, []);
+
+    useEffect(() => {
+        if (propertiesTab.length > 0) {
+            getPropertyList();
+        }
+    }, [selectedTab, propertiesTab]);
 
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
@@ -136,12 +182,18 @@ const HomeScreen: React.FC = () => {
                     </NMText>
 
                     <NMTabs
-                        tabs={tabs}
+                        tabs={propertiesTab.length > 0 ? propertiesTab : tabs}
                         onTabSelect={(tabId) => setSelectedTab(tabId)}
-                        defaultSelected="1"
+                        defaultSelected={selectedTab || "0"}
                     />
 
-                    <PropertyCardList properties={properties} />
+                    {properties.length > 0 ? (
+                        <PropertyCardList properties={properties} />
+                    ) : (
+                        <NMText fontSize={14} fontFamily='regular' color={Colors.textSecondary} style={{ marginTop: 20, marginHorizontal: '5%' }}>
+                            No properties available for the selected type.
+                        </NMText>
+                    )}
 
                     <PostAnAd />
 

@@ -126,6 +126,9 @@ const FunActivityDetail: React.FC = ({ navigation, route }: any) => {
                     />
                 )}
 
+                {/* not image dummy view  */}
+                {!detailData.primary_image && (<View style={[styles.image, { backgroundColor: Colors.borderLight }]} />)}
+
                 <View style={styles.content}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <NMText fontSize={18} fontFamily="bold" color={Colors.textPrimary} style={styles.title}>

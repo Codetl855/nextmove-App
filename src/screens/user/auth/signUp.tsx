@@ -183,7 +183,7 @@ const SignUpScreen: React.FC = () => {
                                 Sign Up
                             </NMText>
 
-                            <View style={styles.rowSection}>
+                            {/* <View style={styles.rowSection}>
                                 <NMRadioButton
                                     label="Personal Use"
                                     labelColor={Colors.textLight}
@@ -197,7 +197,7 @@ const SignUpScreen: React.FC = () => {
                                     marginLeft={20}
                                     onPress={() => setUserType('agency')}
                                 />
-                            </View>
+                            </View> */}
 
                             {userType === 'personal' ? (
                                 <>

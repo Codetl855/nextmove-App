@@ -121,7 +121,7 @@ const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
     const calculateTotal = () => {
         if (!invoiceData) return 0;
         const paymentAmount = parseFloat(invoiceData.payment.amount);
-        return paymentAmount;
+        return paymentAmount / 100;
     };
 
     const calculateMyPayment = () => {

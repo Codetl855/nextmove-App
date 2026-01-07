@@ -9,7 +9,6 @@ import NMButton from '../../../components/common/NMButton';
 import NMRadioButton from '../../../components/common/NMRadioButton';
 import { showErrorToast, showSuccessToast, showWarningToast } from '../../../utils/toastService';
 import { apiRequest } from '../../../services/apiClient';
-import { id } from 'rn-emoji-keyboard';
 
 const BookingPayment: React.FC = ({ navigation, route }: any) => {
 
@@ -164,23 +163,61 @@ const BookingPayment: React.FC = ({ navigation, route }: any) => {
     };
 
     const handleCreateBooking = async () => {
+        // Validate: If splitCheck is true, at least 1 co-payer is required
+        if (splitCheck && emails.length === 0) {
+            showErrorToast('Please add at least one co-payer email to split the rent');
+            return;
+        }
+
+        const bookingDetails: any = {
+            check_in: checkIn,
+            check_out: checkOut,
+            split_rent: splitCheck,
+            guests: guest,
+        };
+
+        if (splitCheck) {
+            bookingDetails.co_payers = emails.map(email => ({
+                email,
+                amount: Number(getEmailAmount(email)).toFixed(2),
+            }));
+        }
+
         const payload = {
             type: "property",
             property_details: {
                 id: propertyDetails?.id,
                 currency: propertyDetails?.currency || "SAR",
-                price: propertyDetails?.price
+                price: propertyDetails?.price,
             },
-            booking_details: {
-                check_in: checkIn,
-                check_out: checkOut,
-                split_rent: splitCheck,
-                guests: guest,
-                co_payers: emails.map(email => ({
-                    email,
-                    amount: getEmailAmount(email).toFixed(2)
-                }))
-            }
+            booking_details: bookingDetails,
+        };
+
+        // const payload = {
+        //     type: "property",
+        //     property_details: {
+        //         id: propertyDetails?.id,
+        //         currency: propertyDetails?.currency || "SAR",
+        //         price: propertyDetails?.price
+        //     },
+        //     booking_details: {
+        //         check_in: checkIn,
+        //         check_out: checkOut,
+        //         split_rent: splitCheck,
+        //         guests: guest,
+        //         // co_payers: emails.map(email => ({
+        //         //     email,
+        //         //     amount: getEmailAmount(email).toFixed(2)
+        //         // }))
+        //     }
+        // }
+
+        // Only add co_payers when splitCheck is true
+        if (splitCheck) {
+            bookingDetails.co_payers = emails.map(email => ({
+                email,
+                amount: Number(getEmailAmount(email)).toFixed(2),
+            }));
         }
 
         try {

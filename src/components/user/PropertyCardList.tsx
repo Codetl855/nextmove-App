@@ -175,15 +175,15 @@ const PropertyCardList: React.FC<{ properties: any[] }> = ({ properties }) => {
             >
                 {properties.map((property) => (
                     <PropertyCard
-                        key={property.id}
-                        image={property.media[0]?.media_url}
-                        title={property.title}
-                        sqft={property.size || 0}
-                        beds={property.bedrooms || 0}
-                        baths={property.bathrooms || 0}
-                        agentName={property.owner.first_name + ' ' + property.owner.last_name}
-                        agentImage={property.owner.profile_image_url}
-                        price={property.price}
+                        key={property?.id}
+                        image={property?.media[0]?.media_url}
+                        title={property?.title}
+                        sqft={property?.size || 0}
+                        beds={property?.bedrooms || 0}
+                        baths={property?.bathrooms || 0}
+                        agentName={property?.owner?.first_name + ' ' + property?.owner?.last_name}
+                        agentImage={property?.owner?.profile_image_url}
+                        price={property?.price}
                         isFavorite={property.is_favourite || favoriteStates[property.id] || false}
                         onPress={() => navigation.navigate('PropertyDetailScreen', { property })}
                         onFavoritePress={() => makeFavorite(property)}

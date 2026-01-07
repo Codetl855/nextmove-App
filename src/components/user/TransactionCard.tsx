@@ -166,7 +166,7 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ data, onPress }) => {
                         {formatDate(data.created_at)}
                     </NMText>
                     <NMText fontSize={14} fontFamily='semiBold' color={Colors.primary}>
-                        {formatAmount(data.amount, data.currency)}
+                        {formatAmount((data.amount / 100), data.currency)}
                     </NMText>
                 </View>
             </View>

@@ -75,7 +75,7 @@ const BookingRequestsScreen: React.FC = () => {
                 <TouchableOpacity
                     key={property.id}
                     style={styles.propertyCard}
-                    onPress={() => navigation.navigate('BookingRequestStatusDetail' as never)}
+                // onPress={() => navigation.navigate('BookingRequestStatusDetail' as never)}
                 >
                     <View style={styles.inRow}>
                         <Image source={{ uri: property.image }} style={styles.propertyImage} />

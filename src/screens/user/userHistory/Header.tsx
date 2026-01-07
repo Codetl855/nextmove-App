@@ -3,6 +3,7 @@ import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import NMText from '../../../components/common/NMText';
 import { Colors } from '../../../theme/colors';
+import { ChevronLeft } from 'lucide-react-native';
 
 const Header: React.FC = () => {
     const navigation = useNavigation();
@@ -19,11 +20,9 @@ const Header: React.FC = () => {
     return (
         <View style={styles.headerView}>
             <View style={styles.inRow}>
-                <TouchableOpacity onPress={handleDrawerOpen}>
-                    <Image
-                        source={require('../../../assets/icons/drawer.png')}
-                        style={styles.headerIcon}
-                    />
+
+                <TouchableOpacity style={styles.backBox} onPress={() => navigation.goBack()}>
+                    <ChevronLeft color={Colors.black} size={24} strokeWidth={2} />
                 </TouchableOpacity>
                 <NMText
                     fontSize={20}
@@ -52,6 +51,14 @@ const styles = StyleSheet.create({
         paddingVertical: 20,
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
+    },
+    backBox: {
+        width: 30,
+        height: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 8,
+        backgroundColor: Colors.background
     },
     inRow: {
         flexDirection: 'row',

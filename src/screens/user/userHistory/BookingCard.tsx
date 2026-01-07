@@ -12,16 +12,16 @@ interface BookingCardProps {
 
 const BookingCard: React.FC<BookingCardProps> = ({ booking }) => {
     const navigation = useNavigation();
-    const propertyImage = booking.primary_image || 
+    const propertyImage = booking.primary_image ||
         'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400';
-    
+
     const statusColors = getStatusColors(booking.status);
     const price = parseFloat(booking.property_price || '0');
 
     return (
         <TouchableOpacity
             style={styles.propertyCard}
-            onPress={() => navigation.navigate('BookingRequestStatusDetail' as never)}
+        // onPress={() => navigation.navigate('BookingRequestStatusDetail' as never)}
         >
             <View style={styles.inRow}>
                 <Image source={{ uri: propertyImage }} style={styles.propertyImage} />
@@ -52,13 +52,12 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking }) => {
                     <NMText fontSize={16} fontFamily="semiBold" color={Colors.primary} style={styles.price}>
                         {price.toLocaleString()} SAR
                     </NMText>
+                    <View style={[styles.statusView, { backgroundColor: statusColors.bg }]}>
+                        <NMText fontSize={12} fontFamily="regular" color={statusColors.text}>
+                            {formatStatus(booking.status)}
+                        </NMText>
+                    </View>
                 </View>
-            </View>
-
-            <View style={[styles.statusView, { backgroundColor: statusColors.bg }]}>
-                <NMText fontSize={12} fontFamily="regular" color={statusColors.text}>
-                    {formatStatus(booking.status)}
-                </NMText>
             </View>
         </TouchableOpacity>
     );
@@ -78,7 +77,7 @@ const styles = StyleSheet.create({
     },
     propertyImage: {
         width: 85,
-        height: 85,
+        height: 96,
         borderRadius: 8,
         resizeMode: 'cover',
     },
@@ -93,9 +92,12 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     statusView: {
-        position: 'absolute',
-        top: '50%',
-        right: 14,
+        // position: 'absolute',
+        // top: '50%',
+        // right: 14,
+        width: 120,
+        alignItems: 'center',
+        justifyContent: 'center',
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 4,

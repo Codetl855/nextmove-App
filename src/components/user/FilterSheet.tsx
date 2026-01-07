@@ -147,6 +147,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({ visible, onClose, onApplyFilt
         //
 
         try {
+            setLoading(true);
             const { result, error } = await apiRequest({
                 endpoint: "v1/search-properties",
                 method: "POST",
@@ -165,6 +166,8 @@ const FilterSheet: React.FC<FilterSheetProps> = ({ visible, onClose, onApplyFilt
             }
         } catch (err) {
             console.error("Filter API Error:", err);
+        } finally {
+            setLoading(false);
         }
     };
 
