@@ -182,9 +182,9 @@ const LoginScreen: React.FC = () => {
                                     onPress={() => setKeepLoggedIn(!keepLoggedIn)}
                                 >
                                     {keepLoggedIn ? (
-                                        <CheckCircle size={18} color={Colors.primary} />
+                                        <CheckCircle size={20} color={Colors.white} fill={Colors.primary} strokeWidth={2} />
                                     ) : (
-                                        <Circle size={18} color={Colors.textLight} />
+                                        <Circle size={16} color={Colors.textLight} />
                                     )}
                                     <NMText
                                         fontSize={14}

@@ -84,6 +84,48 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
         );
     }, [values.amenities, handleChange]);
 
+    // Helper function to validate numeric input
+    const validateNumericInput = (value: string, fieldName: string): string | null => {
+        if (!value) return null;
+        // Allow only numbers and decimal point
+        const numericRegex = /^[0-9]*\.?[0-9]*$/;
+        if (!numericRegex.test(value)) {
+            return `${fieldName} must be a number`;
+        }
+        return null;
+    };
+
+    // Helper function to handle numeric field changes
+    const handleNumericChange = (field: string, value: string, fieldName: string) => {
+        // Only allow numeric characters and decimal point
+        const numericValue = value.replace(/[^0-9.]/g, '');
+        const error = validateNumericInput(numericValue, fieldName);
+        handleChange(field, numericValue, error);
+    };
+
+    // Helper function to validate year built
+    const handleYearBuiltChange = (value: string) => {
+        if (!value) {
+            handleChange('year_built', value);
+            return;
+        }
+
+        const currentYear = new Date().getFullYear();
+        const selectedYear = parseInt(value, 10);
+
+        if (isNaN(selectedYear)) {
+            handleChange('year_built', value, 'Please enter a valid year');
+            return;
+        }
+
+        if (selectedYear > currentYear) {
+            handleChange('year_built', value, 'Year cannot be in the future');
+            return;
+        }
+
+        handleChange('year_built', value);
+    };
+
     const loadFieldOptions = async () => {
         setLoading(true);
         const { result, error } = await apiRequest({
@@ -177,20 +219,174 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
         }
     }, [property, fieldOption.propertyTypes, populatePropertyData]);
 
+    // Re-validate size and garage_size when land_area changes
+    useEffect(() => {
+        if (values.land_area && values.size) {
+            const sizeNum = parseFloat(values.size);
+            const landAreaNum = parseFloat(values.land_area);
+            if (!isNaN(sizeNum) && !isNaN(landAreaNum) && landAreaNum > 0) {
+                if (sizeNum >= landAreaNum) {
+                    if (errors.size !== 'Size must be less than Land Area') {
+                        handleChange('size', values.size, 'Size must be less than Land Area');
+                    }
+                } else if (errors.size === 'Size must be less than Land Area') {
+                    handleChange('size', values.size); // Clear error
+                }
+            }
+        }
+        if (values.land_area && values.garage_size) {
+            const garageSizeNum = parseFloat(values.garage_size);
+            const landAreaNum = parseFloat(values.land_area);
+            if (!isNaN(garageSizeNum) && !isNaN(landAreaNum) && landAreaNum > 0) {
+                if (garageSizeNum >= landAreaNum) {
+                    if (errors.garage_size !== 'Garage Size must be less than Land Area') {
+                        handleChange('garage_size', values.garage_size, 'Garage Size must be less than Land Area');
+                    }
+                } else if (errors.garage_size === 'Garage Size must be less than Land Area') {
+                    handleChange('garage_size', values.garage_size); // Clear error
+                }
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [values.land_area, values.size, values.garage_size]);
+
+    // Re-validate bedrooms and bathrooms when rooms changes
+    useEffect(() => {
+        if (values.rooms) {
+            const roomsNum = parseInt(values.rooms, 10);
+            if (!isNaN(roomsNum) && roomsNum > 0) {
+                if (values.bedrooms) {
+                    const bedroomsNum = parseInt(values.bedrooms, 10);
+                    if (!isNaN(bedroomsNum)) {
+                        if (bedroomsNum > roomsNum) {
+                            if (errors.bedrooms !== 'Bedrooms cannot exceed total Rooms') {
+                                handleChange('bedrooms', values.bedrooms, 'Bedrooms cannot exceed total Rooms');
+                            }
+                        } else if (errors.bedrooms === 'Bedrooms cannot exceed total Rooms') {
+                            handleChange('bedrooms', values.bedrooms); // Clear error
+                        }
+                    }
+                }
+                if (values.bathrooms) {
+                    const bathroomsNum = parseInt(values.bathrooms, 10);
+                    if (!isNaN(bathroomsNum)) {
+                        if (bathroomsNum > roomsNum) {
+                            if (errors.bathrooms !== 'Bathrooms cannot exceed total Rooms') {
+                                handleChange('bathrooms', values.bathrooms, 'Bathrooms cannot exceed total Rooms');
+                            }
+                        } else if (errors.bathrooms === 'Bathrooms cannot exceed total Rooms') {
+                            handleChange('bathrooms', values.bathrooms); // Clear error
+                        }
+                    }
+                }
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [values.rooms, values.bedrooms, values.bathrooms]);
+
     const validateStep1 = () => {
         const isValid = validate({
-            title: (val) => !val ? 'Title is required' : null,
-            description: (val) => !val ? 'Description is required' : null,
+            title: (val) => {
+                if (!val) return 'Title is required';
+                if (val.length > 200) return 'Title must be 200 characters or less';
+                return null;
+            },
+            description: (val) => {
+                if (!val) return 'Description is required';
+                if (val.length > 2000) return 'Description must be 2000 characters or less';
+                return null;
+            },
             property_type: (val) => !val ? 'Property Type is required' : null,
             property_category: (val) => !val ? 'Property Category is required' : null,
-            size: (val) => !val ? 'Size is required' : null,
-            land_area: (val) => !val ? 'Land Area is required' : null,
-            year_built: (val) => !val ? 'Year Built is required' : null,
-            address: (val) => !val ? 'Full Address is required' : null,
-            zip_code: (val) => !val ? 'Zip Code is required' : null,
-            city: (val) => !val ? 'City is required' : null,
-            state: (val) => !val ? 'State is required' : null,
-            location: (val) => !val ? 'Location is required' : null,
+            size: (val) => {
+                if (!val) return 'Size is required';
+                if (!/^[0-9]*\.?[0-9]*$/.test(val)) return 'Size must be a number';
+                const sizeNum = parseFloat(val);
+                const landAreaNum = parseFloat(values.land_area || '0');
+                if (landAreaNum > 0 && sizeNum >= landAreaNum) {
+                    return 'Size must be less than Land Area';
+                }
+                return null;
+            },
+            land_area: (val) => {
+                if (!val) return 'Land Area is required';
+                if (!/^[0-9]*\.?[0-9]*$/.test(val)) return 'Land Area must be a number';
+                return null;
+            },
+            year_built: (val) => {
+                if (!val) return 'Year Built is required';
+                const currentYear = new Date().getFullYear();
+                const selectedYear = parseInt(val, 10);
+                if (isNaN(selectedYear)) return 'Please enter a valid year';
+                if (selectedYear > currentYear) return 'Year cannot be in the future';
+                return null;
+            },
+            address: (val) => {
+                if (!val) return 'Full Address is required';
+                if (val.length > 500) return 'Address must be 500 characters or less';
+                return null;
+            },
+            zip_code: (val) => {
+                if (!val) return 'Zip Code is required';
+                if (val.length > 10) return 'Zip Code must be 10 characters or less';
+                return null;
+            },
+            city: (val) => {
+                if (!val) return 'City is required';
+                if (val.length > 100) return 'City must be 100 characters or less';
+                return null;
+            },
+            state: (val) => {
+                if (!val) return 'State is required';
+                if (val.length > 100) return 'State must be 100 characters or less';
+                return null;
+            },
+            location: (val) => {
+                if (!val) return 'Location is required';
+                if (val.length > 500) return 'Location must be 500 characters or less';
+                return null;
+            },
+            rooms: (val) => {
+                if (val && !/^[0-9]*$/.test(val)) return 'Rooms must be a number';
+                return null;
+            },
+            bedrooms: (val) => {
+                if (val) {
+                    if (!/^[0-9]*$/.test(val)) return 'Bedrooms must be a number';
+                    const bedroomsNum = parseInt(val, 10);
+                    const roomsNum = parseInt(values.rooms || '0');
+                    if (roomsNum > 0 && bedroomsNum > roomsNum) {
+                        return 'Bedrooms cannot exceed total Rooms';
+                    }
+                }
+                return null;
+            },
+            bathrooms: (val) => {
+                if (val) {
+                    if (!/^[0-9]*$/.test(val)) return 'Bathrooms must be a number';
+                    const bathroomsNum = parseInt(val, 10);
+                    const roomsNum = parseInt(values.rooms || '0');
+                    if (roomsNum > 0 && bathroomsNum > roomsNum) {
+                        return 'Bathrooms cannot exceed total Rooms';
+                    }
+                }
+                return null;
+            },
+            garages: (val) => {
+                if (val && !/^[0-9]*$/.test(val)) return 'Garages must be a number';
+                return null;
+            },
+            garage_size: (val) => {
+                if (val) {
+                    if (!/^[0-9]*\.?[0-9]*$/.test(val)) return 'Garage Size must be a number';
+                    const garageSizeNum = parseFloat(val);
+                    const landAreaNum = parseFloat(values.land_area || '0');
+                    if (landAreaNum > 0 && garageSizeNum >= landAreaNum) {
+                        return 'Garage Size must be less than Land Area';
+                    }
+                }
+                return null;
+            },
             availability_start_date: (val) =>
                 values.property_category !== 'Sell' && !val
                     ? 'Availability Start Date is required'
@@ -214,7 +410,15 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
 
     const validateStep2 = () => {
         return validate({
-            price: (val) => !val ? 'Price is required' : null,
+            price: (val) => {
+                if (!val) return 'Price is required';
+                if (!/^[0-9]*\.?[0-9]*$/.test(val)) return 'Price must be a number';
+                return null;
+            },
+            terms: (val) => {
+                if (val && val.length > 2000) return 'Terms & Rules must be 2000 characters or less';
+                return null;
+            },
         });
     };
 
@@ -246,7 +450,50 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
         val === '' ||
         (Array.isArray(val) && val.length === 0);
 
+    // Check for duplicate properties
+    const checkDuplicateProperty = async (): Promise<boolean> => {
+        if (property) return false; // Skip duplicate check for edits
+
+        try {
+            const { result, error } = await apiRequest({
+                endpoint: 'v1/properties',
+                method: 'GET',
+            });
+
+            if (result && result.data) {
+                const existingProperties = result.data;
+                const isDuplicate = existingProperties.some((prop: any) => {
+                    return (
+                        prop.title?.toLowerCase().trim() === values.title?.toLowerCase().trim() &&
+                        prop.address?.toLowerCase().trim() === values.address?.toLowerCase().trim() &&
+                        prop.city?.toLowerCase().trim() === values.city?.toLowerCase().trim() &&
+                        prop.zip_code?.trim() === values.zip_code?.trim()
+                    );
+                });
+
+                if (isDuplicate) {
+                    showErrorToast('A property with the same details already exists');
+                    return true;
+                }
+            }
+
+            if (error) {
+                console.warn('Error checking duplicates:', error);
+            }
+        } catch (error) {
+            console.warn('Error checking duplicates:', error);
+        }
+
+        return false;
+    };
+
     const handleSubmit = async () => {
+        // // Check for duplicates before submission
+        // const isDuplicate = await checkDuplicateProperty();
+        // if (isDuplicate) {
+        //     return;
+        // }
+
         const data = new FormData();
 
         Object.keys(values).forEach(key => {
@@ -278,7 +525,6 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
             });
         }
 
-        console.log('print data', JSON.stringify(data));
 
         try {
             setLoading(true);
@@ -295,8 +541,9 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
             });
 
             if (result) {
-                showSuccessToast('Property added successfully!');
-                navigation.goBack();
+                showSuccessToast(property ? 'Property updated successfully!' : 'Property added successfully!');
+                // Navigate to home page
+                navigation.navigate('UserBottomTab', { screen: 'Home' });
             }
 
             if (error) {
@@ -320,23 +567,33 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                             placeholder='Enter'
                             multiline
                             value={values.title}
-                            onChangeText={(text) => handleChange('title', text)}
+                            onChangeText={(text) => {
+                                if (text.length <= 200) {
+                                    handleChange('title', text);
+                                }
+                            }}
                             numberOfLines={2}
                             mainViewStyle={{ marginVertical: 10 }}
                             required
                             error={errors.title}
+                            maxLength={200}
                         />
                         <NMTextInput
                             label='Description'
                             placeholder='Enter'
                             multiline
                             value={values.description}
-                            onChangeText={(text) => handleChange('description', text)}
+                            onChangeText={(text) => {
+                                if (text.length <= 2000) {
+                                    handleChange('description', text);
+                                }
+                            }}
                             numberOfLines={5}
                             mainViewStyle={{ marginVertical: 10 }}
                             inputStyle={{ textAlignVertical: 'top', height: 120 }}
                             required
                             error={errors.description}
+                            maxLength={2000}
                         />
                         <NMDropdown
                             label="Property Type"
@@ -363,19 +620,31 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                                 label="Size (SqFt)"
                                 placeholder="Enter"
                                 value={values.size}
-                                onChangeText={(text) => handleChange('size', text)}
+                                onChangeText={(text) => {
+                                    const numericValue = text.replace(/[^0-9.]/g, '');
+                                    if (numericValue.length <= 15) {
+                                        const error = numericValue && values.land_area ?
+                                            (parseFloat(numericValue) >= parseFloat(values.land_area) ?
+                                                'Size must be less than Land Area' : null) : null;
+                                        handleChange('size', numericValue, error);
+                                    }
+                                }}
                                 mainViewStyle={{ width: '46%' }}
                                 required
                                 error={errors.size}
+                                keyboardType="numeric"
+                                maxLength={15}
                             />
                             <NMTextInput
                                 label="Land Area (SqFt)"
                                 placeholder="Enter"
                                 value={values.land_area}
-                                onChangeText={(text) => handleChange('land_area', text)}
+                                onChangeText={(text) => handleNumericChange('land_area', text, 'Land Area')}
                                 mainViewStyle={{ width: '46%' }}
                                 required
                                 error={errors.land_area}
+                                keyboardType="numeric"
+                                maxLength={15}
                             />
                         </View>
                         <View style={styles.inRowInputs}>
@@ -383,15 +652,34 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                                 label="Rooms"
                                 placeholder="Enter"
                                 value={values.rooms}
-                                onChangeText={(text) => handleChange('rooms', text)}
+                                onChangeText={(text) => {
+                                    const numericValue = text.replace(/[^0-9]/g, '');
+                                    if (numericValue.length <= 3) {
+                                        handleChange('rooms', numericValue);
+                                    }
+                                }}
                                 mainViewStyle={{ width: '46%' }}
+                                keyboardType="numeric"
+                                maxLength={3}
+                                error={errors.rooms}
                             />
                             <NMTextInput
                                 label="Bedrooms"
                                 placeholder="Enter"
                                 value={values.bedrooms}
-                                onChangeText={(text) => handleChange('bedrooms', text)}
+                                onChangeText={(text) => {
+                                    const numericValue = text.replace(/[^0-9]/g, '');
+                                    if (numericValue.length <= 3) {
+                                        const error = numericValue ?
+                                            (values.rooms && parseInt(numericValue, 10) > parseInt(values.rooms, 10) ?
+                                                'Bedrooms cannot exceed total Rooms' : null) : null;
+                                        handleChange('bedrooms', numericValue, error);
+                                    }
+                                }}
                                 mainViewStyle={{ width: '46%' }}
+                                keyboardType="numeric"
+                                maxLength={3}
+                                error={errors.bedrooms}
                             />
                         </View>
                         <View style={styles.inRowInputs}>
@@ -399,15 +687,34 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                                 label="Bathrooms"
                                 placeholder="Enter"
                                 value={values.bathrooms}
-                                onChangeText={(text) => handleChange('bathrooms', text)}
+                                onChangeText={(text) => {
+                                    const numericValue = text.replace(/[^0-9]/g, '');
+                                    if (numericValue.length <= 3) {
+                                        const error = numericValue ?
+                                            (values.rooms && parseInt(numericValue, 10) > parseInt(values.rooms, 10) ?
+                                                'Bathrooms cannot exceed total Rooms' : null) : null;
+                                        handleChange('bathrooms', numericValue, error);
+                                    }
+                                }}
                                 mainViewStyle={{ width: '46%' }}
+                                keyboardType="numeric"
+                                maxLength={3}
+                                error={errors.bathrooms}
                             />
                             <NMTextInput
                                 label="Garages"
                                 placeholder="Enter"
                                 value={values.garages}
-                                onChangeText={(text) => handleChange('garages', text)}
+                                onChangeText={(text) => {
+                                    const numericValue = text.replace(/[^0-9]/g, '');
+                                    if (numericValue.length <= 3) {
+                                        handleChange('garages', numericValue);
+                                    }
+                                }}
                                 mainViewStyle={{ width: '46%' }}
+                                keyboardType="numeric"
+                                maxLength={3}
+                                error={errors.garages}
                             />
                         </View>
                         <View style={styles.inRowInputs}>
@@ -415,19 +722,31 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                                 label="Garages Size (SqFt)"
                                 placeholder="Enter"
                                 value={values.garage_size}
-                                onChangeText={(text) => handleChange('garage_size', text)}
+                                onChangeText={(text) => {
+                                    const numericValue = text.replace(/[^0-9.]/g, '');
+                                    if (numericValue.length <= 15) {
+                                        const error = numericValue && values.land_area ?
+                                            (parseFloat(numericValue) >= parseFloat(values.land_area) ?
+                                                'Garage Size must be less than Land Area' : null) : null;
+                                        handleChange('garage_size', numericValue, error);
+                                    }
+                                }}
                                 mainViewStyle={{ width: '46%' }}
+                                keyboardType="numeric"
+                                maxLength={15}
+                                error={errors.garage_size}
                             />
                             <NMDatePicker
                                 label="Year Built"
                                 placeholder="Select"
                                 value={values.year_built}
                                 mode="year"
-                                onChange={(value) => handleChange('year_built', value)}
+                                onChange={(value) => handleYearBuiltChange(value)}
                                 isRequired
                                 mHorizontal={0}
                                 mainView={{ width: '46%' }}
                                 error={errors.year_built}
+                                maxDate="today"
                             />
                         </View>
                         {values.property_category !== 'Sell' && (<NMDateRangePicker
@@ -448,30 +767,45 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                             placeholder='Enter'
                             multiline
                             value={values.address}
-                            onChangeText={(text) => handleChange('address', text)}
+                            onChangeText={(text) => {
+                                if (text.length <= 500) {
+                                    handleChange('address', text);
+                                }
+                            }}
                             numberOfLines={5}
                             mainViewStyle={{ marginVertical: 10 }}
                             required
                             error={errors.address}
+                            maxLength={500}
                         />
                         <View style={styles.inRowInputs}>
                             <NMTextInput
                                 label="Zip Code"
                                 placeholder="Enter"
                                 value={values.zip_code}
-                                onChangeText={(text) => handleChange('zip_code', text)}
+                                onChangeText={(text) => {
+                                    if (text.length <= 10) {
+                                        handleChange('zip_code', text);
+                                    }
+                                }}
                                 mainViewStyle={{ width: '46%' }}
                                 required
                                 error={errors.zip_code}
+                                maxLength={10}
                             />
                             <NMTextInput
                                 label="City"
                                 placeholder="Enter"
                                 value={values.city}
-                                onChangeText={(text) => handleChange('city', text)}
+                                onChangeText={(text) => {
+                                    if (text.length <= 100) {
+                                        handleChange('city', text);
+                                    }
+                                }}
                                 mainViewStyle={{ width: '46%' }}
                                 required
                                 error={errors.city}
+                                maxLength={100}
                             />
                         </View>
                         {/* <NMDropdown
@@ -488,21 +822,31 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                             label='State/Province'
                             placeholder='Enter'
                             value={values.state}
-                            onChangeText={(text) => handleChange('state', text)}
+                            onChangeText={(text) => {
+                                if (text.length <= 100) {
+                                    handleChange('state', text);
+                                }
+                            }}
                             mainViewStyle={{ marginVertical: 10 }}
                             required
                             error={errors.state}
+                            maxLength={100}
                         />
                         <NMTextInput
                             label='Location'
                             placeholder='Enter'
                             multiline
                             value={values.location}
-                            onChangeText={(text) => handleChange('location', text)}
+                            onChangeText={(text) => {
+                                if (text.length <= 500) {
+                                    handleChange('location', text);
+                                }
+                            }}
                             numberOfLines={5}
                             mainViewStyle={{ marginVertical: 10 }}
                             required
                             error={errors.location}
+                            maxLength={500}
                         />
                         {values.property_category !== 'Sell' && (<>
                             <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
@@ -549,10 +893,12 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                             label='Price'
                             placeholder='Enter'
                             value={values.price}
-                            onChangeText={(text) => handleChange('price', text)}
+                            onChangeText={(text) => handleNumericChange('price', text, 'Price')}
                             mainViewStyle={{ marginVertical: 10 }}
                             required
                             error={errors.price}
+                            keyboardType="numeric"
+                            maxLength={15}
                         />
                         <View style={styles.termBox}>
                             <View style={[styles.inRow, { justifyContent: 'space-between' }]}>
@@ -565,10 +911,16 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                                 placeholder='Enter'
                                 multiline
                                 value={values.terms}
-                                onChangeText={(text) => handleChange('terms', text)}
+                                onChangeText={(text) => {
+                                    if (text.length <= 2000) {
+                                        handleChange('terms', text);
+                                    }
+                                }}
                                 numberOfLines={5}
                                 mainViewStyle={{ marginVertical: 10 }}
                                 inputStyle={{ textAlignVertical: 'top', height: 120 }}
+                                maxLength={2000}
+                                error={errors.terms}
                             />
                         </View>
                         <View style={styles.inRowBtn}>

@@ -57,7 +57,7 @@ const CommentSheetModal: React.FC<CommentSheetModalProps> = ({
                     <View style={styles.titleRow}>
                         <View style={styles.titleContainer}>
                             <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary}>
-                                Leave A comment
+                                Leave A Comment
                             </NMText>
                         </View>
                         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
@@ -95,6 +95,8 @@ const CommentSheetModal: React.FC<CommentSheetModalProps> = ({
                         required
                         value={comment}
                         onChangeText={(text) => setComment(text)}
+                        maxLength={200}
+                        error={comment.length === 0 ? 'Review is required' : comment.length > 200 ? 'Review cannot exceed 200 characters' : ''}
                     />
 
                     <View style={styles.starReview}>

@@ -23,6 +23,7 @@ interface NMDatePickerProps {
     error?: string;
     mode?: 'date' | 'year';
     minDate?: 'today' | string;
+    maxDate?: 'today' | string;
 }
 
 const NMDatePicker: React.FC<NMDatePickerProps> = ({
@@ -37,6 +38,7 @@ const NMDatePicker: React.FC<NMDatePickerProps> = ({
     error,
     mode = 'date',
     minDate,
+    maxDate,
 }) => {
     const [open, setOpen] = useState(false);
 
@@ -44,6 +46,11 @@ const NMDatePicker: React.FC<NMDatePickerProps> = ({
         minDate === 'today'
             ? new Date().toISOString().split('T')[0]
             : minDate;
+
+    const resolvedMaxDate =
+        maxDate === 'today'
+            ? new Date().toISOString().split('T')[0]
+            : maxDate;
 
     return (
         <View
@@ -107,6 +114,7 @@ const NMDatePicker: React.FC<NMDatePickerProps> = ({
                     <View style={styles.modalContent}>
                         <Calendar
                             minDate={mode === 'date' ? resolvedMinDate : undefined}
+                            maxDate={mode === 'date' ? resolvedMaxDate : (mode === 'year' && resolvedMaxDate ? resolvedMaxDate : undefined)}
                             markedDates={
                                 mode === 'date' && value
                                     ? {
@@ -119,6 +127,12 @@ const NMDatePicker: React.FC<NMDatePickerProps> = ({
                             }
                             onDayPress={(day) => {
                                 if (mode === 'year') {
+                                    const selectedYear = parseInt(day.dateString.split('-')[0], 10);
+                                    const currentYear = new Date().getFullYear();
+                                    if (selectedYear > currentYear) {
+                                        // Don't allow future years
+                                        return;
+                                    }
                                     onChange?.(day.dateString.split('-')[0]);
                                 } else {
                                     onChange?.(day.dateString);

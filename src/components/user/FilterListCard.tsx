@@ -55,7 +55,7 @@ const FilterListCard: React.FC<Props> = ({ item, SelectedCategory, onFavoritePre
                 </View>
 
                 {/* Features (these are not in API → default 0) */}
-                <View style={styles.featuresContainer}>
+                {/* <View style={styles.featuresContainer}>
                     <View style={styles.feature}>
                         <Image source={require('../../assets/icons/sqf.png')} style={styles.featureIcon} />
                         <NMText fontSize={12} fontFamily='regular' color={Colors.textPrimary}>
@@ -76,7 +76,7 @@ const FilterListCard: React.FC<Props> = ({ item, SelectedCategory, onFavoritePre
                             {item?.bathrooms || 0} Baths
                         </NMText>
                     </View>
-                </View>
+                </View> */}
 
                 {/* Price + Added Date */}
                 <View style={styles.priceContainer}>
@@ -192,7 +192,8 @@ const styles = StyleSheet.create({
     },
     imageStyle: {
         width: 110,
-        height: 113,
+        height: 90,
+        // height: 113,
         borderRadius: 12,
     },
     textContainer: {
@@ -222,6 +223,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
+        marginTop: 10,
     },
     favoriteButton: {
         position: 'absolute',

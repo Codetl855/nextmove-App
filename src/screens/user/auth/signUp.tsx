@@ -203,7 +203,7 @@ const SignUpScreen: React.FC = () => {
                                 <>
                                     <NMTextInput
                                         label="First Name"
-                                        placeholder="John"
+                                        placeholder="First Name"
                                         value={values.firstName}
                                         onChangeText={(text) => handleChange("firstName", text)}
                                         inputType="text"
@@ -212,7 +212,7 @@ const SignUpScreen: React.FC = () => {
                                     />
                                     <NMTextInput
                                         label="Last Name"
-                                        placeholder="Doe"
+                                        placeholder="Last Name"
                                         value={values.lastName}
                                         onChangeText={(text) => handleChange("lastName", text)}
                                         inputType="text"
@@ -230,7 +230,7 @@ const SignUpScreen: React.FC = () => {
                                         required
                                     />
                                     <NMTextInput
-                                        label="Phone"
+                                        label="Mobile Number"
                                         placeholder="123456789"
                                         value={values.phone}
                                         onChangeText={(text) => handleChange("phone", text)}
@@ -305,6 +305,7 @@ const SignUpScreen: React.FC = () => {
                                             showPasswordToggle
                                             error={errors.agencyPassword}
                                             mainViewStyle={{ width: '48%' }}
+                                            required
                                         />
                                         <NMTextInput
                                             label="Confirm Password"
@@ -315,6 +316,7 @@ const SignUpScreen: React.FC = () => {
                                             showPasswordToggle
                                             error={errors.agencyConfirmPassword}
                                             mainViewStyle={{ width: '48%' }}
+                                            required
                                         />
                                     </View>
                                 </>

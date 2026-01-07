@@ -19,15 +19,12 @@ const SplashScreen: React.FC = () => {
         try {
             const userData = await getLoginUser();
             if (userData && userData.token) {
-                // Token exists, navigate to home screen
                 navigation?.replace('UserBottomTab' as never);
             } else {
-                // No token found, navigate to login
                 navigation?.replace('loginScreen' as never);
             }
         } catch (error) {
             console.error('Error checking auth status:', error);
-            // If error, go to login
             navigation?.replace('loginScreen' as never);
         }
     };
@@ -50,7 +47,7 @@ const SplashScreen: React.FC = () => {
                 <NMText fontSize={28} color={Colors.white} fontFamily='bold'>
                     Your Dreams
                 </NMText>
-                <NMText fontSize={16} color={Colors.white} fontFamily='regular' style={{ marginVertical: 10 }}>
+                <NMText fontSize={16} color={Colors.white} fontFamily='regular' style={{ marginVertical: 10, textAlign: 'center' }}>
                     Finding a place to live can be a difficult task, therefore we have done our best to simplify it.
                 </NMText>
                 <NMButton

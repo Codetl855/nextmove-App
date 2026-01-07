@@ -48,7 +48,7 @@ const CommentView: React.FC<CommentViewProps> = ({
                 </NMText>
 
                 {/* Useful Button */}
-                <View style={[styles.inRow, { marginBottom: 4 }]}>
+                {/* <View style={[styles.inRow, { marginBottom: 4 }]}>
                     <View style={styles.inRow}>
                         <ThumbsUp color={Colors.primary} size={20} strokeWidth={1.5} />
                         <NMText fontSize={12} fontFamily='regular' color={Colors.textPrimary}>
@@ -62,7 +62,7 @@ const CommentView: React.FC<CommentViewProps> = ({
                             Not Useful
                         </NMText>
                     </View>
-                </View>
+                </View> */}
             </View>
 
             <View style={styles.starRow}>

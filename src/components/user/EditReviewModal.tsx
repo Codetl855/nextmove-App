@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, View, TouchableOpacity, StyleSheet } from 'react-native';
+import { Modal, View, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { StarIcon, X } from 'lucide-react-native';
 import NMText from '../common/NMText';
 import { Colors } from '../../theme/colors';
@@ -32,75 +32,79 @@ const EditReviewModal: React.FC<EditReviewModalProps> = ({
     return (
         <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
             <View style={styles.overlay}>
-                <View style={styles.modalContainer}>
-                    <View style={styles.header}>
-                        <View style={styles.dragIndicator} />
-                    </View>
+                <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'flex-end' }}>
+                    <View style={styles.modalContainer}>
+                        <View style={styles.header}>
+                            <View style={styles.dragIndicator} />
+                        </View>
 
-                    <View style={styles.titleRow}>
-                        <View style={styles.titleContainer}>
-                            <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary}>
-                                Edit Review
+                        <View style={styles.titleRow}>
+                            <View style={styles.titleContainer}>
+                                <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary}>
+                                    Edit Review
+                                </NMText>
+                            </View>
+                            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                                <X color="#000" size={24} strokeWidth={2} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <NMTextInput
+                            label="Comment"
+                            placeholder="Enter your comment"
+                            multiline
+                            numberOfLines={5}
+                            mainViewStyle={{ marginVertical: 10, marginHorizontal: 20 }}
+                            inputStyle={{ textAlignVertical: 'top', height: 120 }}
+                            value={comment}
+                            onChangeText={setComment}
+                            maxLength={200}
+                            error={comment.length === 0 ? 'Review is required' : comment.length > 200 ? 'Review cannot exceed 200 characters' : ''}
+                        />
+
+                        <View style={styles.starReview}>
+                            <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary} style={{ marginHorizontal: 20 }}>
+                                Rate Us
                             </NMText>
+                            <View style={styles.inRow}>
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <TouchableOpacity key={star} onPress={() => setRating(star)}>
+                                        <StarIcon
+                                            size={24}
+                                            color={star <= rating ? Colors.star : Colors.border}
+                                            fill={star <= rating ? Colors.star : 'transparent'}
+                                        />
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
                         </View>
-                        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                            <X color="#000" size={24} strokeWidth={2} />
-                        </TouchableOpacity>
-                    </View>
 
-                    <NMTextInput
-                        label="Comment"
-                        placeholder="Enter your comment"
-                        multiline
-                        numberOfLines={5}
-                        mainViewStyle={{ marginVertical: 10, marginHorizontal: 20 }}
-                        inputStyle={{ textAlignVertical: 'top', height: 120 }}
-                        value={comment}
-                        onChangeText={setComment}
-                    />
-
-                    <View style={styles.starReview}>
-                        <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary} style={{ marginHorizontal: 20 }}>
-                            Rate Us
-                        </NMText>
-                        <View style={styles.inRow}>
-                            {[1, 2, 3, 4, 5].map((star) => (
-                                <TouchableOpacity key={star} onPress={() => setRating(star)}>
-                                    <StarIcon
-                                        size={24}
-                                        color={star <= rating ? Colors.star : Colors.border}
-                                        fill={star <= rating ? Colors.star : 'transparent'}
-                                    />
-                                </TouchableOpacity>
-                            ))}
+                        <View style={[styles.inRow, { marginTop: 10, justifyContent: 'space-between', gap: 0, marginHorizontal: 20 }]}>
+                            <NMButton
+                                title="Cancel"
+                                backgroundColor={Colors.white}
+                                textColor={Colors.primary}
+                                fontSize={14}
+                                fontFamily="semiBold"
+                                borderRadius={8}
+                                height={44}
+                                width={'46%'}
+                                style={{ borderColor: Colors.primary, borderWidth: 1 }}
+                                onPress={onClose}
+                            />
+                            <NMButton
+                                title="Save & Update"
+                                textColor={Colors.white}
+                                fontSize={14}
+                                fontFamily="semiBold"
+                                borderRadius={8}
+                                height={44}
+                                width={'46%'}
+                                onPress={() => onSave(comment, rating)}
+                            />
                         </View>
                     </View>
-
-                    <View style={[styles.inRow, { marginTop: 10, justifyContent: 'space-between', gap: 0, marginHorizontal: 20 }]}>
-                        <NMButton
-                            title="Cancel"
-                            backgroundColor={Colors.white}
-                            textColor={Colors.primary}
-                            fontSize={14}
-                            fontFamily="semiBold"
-                            borderRadius={8}
-                            height={44}
-                            width={'46%'}
-                            style={{ borderColor: Colors.primary, borderWidth: 1 }}
-                            onPress={onClose}
-                        />
-                        <NMButton
-                            title="Save"
-                            textColor={Colors.white}
-                            fontSize={14}
-                            fontFamily="semiBold"
-                            borderRadius={8}
-                            height={44}
-                            width={'46%'}
-                            onPress={() => onSave(comment, rating)}
-                        />
-                    </View>
-                </View>
+                </ScrollView>
             </View>
         </Modal>
     );

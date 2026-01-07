@@ -14,7 +14,7 @@ import NMText from '../../../components/common/NMText';
 import NMButton from '../../../components/common/NMButton';
 import NMRadioButton from '../../../components/common/NMRadioButton';
 import NMTextInput from '../../../components/common/NMTextInput';
-import { Mail, Phone } from 'lucide-react-native';
+import { Mail, PhoneCall } from 'lucide-react-native';
 import { useForm } from '../../../hooks/useForm';
 import { apiRequest } from '../../../services/apiClient';
 import { showErrorToast, showSuccessToast } from '../../../utils/toastService';
@@ -129,14 +129,14 @@ const ForgotPasswordScreen: React.FC = () => {
                                 />
                             ) : (
                                 <NMTextInput
-                                    label="Phone"
+                                    label="Mobie Number"
                                     placeholder="123456789"
                                     value={values.phone}
                                     onChangeText={(text) => handleChange("phone", text)}
                                     keyboardType="phone-pad"
                                     inputType="text"
                                     error={errors.phone}
-                                    leftIcon={<Phone size={18} color={Colors.textLight} />}
+                                    leftIcon={<PhoneCall size={18} color={Colors.textLight} />}
                                 />
                             )}
 

@@ -107,7 +107,7 @@ const NMTextInput: React.FC<NMTextInputProps> = ({
                     {inputType === 'password' && showPasswordToggle && (
                         <TouchableOpacity onPress={togglePasswordVisibility}>
                             {isPasswordVisible ? (
-                                <EyeOff size={20} color={Colors.gray} />
+                                <Eye size={20} color={Colors.gray} />
                             ) : (
                                 <Eye size={20} color={Colors.gray} />
                             )}

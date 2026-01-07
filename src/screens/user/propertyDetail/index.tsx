@@ -189,7 +189,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
         <NMSafeAreaWrapper statusBarColor={Colors.black} statusBarStyle="light-content">
             <View style={styles.container}>
 
-                <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+                <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
                     <View style={styles.imageContainer}>
                         <Image
                             source={{ uri: detailData?.media?.[0]?.media_url }}

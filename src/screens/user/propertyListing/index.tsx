@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import { Colors } from '../../../theme/colors';
 import NMText from '../../../components/common/NMText';
@@ -7,10 +7,11 @@ import NMButton from '../../../components/common/NMButton';
 import NMDropdown from '../../../components/common/NMDropdown';
 import { useNavigation } from '@react-navigation/native';
 import { apiRequest } from '../../../services/apiClient';
-import { showErrorToast } from '../../../utils/toastService';
+import { showErrorToast, showSuccessToast } from '../../../utils/toastService';
 import BidListModal from '../../../components/user/BidListModal';
 import LoaderModal from '../../../components/common/NMLoaderModal';
-import { ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft, Plus } from 'lucide-react-native';
+import FloatingChatButton from '../../../components/user/FloatingChatButton';
 
 type TabType = 'LISTING' | 'REQUESTS';
 type StatusType = 'Active' | 'Sold' | 'Deactive' | 'Pending' | 'Approved';
@@ -23,6 +24,11 @@ interface Property {
     date: string;
     price: string;
     status: StatusType;
+    property_category?: string;
+    property_type?: string;
+    created_at?: string;
+    is_active?: number;
+    media?: Array<{ media_url: string }>;
 }
 
 interface BookingRequest {
@@ -65,7 +71,6 @@ interface BidRequest {
 
 const PropertyListingScreen: React.FC = () => {
     const navigation = useNavigation();
-    const drawerNavigation = navigation.getParent('drawer') || navigation.getParent();
     const [activeTab, setActiveTab] = useState<TabType>('LISTING');
     const [status, setStatus] = useState('Sell');
     const [selectReq, setSelectReq] = useState('Booking');
@@ -98,7 +103,27 @@ const PropertyListingScreen: React.FC = () => {
 
             if (result) {
                 console.log("Properties List:", JSON.stringify(result.data));
-                setProperties(result.data);
+                // Handle both array and object with data property
+                let propertiesData = Array.isArray(result.data)
+                    ? result.data
+                    : (result.data?.data || result.data || []);
+
+                // Filter by property_category based on status selection
+                if (status === 'Rent' || status === 'Stay') {
+                    propertiesData = propertiesData.filter((property: any) =>
+                        property.property_category &&
+                        property.property_category.toLowerCase() === status.toLowerCase()
+                    );
+                } else if (status === 'Sell') {
+                    // For Sell, show properties that are not Rent or Stay (or all if no category)
+                    propertiesData = propertiesData.filter((property: any) =>
+                        !property.property_category ||
+                        (property.property_category.toLowerCase() !== 'rent' &&
+                            property.property_category.toLowerCase() !== 'stay')
+                    );
+                }
+
+                setProperties(propertiesData);
             }
 
             if (error) {
@@ -117,6 +142,12 @@ const PropertyListingScreen: React.FC = () => {
     useEffect(() => {
         getProperties();
     }, []);
+
+    useEffect(() => {
+        if (activeTab === 'LISTING') {
+            getProperties();
+        }
+    }, [status]);
 
     useEffect(() => {
         if (activeTab === 'REQUESTS') {
@@ -187,73 +218,115 @@ const PropertyListingScreen: React.FC = () => {
         }
     };
 
+    const deleteProperty = async (propertyId: number) => {
+        try {
+            setLoadingRequests(true);
+            const { result, error } = await apiRequest({
+                endpoint: `v1/properties/${propertyId}`,
+                method: 'DELETE',
+            });
 
-    const SellListing = () => (
-        <View>
-            {properties?.data?.map((property) => (
-                <TouchableOpacity key={property.id} style={styles.sellContainer} activeOpacity={.8} onPress={() => navigation.navigate('AddProperties' as never, { property: property } as never)}>
-                    <View style={styles.inRow}>
-                        <Image source={{ uri: property?.media[0]?.media_url }} style={styles.sellImage} />
-                        <View style={{ marginLeft: 12, width: '52%' }}>
-                            <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary} numberOfLines={1} ellipsizeMode="tail">
-                                {property.title}
-                            </NMText>
+            if (result) {
+                console.log("Property deleted:", JSON.stringify(result));
+                showSuccessToast('Property deleted successfully');
+                getProperties();
+            }
 
+            if (error) {
+                console.log("Error:", error);
+                showErrorToast(`Delete Property Error: ${error}`);
+            }
+
+        } catch (err) {
+            console.error("Unexpected Error:", err);
+            showErrorToast(`Unexpected Error: ${err}`);
+        } finally {
+            setLoadingRequests(false);
+        }
+    };
+
+
+    const SellListing = () => {
+        const propertiesList = Array.isArray(properties)
+            ? properties
+            : (Array.isArray(properties?.data) ? properties.data : []);
+
+        if (propertiesList.length === 0) {
+            return (
+                <View style={styles.emptyContainer}>
+                    <NMText fontSize={16} fontFamily="regular" color={Colors.textSecondary}>
+                        No properties found
+                    </NMText>
+                </View>
+            );
+        }
+
+        return (
+            <View>
+                {propertiesList.map((property) => (
+                    <TouchableOpacity key={property.id} style={styles.sellContainer} activeOpacity={.8} onPress={() => navigation.navigate('AddProperties' as never, { property: property } as never)}>
+                        <View style={styles.inRow}>
+                            <Image source={{ uri: property?.media[0]?.media_url }} style={styles.sellImage} />
+                            <View style={{ marginLeft: 12, width: '52%' }}>
+                                <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary} numberOfLines={1} ellipsizeMode="tail">
+                                    {property.title}
+                                </NMText>
+
+                                <NMText
+                                    fontSize={14}
+                                    fontFamily="regular"
+                                    color={Colors.textSecondary}
+                                    style={{ marginVertical: 4 }}
+                                >
+                                    Type:{' '}
+                                    <NMText fontSize={14} fontFamily="semiBold" color={Colors.textSecondary}>
+                                        {property.property_type}
+                                    </NMText>
+                                </NMText>
+
+                                <NMText fontSize={14} fontFamily="regular" color={Colors.textSecondary}>
+                                    Date:{' '}
+                                    <NMText fontSize={14} fontFamily="semiBold" color={Colors.textSecondary}>
+                                        {new Date(property.created_at).toLocaleDateString("en-GB")}
+                                    </NMText>
+                                </NMText>
+
+                                <NMText fontSize={16} fontFamily="semiBold" color={Colors.primary} style={{ marginTop: 4 }}>
+                                    SAR {property.price}
+                                </NMText>
+                            </View>
+                        </View>
+
+                        <View
+                            style={[
+                                styles.statusView,
+                                {
+                                    backgroundColor:
+                                        property.is_active
+                                            ? Colors.statusBg
+                                            : property.is_active == 2
+                                                ? Colors.statusSoldBg
+                                                : Colors.statusPendingBg,
+                                },
+                            ]}
+                        >
                             <NMText
-                                fontSize={14}
+                                fontSize={12}
                                 fontFamily="regular"
-                                color={Colors.textSecondary}
-                                style={{ marginVertical: 4 }}
+                                color={
+                                    property.is_active
+                                        ? Colors.statusText
+                                        : property.is_active == 2
+                                            ? Colors.statusSoldText
+                                            : Colors.statusPendingText
+                                }
                             >
-                                Type:{' '}
-                                <NMText fontSize={14} fontFamily="semiBold" color={Colors.textSecondary}>
-                                    {property.property_type}
-                                </NMText>
-                            </NMText>
-
-                            <NMText fontSize={14} fontFamily="regular" color={Colors.textSecondary}>
-                                Date:{' '}
-                                <NMText fontSize={14} fontFamily="semiBold" color={Colors.textSecondary}>
-                                    {new Date(property.created_at).toLocaleDateString("en-GB")}
-                                </NMText>
-                            </NMText>
-
-                            <NMText fontSize={16} fontFamily="semiBold" color={Colors.primary} style={{ marginTop: 4 }}>
-                                SAR {property.price}
+                                {property.is_active ? 'Active' : property.is_active == 2 ? 'Sold' : 'Deactive'}
                             </NMText>
                         </View>
-                    </View>
 
-                    <View
-                        style={[
-                            styles.statusView,
-                            {
-                                backgroundColor:
-                                    property.is_active
-                                        ? Colors.statusBg
-                                        : property.is_active == 2
-                                            ? Colors.statusSoldBg
-                                            : Colors.statusPendingBg,
-                            },
-                        ]}
-                    >
-                        <NMText
-                            fontSize={12}
-                            fontFamily="regular"
-                            color={
-                                property.is_active
-                                    ? Colors.statusText
-                                    : property.is_active == 2
-                                        ? Colors.statusSoldText
-                                        : Colors.statusPendingText
-                            }
-                        >
-                            {property.is_active ? 'Active' : property.is_active == 2 ? 'Sold' : 'Deactive'}
-                        </NMText>
-                    </View>
-
-                    <View style={styles.btnView}>
-                        {property.is_active && (
+                        <View style={styles.btnView}>
+                            {/* {property.is_active && (
                             <NMButton
                                 title="De-Active"
                                 textColor={Colors.statusPendingText}
@@ -274,8 +347,8 @@ const PropertyListingScreen: React.FC = () => {
                                 height={40}
                                 style={{ borderWidth: 1, borderColor: Colors.statusText }}
                             />
-                        )}
-                        {(property.is_active != 2 && status === 'Sell') && (
+                        )} */}
+                            {/* {(property.is_active != 2 && status === 'Sell') && (
                             <NMButton
                                 title="Sold"
                                 textColor={Colors.statusSoldText}
@@ -285,32 +358,35 @@ const PropertyListingScreen: React.FC = () => {
                                 height={40}
                                 style={{ borderWidth: 1, borderColor: Colors.statusSoldText }}
                             />
-                        )}
-                        <NMButton
-                            title="Edit"
-                            textColor={Colors.primary}
-                            backgroundColor={Colors.white}
-                            borderRadius={8}
-                            width={property.is_active == 2 || status != 'Sell' ? '46%' : '32%'}
-                            height={40}
-                            style={{ borderWidth: 1, borderColor: Colors.primary }}
-                            onPress={() => navigation.navigate('AddProperties' as never, { property: property } as never)}
-                        />
-                    </View>
-                </TouchableOpacity>
-            ))}
-        </View>
-    );
+                        )} */}
+                            <NMButton
+                                title="Delete"
+                                textColor={Colors.statusSoldText}
+                                backgroundColor={Colors.white}
+                                borderRadius={8}
+                                width={'32%'}
+                                height={40}
+                                style={{ borderWidth: 1, borderColor: Colors.statusSoldText }}
+                                onPress={() => deleteProperty(property.id)}
+                            />
+                            <NMButton
+                                title="Edit"
+                                textColor={Colors.primary}
+                                backgroundColor={Colors.white}
+                                borderRadius={8}
+                                width={property.is_active == 2 || status != 'Sell' ? '46%' : '32%'}
+                                height={40}
+                                style={{ borderWidth: 1, borderColor: Colors.primary }}
+                                onPress={() => navigation.navigate('AddProperties' as never, { property: property } as never)}
+                            />
+                        </View>
+                    </TouchableOpacity>
+                ))}
+            </View>
+        );
+    };
 
     const RequestListing = () => {
-        if (loadingRequests) {
-            return (
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={Colors.primary} />
-                </View>
-            );
-        }
-
         if (selectReq === 'Booking') {
             if (bookingRequests.length === 0) {
                 return (
@@ -506,7 +582,7 @@ const PropertyListingScreen: React.FC = () => {
                             </TouchableOpacity>
                             <View style={styles.titleView}>
                                 <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary}>
-                                    Property listing
+                                    Property Listing
                                 </NMText>
                             </View>
                         </View>
@@ -557,7 +633,6 @@ const PropertyListingScreen: React.FC = () => {
                         />
                     )}
 
-                    {/* CONTENT */}
                     {activeTab === 'LISTING' ? <SellListing /> : null}
                     {activeTab === 'REQUESTS' ? <RequestListing /> : null}
                 </View>
@@ -573,6 +648,11 @@ const PropertyListingScreen: React.FC = () => {
                 onBidUpdate={fetchBidRequests}
             />
             <LoaderModal visible={loadingRequests} />
+            <FloatingChatButton
+                onPress={() => navigation.navigate('AddProperties' as never)}
+                icon={<Plus color={Colors.white} size={24} strokeWidth={2} />}
+                bottom={40}
+            />
         </NMSafeAreaWrapper>
     );
 };
