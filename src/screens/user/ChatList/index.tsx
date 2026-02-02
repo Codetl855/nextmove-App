@@ -1,11 +1,14 @@
 import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import { Colors } from '../../../theme/colors';
 import NMText from '../../../components/common/NMText';
 import ChatListCard from '../../../components/user/ChatListCard';
 import { chatService, type Conversation } from '../../../services/chatService';
 import LoaderModal from '../../../components/common/NMLoaderModal';
+import { getEcho } from '../../../utils/echo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ChatList: React.FC = ({ navigation }: any) => {
     // Get drawer navigation from parent
@@ -13,21 +16,95 @@ const ChatList: React.FC = ({ navigation }: any) => {
 
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [loading, setLoading] = useState(true);
+    const echoRef = useRef<any>(null);
+    const channelNameRef = useRef<string | null>(null);
+
+    const loadConversations = async () => {
+        try {
+            setLoading(true);
+            const data = await chatService.getConversations();
+            // Sort conversations by last message time (most recent first)
+            const sortedData = [...data].sort((a, b) => {
+                const timeA = a.last_message?.created_at || a.updated_at || '';
+                const timeB = b.last_message?.created_at || b.updated_at || '';
+                return new Date(timeB).getTime() - new Date(timeA).getTime();
+            });
+            setConversations(sortedData);
+        } catch (error: any) {
+            console.log("Failed to load conversations:", error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Refresh conversations when screen comes into focus
+    useFocusEffect(
+        useCallback(() => {
+            loadConversations();
+        }, [])
+    );
 
     useEffect(() => {
-        const loadConversations = async () => {
+        // Set up real-time listener for conversation updates
+        let echo: any = null;
+        let channelName: string | null = null;
+
+        const setupEcho = async () => {
             try {
-                setLoading(true);
-                const data = await chatService.getConversations();
-                setConversations(data);
-            } catch (error: any) {
-                console.log("Failed to load conversations:", error.message);
-            } finally {
-                setLoading(false);
+                const userInfo = await AsyncStorage.getItem('loginUser');
+                if (!userInfo) return;
+
+                const parsedUser = JSON.parse(userInfo);
+                const userId = parsedUser?.user?.id;
+                if (!userId) return;
+
+                echo = await getEcho();
+                channelName = `conversation-list.user.${userId}`;
+                echoRef.current = echo;
+                channelNameRef.current = channelName;
+
+                echo.private(channelName)
+                    .subscribed(() => console.log("📡 Subscribed to conversation list updates"))
+                    .listen(".conversation.updated", (updatedConversation: Conversation) => {
+                        console.log("📩 Conversation updated:", updatedConversation);
+                        setConversations(prev => {
+                            const exists = prev.find(c => c.id === updatedConversation.id);
+                            let updated;
+                            if (!exists) {
+                                updated = [updatedConversation, ...prev];
+                            } else {
+                                updated = prev.map(c => 
+                                    c.id === updatedConversation.id ? updatedConversation : c
+                                );
+                            }
+                            // Re-sort by last message time
+                            return updated.sort((a, b) => {
+                                const timeA = a.last_message?.created_at || a.updated_at || '';
+                                const timeB = b.last_message?.created_at || b.updated_at || '';
+                                return new Date(timeB).getTime() - new Date(timeA).getTime();
+                            });
+                        });
+                    });
+            } catch (error) {
+                console.log("Failed to setup echo listener:", error);
             }
         };
 
-        loadConversations();
+        setupEcho();
+
+        return () => {
+            // Cleanup Echo listener
+            if (echo && channelName) {
+                try {
+                    echo.leave(channelName);
+                    console.log("🧹 Left channel:", channelName);
+                } catch (error) {
+                    console.log("Error leaving channel:", error);
+                }
+            }
+            echoRef.current = null;
+            channelNameRef.current = null;
+        };
     }, []);
 
     return (

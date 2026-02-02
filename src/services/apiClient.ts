@@ -13,12 +13,18 @@ interface ApiCallParams {
 
 let logoutListener: (() => void) | null = null;
 
+let authToken: string | null = null;
+let tokenLoadTime: number = 0;
+const TOKEN_CACHE_DURATION = 60000;
+
 export const setLogoutListener = (listener: () => void) => {
     logoutListener = listener;
 };
 
 export const handleTokenExpiration = async () => {
     try {
+        authToken = null;
+        tokenLoadTime = 0;
         await AsyncStorage.removeItem('loginUser');
         if (logoutListener) logoutListener();
     } catch (err) {
@@ -28,6 +34,8 @@ export const handleTokenExpiration = async () => {
 
 export const saveLoginToken = async (token: string, userData?: any) => {
     try {
+        authToken = token;
+        tokenLoadTime = Date.now();
         await AsyncStorage.setItem(
             'loginUser',
             JSON.stringify({ token, ...userData })
@@ -47,13 +55,41 @@ export const getLoginUser = async () => {
     }
 };
 
+const getToken = async (forceRefresh: boolean = false): Promise<string | null> => {
+    const now = Date.now();
+    const cacheIsValid = authToken && (now - tokenLoadTime < TOKEN_CACHE_DURATION);
+
+    if (cacheIsValid && !forceRefresh) {
+        return authToken;
+    }
+
+    try {
+        const userData = await AsyncStorage.getItem('loginUser');
+        if (userData) {
+            const parsed = JSON.parse(userData);
+            authToken = parsed?.token || null;
+            tokenLoadTime = now;
+            return authToken;
+        }
+        authToken = null;
+        return null;
+    } catch (err) {
+        console.error('Failed to get token', err);
+        return authToken;
+    }
+};
+
+export const initializeAuth = async () => {
+    await getToken(true);
+};
+
 export const NO_TOKEN_REQUIRED: string[] = [
     'login',
     'register',
     'forgot-password',
+    'verification-notification',
 ];
 
-// Helper to check if an endpoint requires token
 const requiresToken = (url?: string) => {
     if (!url) return true;
     return !NO_TOKEN_REQUIRED.some((endpoint) => url.includes(endpoint));
@@ -61,24 +97,39 @@ const requiresToken = (url?: string) => {
 
 const api = axios.create({
     baseURL: BASE_URL,
-    // timeout: 15000,
 });
 
 api.interceptors.request.use(
     async (config) => {
         if (requiresToken(config.url)) {
-            const userData = await AsyncStorage.getItem('loginUser');
-            if (userData) {
-                const parsed = JSON.parse(userData);
-                const token = parsed?.token;
-                if (token) {
-                    config.headers.Authorization = `Bearer ${token}`;
-                }
+            const token = await getToken();
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
             }
         }
         return config;
     },
     (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config;
+
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            originalRequest._retry = true;
+
+            const token = await getToken(true);
+
+            if (token) {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                return api(originalRequest);
+            }
+        }
+
+        return Promise.reject(error);
+    }
 );
 
 export const apiRequest = async <T = any>({
@@ -92,8 +143,6 @@ export const apiRequest = async <T = any>({
     fieldErrors?: Record<string, string[]>;
     tokenExpired?: boolean;
 }> => {
-    console.log('API Request:', endpoint);
-
     try {
         const response = await api.request<T>({
             url: endpoint,
@@ -116,7 +165,6 @@ export const apiRequest = async <T = any>({
             };
         }
 
-        // Corrected: look inside error.response.data
         if (error.response?.data?.errors) {
             return {
                 error: error.response.data.message || 'Validation errors occurred.',

@@ -37,12 +37,12 @@ const CustomDrawer: React.FC<DrawerContentComponentProps> = (props) => {
     const menuItems: MenuItem[] = [
         { id: 1, label: 'Property Listing', icon: require('../../assets/icons/property.png'), route: 'PropertyListing' },
         { id: 2, label: 'History', icon: require('../../assets/icons/booking.png'), route: 'UserHistoryScreen' },
-        { id: 3, label: 'Booking Request', icon: require('../../assets/icons/booking.png'), route: 'BookingRequestsScreen' },
+        // { id: 3, label: 'Booking Request', icon: require('../../assets/icons/booking.png'), route: 'BookingRequestsScreen' },
         { id: 4, label: 'Favorite Properties', icon: require('../../assets/icons/favorite.png'), route: 'FavoriteProperties' },
         { id: 5, label: 'Saved Searches', icon: require('../../assets/icons/saved.png'), route: 'SavedSearch' },
         { id: 6, label: 'Reviews', icon: require('../../assets/icons/reviews.png'), route: 'ReviewsScreen' },
         { id: 7, label: 'Book Fun Activities', icon: require('../../assets/icons/bookFun.png'), route: 'BookFunActivities' },
-        { id: 8, label: 'Packages', icon: require('../../assets/icons/package.png'), route: 'PackagesScreen' },
+        // { id: 8, label: 'Packages', icon: require('../../assets/icons/package.png'), route: 'PackagesScreen' },
         { id: 9, label: 'Setting', icon: require('../../assets/icons/setting.png'), route: 'SettingScreen' },
     ];
 

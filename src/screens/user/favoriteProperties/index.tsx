@@ -19,7 +19,7 @@ const FavoriteProperties: React.FC = () => {
         try {
             setLoader(true);
             const { result, error } = await apiRequest({
-                endpoint: `v1/favourites`,
+                endpoint: `v1/favourites?page=1&per_page=1000`,
                 method: 'GET',
             });
 

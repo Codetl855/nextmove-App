@@ -4,7 +4,7 @@ import { Edit3Icon, Trash2Icon } from 'lucide-react-native';
 import NMText from '../../../components/common/NMText';
 import { Colors } from '../../../theme/colors';
 import { AuctionBid } from './types';
-import { formatDate } from './utils';
+import { formatDate, getStatusColors, formatStatus } from './utils';
 
 interface AuctionCardProps {
     bid: AuctionBid;
@@ -28,7 +28,8 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
     onBidAmountChange,
 }) => {
     const propertyImage = 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400';
-    const isEditing = editingBidId === bid.id;
+    const isEditing = editingBidId === bid?.id;
+    const statusColors = getStatusColors(bid?.status || '');
 
     return (
         <View style={styles.auctionCard}>
@@ -36,8 +37,14 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
                 <View style={styles.inRow}>
                     <Image source={{ uri: propertyImage }} style={styles.auctionPropertyImage} />
                     <View style={styles.auctionPropertyInfo}>
-                        <NMText fontSize={18} fontFamily="semiBold" color={Colors.textPrimary}>
-                            {bid.property.title}
+                        <NMText
+                            fontSize={18}
+                            fontFamily="semiBold"
+                            color={Colors.textPrimary}
+                            numberOfLines={2}
+                            ellipsizeMode="tail"
+                        >
+                            {bid?.property?.title}
                         </NMText>
 
                         <NMText
@@ -48,7 +55,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
                         >
                             Type:{' '}
                             <NMText fontSize={14} fontFamily="semiBold" color={Colors.textSecondary}>
-                                {bid.property.property_type}
+                                {bid?.property?.property_type}
                             </NMText>
                         </NMText>
 
@@ -60,20 +67,26 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
                         >
                             Location:{' '}
                             <NMText fontSize={14} fontFamily="semiBold" color={Colors.textSecondary}>
-                                {bid.property.address}
+                                {bid?.property?.address}
                             </NMText>
                         </NMText>
 
                         <NMText fontSize={16} fontFamily="semiBold" color={Colors.primary} style={styles.price}>
-                            {bid.property.price.toLocaleString()} SAR
+                            {bid?.property?.price?.toLocaleString()} SAR
                         </NMText>
                     </View>
+                </View>
+
+                <View style={[styles.statusBadge, { backgroundColor: statusColors.bg }]}>
+                    <NMText fontSize={12} fontFamily="semiBold" color={statusColors.text}>
+                        {formatStatus(bid?.status || '')}
+                    </NMText>
                 </View>
 
                 <View style={styles.actionButtonsContainer}>
                     <TouchableOpacity
                         style={styles.editButton}
-                        onPress={() => onEdit(bid.id, bid.amount)}
+                        onPress={() => onEdit(bid?.id, bid?.amount)}
                         disabled={editingBidId !== null}
                     >
                         <Edit3Icon color={Colors.primary} size={18} strokeWidth={2} />
@@ -81,7 +94,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
 
                     <TouchableOpacity
                         style={[styles.editButton, styles.deleteButton]}
-                        onPress={() => onDelete(bid.id)}
+                        onPress={() => onDelete(bid?.id)}
                     >
                         <Trash2Icon color={Colors.error} size={18} strokeWidth={2} />
                     </TouchableOpacity>
@@ -95,7 +108,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
                     Bid Date
                 </NMText>
                 <NMText fontSize={14} fontFamily="semiBold" color={Colors.textPrimary}>
-                    {formatDate(bid.created_at)}
+                    {formatDate(bid?.created_at)}
                 </NMText>
             </View>
 
@@ -126,7 +139,7 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={[styles.bidActionButton, styles.acceptButton]}
-                            onPress={() => onAcceptBid(bid.id)}
+                            onPress={() => onAcceptBid(bid?.id)}
                         >
                             <NMText fontSize={16} fontFamily="semiBold" color={Colors.white}>
                                 ✓
@@ -135,16 +148,11 @@ const AuctionCard: React.FC<AuctionCardProps> = ({
                     </View>
                 ) : (
                     <NMText fontSize={14} fontFamily="semiBold" color={Colors.textPrimary}>
-                        {bid.amount.toLocaleString()} SAR
+                        {bid?.amount?.toLocaleString()} SAR
                     </NMText>
                 )}
             </View>
 
-            <View style={styles.statusBadge}>
-                <NMText fontSize={12} fontFamily="semiBold" color={Colors.primary}>
-                    {bid.status.toUpperCase()}
-                </NMText>
-            </View>
         </View>
     );
 };
@@ -176,6 +184,7 @@ const styles = StyleSheet.create({
     auctionPropertyInfo: {
         flex: 1,
         marginLeft: 12,
+        minWidth: 0,
     },
     propertyDetail: {
         marginTop: 4,
@@ -242,10 +251,8 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.statusText,
     },
     statusBadge: {
-        position: 'absolute',
-        top: 12,
-        right: 12,
-        backgroundColor: Colors.whitEC,
+        alignSelf: 'flex-start',
+        flexShrink: 0,
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 6,
@@ -253,6 +260,7 @@ const styles = StyleSheet.create({
 });
 
 export default React.memo(AuctionCard);
+
 
 
 

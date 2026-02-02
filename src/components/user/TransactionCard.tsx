@@ -50,10 +50,10 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ data, onPress }) => {
         }
     };
 
-    const formatAmount = (amount?: string, currency?: string) => {
-        if (!amount || !currency) return 'N/A';
+    const formatAmount = (amount?: string | number, currency?: string) => {
+        if (amount === undefined || amount === null || !currency) return 'N/A';
         try {
-            const numAmount = parseFloat(amount);
+            const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
             if (isNaN(numAmount)) {
                 return `${currency} 0.00`;
             }
@@ -138,7 +138,19 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ data, onPress }) => {
     const formatStatus = (status?: string) => {
         if (!status) return 'Unknown';
         try {
-            return status.charAt(0).toUpperCase() + status.slice(1);
+            const statusLower = status.toLowerCase();
+            if (statusLower === 'succeeded') {
+                return 'Completed';
+            } else if (statusLower === 'pending_payment') {
+                return 'Pending Payment';
+            } else if (statusLower === 'pending_approval') {
+                return 'Pending Approval';
+            }
+            // For other statuses, capitalize first letter and replace underscores with spaces
+            return status
+                .split('_')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ');
         } catch (error) {
             return status;
         }
@@ -166,7 +178,10 @@ const TransactionCard: React.FC<TransactionCardProps> = ({ data, onPress }) => {
                         {formatDate(data.created_at)}
                     </NMText>
                     <NMText fontSize={14} fontFamily='semiBold' color={Colors.primary}>
-                        {formatAmount((data.amount / 100), data.currency)}
+                        {data.amount && data.currency ? formatAmount(
+                            typeof data.amount === 'string' ? parseFloat(data.amount) / 100 : (data.amount as number) / 100,
+                            data.currency
+                        ) : 'N/A'}
                     </NMText>
                 </View>
             </View>

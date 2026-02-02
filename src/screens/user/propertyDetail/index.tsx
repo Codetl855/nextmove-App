@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Image, ScrollView, StyleSheet, TouchableOpacity, Linking } from 'react-native';
 import { ChevronLeft, Bookmark, Heart, Share2, MapPin, PhoneCallIcon, Mail, ChevronRight, PlusIcon } from 'lucide-react-native';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import { Colors } from '../../../theme/colors';
@@ -15,6 +15,7 @@ import { apiRequest } from '../../../services/apiClient';
 import { showErrorToast, showSuccessToast } from '../../../utils/toastService';
 import LoaderModal from '../../../components/common/NMLoaderModal';
 import FloatingChatButton from '../../../components/user/FloatingChatButton';
+import { chatService } from '../../../services/chatService';
 
 const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
     const { SelectedCategory, property } = route.params;
@@ -28,6 +29,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
     const [detailData, setDetailData] = useState<any>({});
     const [bidAmount, setBidAmount] = useState('');
     const [error, setError] = useState('');
+    const [chatLoading, setChatLoading] = useState(false);
     const propertyImages = [
         'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800',
         'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800',
@@ -39,7 +41,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
         try {
             setLoader(true);
             const { result, error } = await apiRequest({
-                endpoint: `v1/get-property/${property.id}`,
+                endpoint: `v1/mobile/get-property/${property.id || property.property_id}`,
                 method: 'GET',
             });
 
@@ -67,7 +69,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
             setLoader(true);
 
             const { result, error } = await apiRequest({
-                endpoint: `v1/favourites/${property.id}/toggle`,
+                endpoint: `v1/favourites/${property.id || property.property_id}/toggle`,
                 method: 'POST',
             });
 
@@ -97,7 +99,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
 
     const handleSubmission = async (reviewText: string, rating: number) => {
         const newReview = {
-            property_id: property.id,
+            property_id: property.id || property.property_id,
             review_text: reviewText,
             rating: rating,
         };
@@ -158,7 +160,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
                 method: 'POST',
                 data: {
                     amount: amount,
-                    property_id: property.id,
+                    property_id: property.id || property.property_id,
                 },
             });
 
@@ -184,6 +186,87 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
         }
     };
 
+    const onEmailPress = () => {
+        const ownerEmail = detailData?.owner?.email;
+        if (ownerEmail) {
+            const mailtoUrl = `mailto:${ownerEmail}`;
+            Linking.openURL(mailtoUrl).catch((err) => {
+                console.error('Failed to open email client:', err);
+                showErrorToast('Failed to open email client');
+            });
+        } else {
+            showErrorToast('Owner email not available');
+        }
+    };
+
+    const onPhonePress = () => {
+        const ownerPhone = detailData?.owner?.mobile;
+        if (ownerPhone) {
+            const telUrl = `tel:${ownerPhone}`;
+            Linking.openURL(telUrl).catch((err) => {
+                console.error('Failed to open phone dialer:', err);
+                showErrorToast('Failed to open phone dialer');
+            });
+        } else {
+            showErrorToast('Owner phone number not available');
+        }
+    };
+
+    const handleChatPress = async () => {
+        if (chatLoading) return; // Prevent multiple clicks
+
+        try {
+            setChatLoading(true);
+            const ownerId = detailData?.owner?.id;
+            if (!ownerId) {
+                showErrorToast('Owner information not available');
+                return;
+            }
+
+            // Check if conversation already exists
+            const conversations = await chatService.getConversations();
+            const existingConversation = conversations.find(
+                (conv: any) => conv.user_id === ownerId || conv.participants?.some((p: any) => p.id === ownerId)
+            );
+
+            if (existingConversation) {
+                // Navigate to existing conversation
+                navigation.navigate('ChatScreen', {
+                    property: {
+                        conversation_id: existingConversation.id,
+                        owner_id: ownerId,
+                        otherItem: {
+                            name: detailData?.owner?.name || `${detailData?.owner?.first_name || ''} ${detailData?.owner?.last_name || ''}`.trim(),
+                            ...detailData?.owner
+                        }
+                    }
+                });
+            } else {
+                // Create new conversation and navigate
+                try {
+                    const newConversation = await chatService.createConversation(ownerId);
+                    navigation.navigate('ChatScreen', {
+                        property: {
+                            conversation_id: newConversation.id,
+                            owner_id: ownerId,
+                            otherItem: {
+                                name: detailData?.owner?.name || `${detailData?.owner?.first_name || ''} ${detailData?.owner?.last_name || ''}`.trim(),
+                                ...detailData?.owner
+                            }
+                        }
+                    });
+                } catch (error: any) {
+                    console.error('Failed to create conversation:', error);
+                    showErrorToast(error.message || 'Failed to start conversation');
+                }
+            }
+        } catch (error: any) {
+            console.error('Failed to open chat:', error);
+            showErrorToast(error.message || 'Failed to open chat');
+        } finally {
+            setChatLoading(false);
+        }
+    };
 
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.black} statusBarStyle="light-content">
@@ -202,9 +285,9 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
                                 <ChevronLeft color="#000" size={24} strokeWidth={2} />
                             </TouchableOpacity>
                             <View style={styles.rightIcons}>
-                                <TouchableOpacity style={styles.iconButton}>
+                                {/* <TouchableOpacity style={styles.iconButton}>
                                     <Bookmark color="#000" size={20} strokeWidth={2} />
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
                                 <TouchableOpacity style={styles.iconButton} onPress={() => makeFavorite()}>
                                     <Heart
                                         color={isFavourite ? Colors.primary : '#000'}
@@ -236,9 +319,15 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
                                 </NMText>
                                 <View style={styles.inRow}>
                                     <NMText fontSize={16} fontFamily='bold' color={Colors.primary}>
-                                        SAR {detailData?.price}
+                                        SAR {detailData?.price} {' '}
                                     </NMText>
-                                    <NMText fontSize={12} fontFamily='medium' color={Colors.primary}>/Month</NMText>
+                                    <NMText fontSize={12} fontFamily="medium" color={Colors.primary}>
+                                        {detailData?.property_category == 'Rent'
+                                            ? '/Month'
+                                            : detailData?.property_category == 'Sell'
+                                                ? ''
+                                                : '/Day'}
+                                    </NMText>
                                 </View>
                             </View>
                             <View style={[styles.inRow, { marginTop: 6 }]}>
@@ -258,28 +347,28 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
                             <View style={styles.feature}>
                                 <Image source={require('../../../assets/icons/sqf.png')} style={styles.featureIcon} />
                                 <NMText fontSize={14} fontFamily='regular' color={Colors.textPrimary}>
-                                    {detailData?.size}sqf
+                                    {detailData?.size} Sqft
                                 </NMText>
                             </View>
 
                             <View style={styles.feature}>
                                 <Image source={require('../../../assets/icons/bed.png')} style={styles.featureIcon} />
                                 <NMText fontSize={14} fontFamily='regular' color={Colors.textPrimary}>
-                                    {detailData?.bed || 0} Beds
+                                    {detailData?.bedrooms || 0} Beds
                                 </NMText>
                             </View>
 
                             <View style={styles.feature}>
                                 <Image source={require('../../../assets/icons/bath.png')} style={styles.featureIcon} />
                                 <NMText fontSize={14} fontFamily='regular' color={Colors.textPrimary}>
-                                    {detailData?.bath || 0} Baths
+                                    {detailData?.bathrooms || 0} Baths
                                 </NMText>
                             </View>
 
                             <View style={styles.feature}>
-                                <Image source={require('../../../assets/icons/kitchen.png')} style={styles.featureIcon} />
+                                <Image source={require('../../../assets/icons/sqf.png')} style={styles.featureIcon} />
                                 <NMText fontSize={14} fontFamily='regular' color={Colors.textPrimary}>
-                                    {detailData?.kitchen || 0} Kitchen
+                                    {detailData?.garages || 0} Garages
                                 </NMText>
                             </View>
                         </View>
@@ -325,7 +414,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
                             </View>
                         </View> */}
 
-                        {SelectedCategory == 'BUY' ? (
+                        {detailData?.property_category == 'Sell' ? (
                             <View style={styles.AuctionBox}>
                                 <NMText fontSize={18} fontFamily='medium' color={Colors.textPrimary}>
                                     Auction
@@ -357,23 +446,25 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
                                 </View>
                             </View>) : (
                             <View style={styles.contentContainer}>
-                                <View style={[styles.inRow, { justifyContent: 'space-between' }]}>
+                                <View style={[styles.inRow, { justifyContent: 'space-between', alignItems: 'center' }]}>
                                     <NMText fontSize={18} fontFamily='medium' color={Colors.textPrimary}>
                                         Guest Reviews
                                     </NMText>
-                                    {detailData?.canAddReview && (<NMButton
-                                        title='Add Review'
-                                        leftIcon={<PlusIcon color={Colors.black} size={16} strokeWidth={2} fill={Colors.black} />}
-                                        width={'36%'}
-                                        height={46}
-                                        borderRadius={8}
-                                        backgroundColor='transparent'
-                                        textColor={Colors.black}
-                                        fontFamily='medium'
-                                        fontSize={14}
-                                        style={{ borderWidth: 1, borderColor: Colors.black }}
-                                        onPress={() => setCommentSheetVisible(true)}
-                                    />)}
+                                    {detailData?.canAddReview && (
+                                        <NMButton
+                                            title='Add Review'
+                                            leftIcon={<PlusIcon color={Colors.black} size={16} strokeWidth={2} fill={Colors.black} />}
+                                            width={'36%'}
+                                            height={46}
+                                            borderRadius={8}
+                                            backgroundColor='transparent'
+                                            textColor={Colors.black}
+                                            fontFamily='medium'
+                                            fontSize={14}
+                                            style={{ borderWidth: 1, borderColor: Colors.black }}
+                                            onPress={() => setCommentSheetVisible(true)}
+                                        />
+                                    )}
                                 </View>
                                 <View style={{ height: 15 }} />
 
@@ -414,20 +505,22 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
                         textColor={Colors.primary}
                         borderRadius={8}
                         height={44}
-                        width={SelectedCategory !== 'BUY' ? '28%' : '46%'}
+                        width={detailData?.property_category !== 'Sell' ? '28%' : '46%'}
                         style={{ borderColor: Colors.primary, borderWidth: 1 }}
+                        onPress={() => onEmailPress()}
                     />
                     <NMButton
                         title='Call'
-                        leftIcon={<PhoneCallIcon size={20} color={SelectedCategory !== 'BUY' ? Colors.primary : Colors.white} />}
-                        backgroundColor={SelectedCategory !== 'BUY' ? Colors.white : Colors.primary}
-                        textColor={SelectedCategory !== 'BUY' ? Colors.primary : Colors.white}
+                        leftIcon={<PhoneCallIcon size={20} color={detailData?.property_category !== 'Sell' ? Colors.primary : Colors.white} />}
+                        backgroundColor={detailData?.property_category !== 'Sell' ? Colors.white : Colors.primary}
+                        textColor={detailData?.property_category !== 'Sell' ? Colors.primary : Colors.white}
                         borderRadius={8}
                         height={44}
-                        width={SelectedCategory !== 'BUY' ? '28%' : '46%'}
+                        width={detailData?.property_category !== 'Sell' ? '28%' : '46%'}
                         style={{ borderColor: Colors.primary, borderWidth: 1 }}
+                        onPress={() => onPhonePress()}
                     />
-                    {SelectedCategory !== 'BUY' && (
+                    {detailData?.property_category !== 'Sell' && (
                         <NMButton
                             title='Book Now'
                             backgroundColor={Colors.primary}
@@ -444,7 +537,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
                 detailData={detailData}
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
-                showTabINBuy={SelectedCategory == 'BUY'}
+                showTabINBuy={detailData?.property_category == 'Sell'}
             />
             <BookKnowModal
                 propertyDetails={detailData}
@@ -453,8 +546,7 @@ const PropertyDetailScreen: React.FC = ({ navigation, route }: any) => {
             />
             <FloatingChatButton
                 navigation={navigation}
-                screenName="ChatScreen"
-                params={{ property: detailData }}
+                onPress={handleChatPress}
             />
 
             <LoaderModal visible={loader} />
@@ -526,7 +618,7 @@ const styles = StyleSheet.create({
         height: 100,
     },
     adjuestTitle: {
-        width: '65%',
+        width: '60%',
         lineHeight: 24,
     },
     featuresContainer: {

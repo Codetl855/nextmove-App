@@ -21,14 +21,29 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking }) => {
     return (
         <TouchableOpacity
             style={styles.propertyCard}
+            onPress={() => navigation.navigate('PropertyDetailScreen', { property: booking })}
         // onPress={() => navigation.navigate('BookingRequestStatusDetail' as never)}
         >
             <View style={styles.inRow}>
                 <Image source={{ uri: propertyImage }} style={styles.propertyImage} />
                 <View style={styles.propertyInfo}>
-                    <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-                        {booking.property_title}
-                    </NMText>
+                    <View style={styles.titleRow}>
+                        <NMText
+                            fontSize={16}
+                            fontFamily="semiBold"
+                            color={Colors.textPrimary}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                            style={styles.propertyTitle}
+                        >
+                            {booking.property_title}
+                        </NMText>
+                        <View style={[styles.statusView, { backgroundColor: statusColors.bg }]}>
+                            <NMText fontSize={12} fontFamily="regular" color={statusColors.text}>
+                                {formatStatus(booking.status)}
+                            </NMText>
+                        </View>
+                    </View>
 
                     <NMText
                         fontSize={14}
@@ -52,11 +67,6 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking }) => {
                     <NMText fontSize={16} fontFamily="semiBold" color={Colors.primary} style={styles.price}>
                         {price.toLocaleString()} SAR
                     </NMText>
-                    <View style={[styles.statusView, { backgroundColor: statusColors.bg }]}>
-                        <NMText fontSize={12} fontFamily="regular" color={statusColors.text}>
-                            {formatStatus(booking.status)}
-                        </NMText>
-                    </View>
                 </View>
             </View>
         </TouchableOpacity>
@@ -84,6 +94,17 @@ const styles = StyleSheet.create({
     propertyInfo: {
         marginLeft: 12,
         flex: 1,
+        minWidth: 0,
+    },
+    titleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 8,
+    },
+    propertyTitle: {
+        flex: 1,
+        minWidth: 0,
     },
     propertyDetail: {
         marginVertical: 4,
@@ -92,12 +113,7 @@ const styles = StyleSheet.create({
         marginTop: 4,
     },
     statusView: {
-        // position: 'absolute',
-        // top: '50%',
-        // right: 14,
-        width: 120,
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignSelf: 'flex-start',
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 4,
@@ -105,6 +121,7 @@ const styles = StyleSheet.create({
 });
 
 export default React.memo(BookingCard);
+
 
 
 

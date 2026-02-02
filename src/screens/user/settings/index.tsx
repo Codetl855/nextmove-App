@@ -64,8 +64,8 @@ const SettingScreen: React.FC = ({ navigation }: any) => {
                 </View>
                 <View style={{ height: 20 }} />
                 <SettingItem icon={require('../../../assets/icons/privacypolicy.png')} title="Privacy Policy" onPress={() => navigation.navigate("PrivacyPolicyScreen")} />
-                <SettingItem icon={require('../../../assets/icons/termsCondition.png')} title="Terms & Condition" />
-                <SettingItem icon={require('../../../assets/icons/lock.png')} title="Reset Password" onPress={() => navigation.navigate("ResetPasswordScreen")} />
+                {/* <SettingItem icon={require('../../../assets/icons/termsCondition.png')} title="Terms & Condition" />
+                <SettingItem icon={require('../../../assets/icons/lock.png')} title="Reset Password" onPress={() => navigation.navigate("ResetPasswordScreen")} /> */}
 
                 {/* <SettingToggleItem
                     icon={require('../../../assets/icons/multiFactor.png')}

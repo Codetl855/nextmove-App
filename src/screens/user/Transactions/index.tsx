@@ -1,5 +1,5 @@
 import { Image, ScrollView, StyleSheet, View, TouchableOpacity } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import NMTextInput from '../../../components/common/NMTextInput';
 import { Colors } from '../../../theme/colors';
@@ -7,7 +7,7 @@ import NMText from '../../../components/common/NMText';
 import TransactionCard from '../../../components/user/TransactionCard';
 import { apiRequest } from '../../../services/apiClient';
 import LoaderModal from '../../../components/common/NMLoaderModal';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import InvoiceDetailsModal from '../../../components/user/InvoiceDetailsModal';
 import { showWarningToast } from '../../../utils/toastService';
 
@@ -42,7 +42,7 @@ const Transactions: React.FC = () => {
         try {
             setIsLoading(true);
             const { result, error } = await apiRequest({
-                endpoint: 'v1/transactions/properties',
+                endpoint: 'v1/transactions/properties?page=1&per_page=1000',
                 method: 'GET',
             });
             if (error) {
@@ -66,9 +66,12 @@ const Transactions: React.FC = () => {
         }
     };
 
-    useEffect(() => {
-        getTransactions();
-    }, []);
+    // Use focus effect to refresh data when screen comes into focus
+    useFocusEffect(
+        useCallback(() => {
+            getTransactions();
+        }, [])
+    );
 
     const navigation = useNavigation();
     const drawerNavigation = navigation.getParent('drawer') || navigation.getParent();
@@ -137,10 +140,10 @@ const Transactions: React.FC = () => {
                                     key={transaction.booking_id || `transaction-${index}`}
                                     data={transaction}
                                     onPress={() => {
-                                        if (transaction.booking_id && transaction?.status == "succeeded") {
+                                        if (transaction.booking_id && transaction?.status?.toLowerCase() === "succeeded") {
                                             setSelectedInvoiceId(transaction.booking_id);
                                             setIsInvoiceModalVisible(true);
-                                        } else if (transaction.booking_id && transaction?.status == "pending_approval") {
+                                        } else if (transaction.booking_id && transaction?.status?.toLowerCase() === "pending_approval") {
                                             showWarningToast("Your transaction is pending approval. Please wait for the approval to complete.");
                                         }
                                     }}

@@ -11,6 +11,7 @@ interface BlogItem {
     title?: string;
     created_at?: string;
     category?: string;
+    status?: string;
 }
 
 interface Props {
@@ -18,6 +19,7 @@ interface Props {
 }
 
 const BlogListCard: React.FC<Props> = ({ item }) => {
+    if (item?.status !== 'published') return null;
     const navigation = useNavigation<any>();
 
     const formatDate = (isoDate?: string) => {
@@ -53,14 +55,14 @@ const BlogListCard: React.FC<Props> = ({ item }) => {
                         </NMText>
                     </View>
 
-                    <View style={styles.line} />
+                    {/* <View style={styles.line} />
 
                     <View style={styles.inRow}>
                         <Clock size={16} color={Colors.primary} />
                         <NMText fontSize={12} fontFamily="regular" color={Colors.textLight}>
                             5 Min Read
                         </NMText>
-                    </View>
+                    </View> */}
                 </View>
 
                 <View style={styles.tagView}>

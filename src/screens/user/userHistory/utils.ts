@@ -12,7 +12,7 @@ export const formatDate = (dateString: string): string => {
 export const getStatusColors = (status: string): { bg: string; text: string } => {
     const normalizedStatus = status.toLowerCase();
     
-    if (normalizedStatus === 'confirmed' || normalizedStatus === 'completed' || normalizedStatus === 'approved') {
+    if (normalizedStatus === 'confirmed' || normalizedStatus === 'completed' || normalizedStatus === 'approved' || normalizedStatus === 'active') {
         return {
             bg: Colors.statusBg,
             text: Colors.statusText,
@@ -39,6 +39,7 @@ export const formatStatus = (status: string): string => {
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
 };
+
 
 
 

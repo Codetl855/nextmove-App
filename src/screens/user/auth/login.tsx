@@ -21,12 +21,14 @@ import { validatePassword } from '../../../utils/passwordValidation';
 import { apiRequest } from '../../../services/apiClient';
 import { showErrorToast, showSuccessToast } from '../../../utils/toastService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import EmailVerificationModal from '../../../components/user/EmailVerificationModal';
 
 const LoginScreen: React.FC = () => {
     const navigation = useNavigation();
     const [selectedOption, setSelectedOption] = useState<'email' | 'mobile'>('email');
     const [loading, setLoading] = useState(false);
     const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+    const [showEmailVerificationModal, setShowEmailVerificationModal] = useState(false);
     const { values, errors, handleChange, validate } = useForm({
         email: "",
         mobile: "",
@@ -56,13 +58,26 @@ const LoginScreen: React.FC = () => {
         try {
             setLoading(true);
 
-            const { result, error } = await apiRequest({
+            const { result, error, fieldErrors } = await apiRequest({
                 endpoint: "v1/mobile/login",
                 method: "POST",
                 data: payload,
             });
 
             if (error) {
+                // Check if error is "Email not verified"
+                const isEmailNotVerified = 
+                    error.toLowerCase().includes('email not verified') ||
+                    fieldErrors?.email?.some((msg: string) => 
+                        msg.toLowerCase().includes('email not verified')
+                    );
+
+                if (isEmailNotVerified && selectedOption === 'email') {
+                    // Show email verification modal instead of error toast
+                    setShowEmailVerificationModal(true);
+                    return;
+                }
+
                 showErrorToast(error);
                 return;
             }
@@ -297,6 +312,12 @@ const LoginScreen: React.FC = () => {
                     />
                 </ScrollView>
             </KeyboardAvoidingView>
+
+            <EmailVerificationModal
+                visible={showEmailVerificationModal}
+                onClose={() => setShowEmailVerificationModal(false)}
+                email={selectedOption === 'email' ? values.email : undefined}
+            />
         </NMSafeAreaWrapper>
     );
 };

@@ -4,6 +4,7 @@ import {
     View,
     TouchableOpacity,
     StyleSheet,
+    ScrollView,
 } from 'react-native';
 import { X, Check } from 'lucide-react-native';
 import NMText from '../common/NMText';
@@ -26,16 +27,16 @@ const PropertyDescriptionModal: React.FC<PropertyDescriptionModalProps> = ({
 
     const renderPropertyDetails = () => (
         <View style={styles.tabContent}>
-            <DetailRow label="ID" value="N/A" bgColor={Colors.background} />
-            <DetailRow label="Area" value={`${detailData?.size} SqFT`} />
-            <DetailRow label="Price" value={`$ ${detailData?.price}`} bgColor={Colors.background} />
+            <DetailRow label="ID" value={detailData?.property_identifier} bgColor={Colors.background} />
+            <DetailRow label="Area" value={`${detailData?.size} Sqft`} />
+            <DetailRow label="Price" value={`SAR ${detailData?.price}`} bgColor={Colors.background} />
             <DetailRow label="Build Year" value={detailData?.year_built} />
             <DetailRow label="Type" value={detailData?.property_type} bgColor={Colors.background} />
-            <DetailRow label="Status" value="N/A" />
-            <DetailRow label="Room" value={detailData?.bedrooms || 0} bgColor={Colors.background} />
-            <DetailRow label="Baths" value={detailData?.bathrooms || 0} />
-            <DetailRow label="Garage" value={detailData?.garages || 0} bgColor={Colors.background} />
-            <DetailRow label="Added" value={new Date(detailData?.created_at).toDateString()} />
+            {/* <DetailRow label="Status" value="N/A" /> */}
+            <DetailRow label="Room" value={detailData?.bedrooms || 0} />
+            <DetailRow label="Baths" value={detailData?.bathrooms || 0} bgColor={Colors.background} />
+            <DetailRow label="Garage" value={detailData?.garages || 0} />
+            <DetailRow label="Added" value={new Date(detailData?.created_at).toDateString()} bgColor={Colors.background} />
         </View>
     );
 
@@ -89,9 +90,9 @@ const PropertyDescriptionModal: React.FC<PropertyDescriptionModalProps> = ({
                 <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
                     Checkout before 11:00 AM
                 </NMText>
-                <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                {/* <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
                     2 guests maximum
-                </NMText>
+                </NMText> */}
             </View>
             <View style={[styles.rulesContainer, { marginVertical: 10 }]}>
                 <NMText fontSize={16} fontFamily="medium" color={Colors.textPrimary}>
@@ -148,7 +149,7 @@ const PropertyDescriptionModal: React.FC<PropertyDescriptionModalProps> = ({
                             onPress={() => setActiveTab('details')}
                         >
                             <NMText
-                                fontSize={16}
+                                fontSize={14}
                                 fontFamily={activeTab === 'details' ? 'semiBold' : 'regular'}
                                 color={activeTab === 'details' ? Colors.primary : Colors.textLight}
                             >
@@ -160,7 +161,7 @@ const PropertyDescriptionModal: React.FC<PropertyDescriptionModalProps> = ({
                             onPress={() => setActiveTab('features')}
                         >
                             <NMText
-                                fontSize={16}
+                                fontSize={14}
                                 fontFamily={activeTab === 'features' ? 'semiBold' : 'regular'}
                                 color={activeTab === 'features' ? Colors.primary : Colors.textLight}
                             >
@@ -173,7 +174,7 @@ const PropertyDescriptionModal: React.FC<PropertyDescriptionModalProps> = ({
                                 onPress={() => setActiveTab('nearby')}
                             >
                                 <NMText
-                                    fontSize={16}
+                                    fontSize={14}
                                     fontFamily={activeTab === 'nearby' ? 'semiBold' : 'regular'}
                                     color={activeTab === 'nearby' ? Colors.primary : Colors.textLight}
                                 >
@@ -185,7 +186,7 @@ const PropertyDescriptionModal: React.FC<PropertyDescriptionModalProps> = ({
                                 onPress={() => setActiveTab('thingsToKnow')}
                             >
                                 <NMText
-                                    fontSize={16}
+                                    fontSize={14}
                                     fontFamily={activeTab === 'thingsToKnow' ? 'semiBold' : 'regular'}
                                     color={activeTab === 'thingsToKnow' ? Colors.primary : Colors.textLight}
                                 >
@@ -194,11 +195,12 @@ const PropertyDescriptionModal: React.FC<PropertyDescriptionModalProps> = ({
                             </TouchableOpacity>)
                         }
                     </View>
-
-                    {activeTab === 'details' && renderPropertyDetails()}
-                    {activeTab === 'features' && renderFeatures()}
-                    {activeTab === 'nearby' && renderWhatsNearby()}
-                    {activeTab === 'thingsToKnow' && renderThingsToKnow()}
+                    <ScrollView style={{ maxHeight: 400 }}>
+                        {activeTab === 'details' && renderPropertyDetails()}
+                        {activeTab === 'features' && renderFeatures()}
+                        {activeTab === 'nearby' && renderWhatsNearby()}
+                        {activeTab === 'thingsToKnow' && renderThingsToKnow()}
+                    </ScrollView>
                 </View>
             </View>
         </Modal>

@@ -97,7 +97,7 @@ const PropertyListingScreen: React.FC = () => {
         try {
             setLoadingRequests(true);
             const { result, error } = await apiRequest({
-                endpoint: 'v1/properties',
+                endpoint: 'v1/properties?page=1&per_page=1000',
                 method: 'GET',
             });
 
@@ -245,6 +245,33 @@ const PropertyListingScreen: React.FC = () => {
         }
     };
 
+    const updatePropertyStatus = async (propertyId: number) => {
+        try {
+            setLoadingRequests(true);
+            const { result, error } = await apiRequest({
+                endpoint: `v1/update-property-status/${propertyId}`,
+                method: 'GET',
+            });
+
+            if (result) {
+                console.log("Property status updated:", JSON.stringify(result));
+                showSuccessToast('Property status updated to Sold successfully');
+                getProperties();
+            }
+
+            if (error) {
+                console.log("Error:", error);
+                showErrorToast(`Update Property Status Error: ${error}`);
+            }
+
+        } catch (err) {
+            console.error("Unexpected Error:", err);
+            showErrorToast(`Unexpected Error: ${err}`);
+        } finally {
+            setLoadingRequests(false);
+        }
+    };
+
 
     const SellListing = () => {
         const propertiesList = Array.isArray(properties)
@@ -302,10 +329,10 @@ const PropertyListingScreen: React.FC = () => {
                                 styles.statusView,
                                 {
                                     backgroundColor:
-                                        property.is_active
-                                            ? Colors.statusBg
-                                            : property.is_active == 2
-                                                ? Colors.statusSoldBg
+                                        property.is_active == 2
+                                            ? Colors.statusSoldBg
+                                            : property.is_active == 1
+                                                ? Colors.statusBg
                                                 : Colors.statusPendingBg,
                                 },
                             ]}
@@ -314,14 +341,14 @@ const PropertyListingScreen: React.FC = () => {
                                 fontSize={12}
                                 fontFamily="regular"
                                 color={
-                                    property.is_active
-                                        ? Colors.statusText
-                                        : property.is_active == 2
-                                            ? Colors.statusSoldText
+                                    property.is_active == 2
+                                        ? Colors.statusSoldText
+                                        : property.is_active == 1
+                                            ? Colors.statusText
                                             : Colors.statusPendingText
                                 }
                             >
-                                {property.is_active ? 'Active' : property.is_active == 2 ? 'Sold' : 'Deactive'}
+                                {property.is_active == 2 ? 'Sold' : property.is_active == 1 ? 'Active' : 'Deactive'}
                             </NMText>
                         </View>
 
@@ -348,23 +375,24 @@ const PropertyListingScreen: React.FC = () => {
                                 style={{ borderWidth: 1, borderColor: Colors.statusText }}
                             />
                         )} */}
-                            {/* {(property.is_active != 2 && status === 'Sell') && (
-                            <NMButton
-                                title="Sold"
-                                textColor={Colors.statusSoldText}
-                                backgroundColor={Colors.white}
-                                borderRadius={8}
-                                width={'32%'}
-                                height={40}
-                                style={{ borderWidth: 1, borderColor: Colors.statusSoldText }}
-                            />
-                        )} */}
+                            {(property.is_active != 2 && property.property_category?.toLowerCase() === 'sell') && (
+                                <NMButton
+                                    title="Sold"
+                                    textColor={Colors.statusSoldText}
+                                    backgroundColor={Colors.white}
+                                    borderRadius={8}
+                                    width={'32%'}
+                                    height={40}
+                                    style={{ borderWidth: 1, borderColor: Colors.statusSoldText }}
+                                    onPress={() => updatePropertyStatus(property.id)}
+                                />
+                            )}
                             <NMButton
                                 title="Delete"
                                 textColor={Colors.statusSoldText}
                                 backgroundColor={Colors.white}
                                 borderRadius={8}
-                                width={'32%'}
+                                width={property.is_active != 2 && property.property_category?.toLowerCase() === 'sell' ? '32%' : '46%'}
                                 height={40}
                                 style={{ borderWidth: 1, borderColor: Colors.statusSoldText }}
                                 onPress={() => deleteProperty(property.id)}
@@ -374,7 +402,7 @@ const PropertyListingScreen: React.FC = () => {
                                 textColor={Colors.primary}
                                 backgroundColor={Colors.white}
                                 borderRadius={8}
-                                width={property.is_active == 2 || status != 'Sell' ? '46%' : '32%'}
+                                width={property.is_active == 2 || (property.is_active != 2 && property.property_category?.toLowerCase() === 'sell') ? '32%' : '46%'}
                                 height={40}
                                 style={{ borderWidth: 1, borderColor: Colors.primary }}
                                 onPress={() => navigation.navigate('AddProperties' as never, { property: property } as never)}
@@ -412,6 +440,62 @@ const PropertyListingScreen: React.FC = () => {
                                     style={styles.sellImage}
                                 />
                                 <View style={{ marginLeft: 12, flex: 1 }}>
+                                    <View
+                                        style={[
+                                            styles.statusView,
+                                            {
+                                                position: 'relative',
+                                                top: 0,
+                                                right: 0,
+                                                width: '60%',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                backgroundColor:
+                                                    booking.status === 'confirmed'
+                                                        ? Colors.statusBg
+                                                        : booking.status === 'cancelled'
+                                                            ? Colors.statusSoldBg
+                                                            : Colors.statusPendingBg,
+                                            },
+                                        ]}
+                                    >
+                                        <NMText
+                                            fontSize={12}
+                                            fontFamily="regular"
+                                            color={
+                                                booking.status === 'confirmed'
+                                                    ? Colors.statusText
+                                                    : booking.status === 'cancelled'
+                                                        ? Colors.statusSoldText
+                                                        : Colors.statusPendingText
+                                            }
+                                        >
+                                            {(() => {
+                                                const status = (booking.status || '').toLowerCase();
+
+                                                // Map status values to display text
+                                                if (status === 'confirmed') {
+                                                    return 'Approved';
+                                                } else if (status === 'pending_approval') {
+                                                    return 'Pending Approval';
+                                                } else if (status === 'pending_payment') {
+                                                    return 'Pending Payment';
+                                                } else if (status === 'pending') {
+                                                    return 'Pending Approval';
+                                                } else if (status === 'cancelled') {
+                                                    return 'Cancelled';
+                                                } else if (status === 'completed') {
+                                                    return 'Completed';
+                                                }
+
+                                                // Fallback: capitalize first letter of each word
+                                                return status
+                                                    .split('_')
+                                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                                                    .join(' ');
+                                            })()}
+                                        </NMText>
+                                    </View>
                                     <NMText
                                         fontSize={16}
                                         fontFamily="semiBold"
@@ -445,44 +529,6 @@ const PropertyListingScreen: React.FC = () => {
                                         SAR {booking.property_price}
                                     </NMText>
                                 </View>
-                            </View>
-
-                            <View
-                                style={[
-                                    styles.statusView,
-                                    {
-                                        top: '50%',
-                                        backgroundColor:
-                                            booking.status === 'confirmed'
-                                                ? Colors.statusBg
-                                                : booking.status === 'cancelled'
-                                                    ? Colors.statusSoldBg
-                                                    : Colors.statusPendingBg,
-                                    },
-                                ]}
-                            >
-                                <NMText
-                                    fontSize={12}
-                                    fontFamily="regular"
-                                    color={
-                                        booking.status === 'confirmed'
-                                            ? Colors.statusText
-                                            : booking.status === 'cancelled'
-                                                ? Colors.statusSoldText
-                                                : Colors.statusPendingText
-                                    }
-                                >
-                                    {(() => {
-                                        const status = booking.status || '';
-                                        const displayStatus = status.includes('_')
-                                            ? status.split('_')[0]
-                                            : status;
-
-                                        return (
-                                            displayStatus.charAt(0).toUpperCase() + displayStatus.slice(1)
-                                        );
-                                    })()}
-                                </NMText>
                             </View>
                         </TouchableOpacity>
                     ))}
@@ -538,9 +584,9 @@ const PropertyListingScreen: React.FC = () => {
                                     </NMText>
 
                                     <NMText fontSize={14} fontFamily="regular" color={Colors.textSecondary}>
-                                        Location:{' '}
+                                        Date:{' '}
                                         <NMText fontSize={14} fontFamily="semiBold" color={Colors.textSecondary}>
-                                            {bid.location}
+                                            {bid.property_created_at ? new Date(bid.property_created_at).toLocaleDateString("en-GB") : ''}
                                         </NMText>
                                     </NMText>
 
@@ -648,11 +694,11 @@ const PropertyListingScreen: React.FC = () => {
                 onBidUpdate={fetchBidRequests}
             />
             <LoaderModal visible={loadingRequests} />
-            <FloatingChatButton
+            {activeTab === 'LISTING' && (<FloatingChatButton
                 onPress={() => navigation.navigate('AddProperties' as never)}
                 icon={<Plus color={Colors.white} size={24} strokeWidth={2} />}
                 bottom={40}
-            />
+            />)}
         </NMSafeAreaWrapper>
     );
 };
@@ -720,7 +766,7 @@ const styles = StyleSheet.create({
     },
     sellImage: {
         width: 85,
-        height: 85,
+        height: 90,
         borderRadius: 8,
         resizeMode: 'cover',
         backgroundColor: Colors.border,

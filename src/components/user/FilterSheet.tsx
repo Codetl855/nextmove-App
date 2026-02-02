@@ -37,6 +37,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({ visible, onClose, onApplyFilt
     const [sizeMax, setSizeMax] = useState<number | null>(null);
     const [selectedRating, setSelectedRating] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
+    const [resetKey, setResetKey] = useState(0);
     const [fieldOption, setFieldOption] = useState<any>({
         propertyTypes: [],
         ameneties: [],
@@ -68,6 +69,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({ visible, onClose, onApplyFilt
         setSizeMin(null);
         setSizeMax(null);
         setSelectedRating(null);
+        setResetKey(prev => prev + 1); // Force sliders to reset
     };
 
     const handleApplyFilter = () => {
@@ -149,7 +151,7 @@ const FilterSheet: React.FC<FilterSheetProps> = ({ visible, onClose, onApplyFilt
         try {
             setLoading(true);
             const { result, error } = await apiRequest({
-                endpoint: "v1/search-properties",
+                endpoint: "v1/mobile/search-properties",
                 method: "POST",
                 data: payload,
             });
@@ -316,13 +318,14 @@ const FilterSheet: React.FC<FilterSheetProps> = ({ visible, onClose, onApplyFilt
 
                         {/* Price Range */}
                         <MultiRangeSlider
+                            key={`price-${resetKey}`}
                             title="Price Range"
                             min={100}
                             max={650000}
-                            initialMinValue={5000}
-                            initialMaxValue={300000}
+                            initialMinValue={100}
+                            initialMaxValue={650000}
                             step={1000}
-                            prefix="$"
+                            prefix="SAR"
                             onValuesChange={(min, max) => {
                                 setPriceMin(min);
                                 setPriceMax(max);
@@ -333,11 +336,12 @@ const FilterSheet: React.FC<FilterSheetProps> = ({ visible, onClose, onApplyFilt
 
                         {/* Size */}
                         <MultiRangeSlider
+                            key={`size-${resetKey}`}
                             title="Size"
                             min={500}
                             max={1500}
-                            initialMinValue={600}
-                            initialMaxValue={750}
+                            initialMinValue={500}
+                            initialMaxValue={1500}
                             step={50}
                             suffix="SqFt"
                             onValuesChange={(min, max) => {
@@ -492,7 +496,7 @@ const styles = StyleSheet.create({
     },
     typeTabActive: {
         borderBottomWidth: 2,
-        borderBottomColor: '#B8935E',
+        borderBottomColor: Colors.primary,
     },
     activeUnderline: {
         position: 'absolute',
@@ -513,7 +517,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.background,
     },
     subTypeButtonActive: {
-        backgroundColor: '#B8935E',
+        backgroundColor: Colors.primary,
     },
     ratingsContainer: {
         flexDirection: 'row',
@@ -533,7 +537,7 @@ const styles = StyleSheet.create({
     ratingButtonActive: {
         backgroundColor: '#FFF9F0',
         borderWidth: 1,
-        borderColor: '#B8935E',
+        borderColor: Colors.primary,
     },
     starIcon: {
         fontSize: 18,
@@ -1039,7 +1043,7 @@ export default FilterSheet;
 //     },
 //     typeTabActive: {
 //         borderBottomWidth: 2,
-//         borderBottomColor: '#B8935E',
+//         borderBottomColor: Colors.primary,
 //     },
 //     activeUnderline: {
 //         position: 'absolute',
@@ -1060,7 +1064,7 @@ export default FilterSheet;
 //         backgroundColor: Colors.background,
 //     },
 //     subTypeButtonActive: {
-//         backgroundColor: '#B8935E',
+//         backgroundColor: Colors.primary,
 //     },
 //     ratingsContainer: {
 //         flexDirection: 'row',
@@ -1080,7 +1084,7 @@ export default FilterSheet;
 //     ratingButtonActive: {
 //         backgroundColor: '#FFF9F0',
 //         borderWidth: 1,
-//         borderColor: '#B8935E',
+//         borderColor: Colors.primary,
 //     },
 //     starIcon: {
 //         fontSize: 18,

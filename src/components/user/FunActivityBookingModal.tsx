@@ -197,7 +197,7 @@ const FunActivityBookingModal: React.FC<FunActivityBookingModalProps> = ({
 
                             <View style={styles.titleRow}>
                                 <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary}>
-                                    Booking Now
+                                    Booking Details
                                 </NMText>
                                 <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                                     <X color="#000" size={24} strokeWidth={2} />

@@ -72,7 +72,7 @@ const BlogCard: React.FC<BlogCardProps> = ({
                     </NMText>
                 </View>
 
-                <View style={styles.divider} />
+                {/* <View style={styles.divider} />
 
                 <View style={styles.inRow}>
                     <Image
@@ -80,10 +80,9 @@ const BlogCard: React.FC<BlogCardProps> = ({
                         style={styles.featureIcon}
                     />
                     <NMText fontSize={12} fontFamily='regular' color={Colors.textLight}>
-                        {/* {time} */}
                         5 Min Read
                     </NMText>
-                </View>
+                </View> */}
             </View>
             <View style={styles.horizontalDivider} />
             <View style={styles.content}>
@@ -139,6 +138,7 @@ const BlogCardList: React.FC<{ blogs: any }> = ({ blogs }) => {
             >
                 {blogsArray?.map((blog) => {
                     if (!blog || !blog.id) return null;
+                    if (blog?.status !== 'published') return null;
                     return (
                         <BlogCard
                             key={blog.id}

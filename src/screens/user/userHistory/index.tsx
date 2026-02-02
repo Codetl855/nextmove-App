@@ -32,7 +32,7 @@ const UserHistoryScreen: React.FC = () => {
         try {
             setLoading(true);
             const { result, error } = await apiRequest({
-                endpoint: 'v1/bookings/properties',
+                endpoint: 'v1/bookings/properties?page=1&per_page=1000',
                 method: 'GET',
             });
 
@@ -59,7 +59,7 @@ const UserHistoryScreen: React.FC = () => {
         try {
             setLoading(true);
             const { result, error } = await apiRequest({
-                endpoint: 'v1/bids',
+                endpoint: 'v1/bids?page=1&per_page=1000',
                 method: 'GET',
             });
 

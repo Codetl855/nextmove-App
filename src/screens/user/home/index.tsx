@@ -1,4 +1,4 @@
-import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
+import { Image, Pressable, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper'
 import { Colors } from '../../../theme/colors'
@@ -81,7 +81,7 @@ const HomeScreen: React.FC = () => {
         try {
             setLoading(true);
             const { result, error } = await apiRequest({
-                endpoint: `v1/featured-properties/?type=${selectedTabData.label}`,
+                endpoint: `v1/mobile/featured-properties/?type=${selectedTabData.label}`,
                 method: 'GET',
             });
 
@@ -107,7 +107,7 @@ const HomeScreen: React.FC = () => {
         try {
             setLoading(true);
             const { result, error } = await apiRequest({
-                endpoint: `v1/blogs/`,
+                endpoint: `v1/blogs-list?per_page=5`,
                 method: 'GET',
             });
 
@@ -165,14 +165,17 @@ const HomeScreen: React.FC = () => {
                         </TouchableOpacity> */}
                     </View>
                     <View style={styles.filterView}>
-                        <NMTextInput
-                            placeholder='Search here'
-                            rightIcon={
-                                <Image source={require('../../../assets/icons/search.png')} style={styles.searchIcon} />
-                            }
-                            containerStyle={styles.inputContainer}
-                            mainViewStyle={{ width: '76%' }}
-                        />
+                        <Pressable onPress={showFilterSheet} style={{ width: '76%' }}>
+                            <NMTextInput
+                                placeholder='Search here'
+                                rightIcon={
+                                    <Image source={require('../../../assets/icons/search.png')} style={styles.searchIcon} />
+                                }
+                                containerStyle={styles.inputContainer}
+                                mainViewStyle={{ width: '100%' }}
+                                editable={false}
+                            />
+                        </Pressable>
                         <TouchableOpacity style={styles.filterSlider} onPress={showFilterSheet} activeOpacity={0.7}>
                             <Image source={require('../../../assets/icons/slidersBold.png')} style={styles.filterIcon} />
                         </TouchableOpacity>
@@ -188,7 +191,7 @@ const HomeScreen: React.FC = () => {
                     />
 
                     {properties.length > 0 ? (
-                        <PropertyCardList properties={properties} />
+                        <PropertyCardList properties={properties} onFavoriteUpdate={getPropertyList} />
                     ) : (
                         <NMText fontSize={14} fontFamily='regular' color={Colors.textSecondary} style={{ marginTop: 20, marginHorizontal: '5%' }}>
                             No properties available for the selected type.

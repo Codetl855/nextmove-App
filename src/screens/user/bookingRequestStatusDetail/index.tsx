@@ -5,9 +5,10 @@ import { Colors } from '../../../theme/colors'
 import NMText from '../../../components/common/NMText'
 import { ChevronLeft, MapPin } from 'lucide-react-native'
 import NMButton from '../../../components/common/NMButton'
+import { useNavigation } from '@react-navigation/native'
 
 const BookingRequestStatusDetail: React.FC = () => {
-
+    const navigation = useNavigation()
     const propertyStatus = 'Pending' as string
 
     return (
@@ -16,7 +17,7 @@ const BookingRequestStatusDetail: React.FC = () => {
                 {/* HEADER */}
                 <View style={styles.headerView}>
                     <View style={styles.inRow}>
-                        <TouchableOpacity style={styles.backBox}>
+                        <TouchableOpacity style={styles.backBox} onPress={() => navigation.goBack()}>
                             <ChevronLeft color={Colors.black} size={24} strokeWidth={2} />
                         </TouchableOpacity>
                         <View style={styles.titleView}>

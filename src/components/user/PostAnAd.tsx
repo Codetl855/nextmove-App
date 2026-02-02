@@ -3,8 +3,10 @@ import React from 'react'
 import { Colors } from '../../theme/colors'
 import NMText from '../common/NMText'
 import NMButton from '../common/NMButton'
+import { useNavigation } from '@react-navigation/native'
 
 const PostAnAd: React.FC = () => {
+    const navigation = useNavigation();
     return (
         <View style={styles.container}>
             <Image source={require('../../assets/images/HomeAd.png')} style={{ width: 112, height: 71, resizeMode: 'contain' }} />
@@ -16,7 +18,7 @@ const PostAnAd: React.FC = () => {
                     title="Post an Ad"
                     height={40}
                     borderRadius={8}
-                    onPress={() => console.log('Post an Ad pressed')} />
+                    onPress={() => navigation.navigate('AddProperties' as never)} />
 
             </View>
         </View>

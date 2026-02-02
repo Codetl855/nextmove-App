@@ -22,7 +22,7 @@ const BlogsList: React.FC = () => {
         try {
             setLoading(true);
             const { result, error } = await apiRequest({
-                endpoint: `v1/blogs/`,
+                endpoint: `v1/blogs-list?per_page=1000`,
                 method: 'GET',
             });
 

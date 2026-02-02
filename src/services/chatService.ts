@@ -1,3 +1,4 @@
+import { showErrorToast } from "../utils/toastService";
 import { apiRequest } from "./apiClient";
 
 export interface User {
@@ -19,6 +20,9 @@ export interface Conversation {
     unread_count?: number;
     created_at: string;
     updated_at: string;
+    name?: string;
+    avatar?: string;
+    is_online?: boolean;
 }
 
 export interface ConversationsResponse {

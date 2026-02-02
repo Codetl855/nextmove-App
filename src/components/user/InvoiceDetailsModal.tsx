@@ -118,6 +118,23 @@ const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
         return `${currency} ${numAmount.toFixed(2)}`;
     };
 
+    const formatPaymentStatus = (status: string) => {
+        if (!status) return 'Unknown';
+        const statusLower = status.toLowerCase();
+        if (statusLower === 'succeeded') {
+            return 'Completed';
+        } else if (statusLower === 'pending_payment') {
+            return 'Pending Payment';
+        } else if (statusLower === 'pending_approval') {
+            return 'Pending Approval';
+        }
+        // For other statuses, capitalize first letter and replace underscores with spaces
+        return status
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    };
+
     const calculateTotal = () => {
         if (!invoiceData) return 0;
         const paymentAmount = parseFloat(invoiceData.payment.amount);
@@ -225,7 +242,7 @@ const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
                         <ScrollView
                             style={styles.scrollView}
                             contentContainerStyle={styles.scrollContent}
-                            showsVerticalScrollIndicator={false}
+                            showsVerticalScrollIndicator={true}
                         >
                             {invoiceData ? (
                                 <>
@@ -238,11 +255,20 @@ const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
                                             <NMText fontSize={14} fontFamily="regular" color={Colors.textLight}>
                                                 Issue Date: {formatDate(invoiceData.payment?.created_at || '')}
                                             </NMText>
-                                            {/* <View style={[styles.statusBadge, { backgroundColor: Colors.statusBg }]}>
-                                                <NMText fontSize={12} fontFamily="medium" color={Colors.statusText}>
-                                                    {invoiceData.booking?.status?.toUpperCase() || 'CONFIRMED'}
+                                        </View>
+                                        <View style={styles.statusRow}>
+                                            <NMText fontSize={14} fontFamily="regular" color={Colors.textLight} style={{ marginTop: 8 }}>
+                                                Status:
+                                            </NMText>
+                                            <View style={[styles.statusBadge, {
+                                                backgroundColor: invoiceData.payment?.status?.toLowerCase() === 'succeeded' ? Colors.statusBg : Colors.statusPendingBg
+                                            }]}>
+                                                <NMText fontSize={12} fontFamily="medium" color={
+                                                    invoiceData.payment?.status?.toLowerCase() === 'succeeded' ? Colors.statusText : Colors.statusPendingText
+                                                }>
+                                                    {formatPaymentStatus(invoiceData.payment?.status || '')}
                                                 </NMText>
-                                            </View> */}
+                                            </View>
                                         </View>
                                     </View>
 
@@ -337,16 +363,16 @@ const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
                                                     Guest Names
                                                 </NMText> */}
                                                 <NMText fontSize={12} fontFamily="medium" color={Colors.textLight} style={styles.tableCell}>
-                                                    Room Type
+                                                    Property Type
                                                 </NMText>
-                                                <NMText fontSize={12} fontFamily="medium" color={Colors.textLight} style={styles.tableCell}>
+                                                {/* <NMText fontSize={12} fontFamily="medium" color={Colors.textLight} style={styles.tableCell}>
                                                     Meal
-                                                </NMText>
+                                                </NMText> */}
                                                 <NMText fontSize={12} fontFamily="medium" color={Colors.textLight} style={styles.tableCell}>
                                                     No. of Rooms
                                                 </NMText>
                                                 <NMText fontSize={12} fontFamily="medium" color={Colors.textLight} style={styles.tableCell}>
-                                                    Adults
+                                                    No. of Guests
                                                 </NMText>
                                                 {/* <NMText fontSize={12} fontFamily="medium" color={Colors.textLight} style={styles.tableCell}>
                                                     Children
@@ -359,14 +385,14 @@ const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
                                                 <NMText fontSize={12} fontFamily="regular" color={Colors.textPrimary} style={styles.tableCell}>
                                                     {invoiceData.property?.property_type || 'N/A'}
                                                 </NMText>
-                                                <NMText fontSize={12} fontFamily="regular" color={Colors.textPrimary} style={styles.tableCell}>
+                                                {/* <NMText fontSize={12} fontFamily="regular" color={Colors.textPrimary} style={styles.tableCell}>
                                                     Room Only
+                                                </NMText> */}
+                                                <NMText fontSize={12} fontFamily="regular" color={Colors.textPrimary} style={styles.tableCell}>
+                                                    {invoiceData?.property?.rooms || '1'}
                                                 </NMText>
                                                 <NMText fontSize={12} fontFamily="regular" color={Colors.textPrimary} style={styles.tableCell}>
-                                                    01
-                                                </NMText>
-                                                <NMText fontSize={12} fontFamily="regular" color={Colors.textPrimary} style={styles.tableCell}>
-                                                    {invoiceData.booking?.guests || 'N/A'}
+                                                    {invoiceData.booking?.guests || '1'}
                                                 </NMText>
                                                 {/* <NMText fontSize={12} fontFamily="regular" color={Colors.textPrimary} style={styles.tableCell}>
                                                     01
@@ -416,8 +442,8 @@ const InvoiceDetailsModal: React.FC<InvoiceDetailsModalProps> = ({
                                                 <View key={payer.id} style={styles.paymentItem}>
                                                     <View style={styles.paymentInfo}>
                                                         <View style={[styles.paymentIndicator, { backgroundColor: payer.status === 'pending' ? Colors.statusPendingBg : Colors.statusBg }]} />
-                                                        <View>
-                                                            <NMText fontSize={14} fontFamily="medium" color={Colors.textPrimary}>
+                                                        <View style={styles.paymentInfoText}>
+                                                            <NMText fontSize={14} fontFamily="medium" color={Colors.textPrimary} numberOfLines={2} style={styles.emailText}>
                                                                 {payer.email}
                                                             </NMText>
                                                             <NMText fontSize={12} fontFamily="regular" color={Colors.textLight}>
@@ -544,6 +570,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+        marginTop: 8,
+    },
+    statusRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
         marginTop: 8,
     },
     statusBadge: {
@@ -673,6 +705,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'flex-start',
         flex: 1,
+        marginRight: 12,
+    },
+    paymentInfoText: {
+        flex: 1,
+    },
+    emailText: {
+        flexShrink: 1,
     },
     paymentIndicator: {
         width: 12,

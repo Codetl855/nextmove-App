@@ -202,7 +202,7 @@ const FunActivityDetail: React.FC = ({ navigation, route }: any) => {
                         />
                     )}
 
-                    {detailData.user && (
+                    {/* {detailData.user && (
                         <CollapsibleSection
                             title="Host Information"
                             sectionKey="hostInformation"
@@ -217,13 +217,13 @@ const FunActivityDetail: React.FC = ({ navigation, route }: any) => {
                                 </View>
                             }
                         />
-                    )}
+                    )} */}
                 </View>
             </ScrollView>
 
             <View style={styles.footer}>
                 <NMButton
-                    title="Booking Now"
+                    title="Buy Ticket"
                     fontFamily="semiBold"
                     width="100%"
                     borderRadius={8}

@@ -29,16 +29,26 @@ const CommentSheetModal: React.FC<CommentSheetModalProps> = ({
     const [userInfo, setUserInfo] = useState<any>({});
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState('');
+    const [submitAttempted, setSubmitAttempted] = useState(false);
+
     const getLoginUser = async () => {
         const user = await AsyncStorage.getItem('loginUser');;
         const parsedUser = JSON.parse(user);
         setUserInfo(parsedUser);
-    }
+    };
 
     useEffect(() => {
         getLoginUser();
-        setComment('');
     }, []);
+
+    // Reset form to empty when modal opens (Add Review clicked)
+    useEffect(() => {
+        if (visible) {
+            setComment('');
+            setRating(5);
+            setSubmitAttempted(false);
+        }
+    }, [visible]);
 
     return (
         <Modal
@@ -96,7 +106,7 @@ const CommentSheetModal: React.FC<CommentSheetModalProps> = ({
                         value={comment}
                         onChangeText={(text) => setComment(text)}
                         maxLength={200}
-                        error={comment.length === 0 ? 'Review is required' : comment.length > 200 ? 'Review cannot exceed 200 characters' : ''}
+                        error={submitAttempted && comment.trim().length === 0 ? 'Review is required' : comment.length > 200 ? 'Review cannot exceed 200 characters' : ''}
                     />
 
                     <View style={styles.starReview}>
@@ -125,10 +135,15 @@ const CommentSheetModal: React.FC<CommentSheetModalProps> = ({
                         borderRadius={8}
                         style={{ alignSelf: 'center', marginTop: 10 }}
                         onPress={() => {
-                            onSubmit(comment, rating);
-                            if (onClose) {
-                                onClose();
+                            if (!comment.trim()) {
+                                setSubmitAttempted(true);
+                                return;
                             }
+                            if (comment.length > 200) {
+                                return;
+                            }
+                            onSubmit(comment, rating);
+                            onClose?.();
                         }}
                     />
 

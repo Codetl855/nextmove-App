@@ -75,7 +75,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
                     <View style={styles.feature}>
                         <Image source={require('../../assets/icons/sqf.png')} style={styles.featureIcon} />
                         <NMText fontSize={14} fontFamily='regular' color={Colors.textPrimary}>
-                            {sqft}sqf
+                            {sqft} Sqft
                         </NMText>
                     </View>
 
@@ -102,7 +102,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
                         </NMText>
                     </View>
                     <NMText fontSize={14} fontFamily='bold' color={Colors.primary}>
-                        $ {price}
+                        SAR {price}
                     </NMText>
                 </View>
             </View>
@@ -110,9 +110,8 @@ const PropertyCard: React.FC<PropertyCardProps> = ({
     );
 };
 
-const PropertyCardList: React.FC<{ properties: any[] }> = ({ properties }) => {
+const PropertyCardList: React.FC<{ properties: any[]; onFavoriteUpdate?: () => void }> = ({ properties, onFavoriteUpdate }) => {
     const navigation = useNavigation();
-    const [favoriteStates, setFavoriteStates] = useState<{ [key: string]: boolean }>({});
     const [loader, setLoader] = useState(false);
 
     const screenWidth = Dimensions.get('window').width;
@@ -121,11 +120,6 @@ const PropertyCardList: React.FC<{ properties: any[] }> = ({ properties }) => {
     const makeFavorite = async (property: any) => {
         try {
             setLoader(true);
-            // Optimistically update UI
-            setFavoriteStates(prev => ({
-                ...prev,
-                [property.id]: !prev[property.id]
-            }));
 
             const { result, error } = await apiRequest({
                 endpoint: `v1/favourites/${property.id}/toggle`,
@@ -135,25 +129,19 @@ const PropertyCardList: React.FC<{ properties: any[] }> = ({ properties }) => {
             if (result) {
                 console.log("Properties List:", JSON.stringify(result));
                 showSuccessToast('Favorite status updated successfully');
+                // Call the refresh callback to reload the list
+                if (onFavoriteUpdate) {
+                    onFavoriteUpdate();
+                }
             }
 
             if (error) {
                 console.log("Error:", error);
-                // Revert state on error
-                setFavoriteStates(prev => ({
-                    ...prev,
-                    [property.id]: !prev[property.id]
-                }));
                 showErrorToast(`Get Properties Error: ${error}`);
             }
 
         } catch (err) {
             console.error("Unexpected Error:", err);
-            // Revert state on error
-            setFavoriteStates(prev => ({
-                ...prev,
-                [property.id]: !prev[property.id]
-            }));
             showErrorToast(`Unexpected Error: ${err}`);
         } finally {
             setLoader(false);
@@ -184,7 +172,7 @@ const PropertyCardList: React.FC<{ properties: any[] }> = ({ properties }) => {
                         agentName={property?.owner?.first_name + ' ' + property?.owner?.last_name}
                         agentImage={property?.owner?.profile_image_url}
                         price={property?.price}
-                        isFavorite={property.is_favourite || favoriteStates[property.id] || false}
+                        isFavorite={property.is_favourite === true}
                         onPress={() => navigation.navigate('PropertyDetailScreen', { property })}
                         onFavoritePress={() => makeFavorite(property)}
                     />

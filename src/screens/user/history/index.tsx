@@ -1,117 +1,260 @@
-import React, { useState } from 'react';
-import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { ChevronLeft } from 'lucide-react-native';
+import React, { useState, useEffect } from 'react';
+import { View, ScrollView, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { ChevronLeft, MapPin } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import NMText from '../../../components/common/NMText';
 import { Colors } from '../../../theme/colors';
+import { apiRequest } from '../../../services/apiClient';
+import { showErrorToast } from '../../../utils/toastService';
+import LoaderModal from '../../../components/common/NMLoaderModal';
 
-type TabType = 'Confirmed' | 'Cancelled';
-type StatusType = 'Confirmed' | 'Cancelled';
-
-interface HistoryCardProps {
-    title: string;
-    tickets: number;
+interface FunActivityBooking {
+    fun_activity_id: number;
+    fun_activity_title: string;
+    fun_activity_location: string;
+    fun_activity_price: string;
+    fun_activity_category: string;
+    fun_activity_created_at: string;
+    booking_created_at: string;
     date: string;
-    time: string;
-    amount: string;
-    status: StatusType;
+    total_tickets: number;
+    adults: number;
+    children: number;
+    status: string;
+    user_email: string;
+    user_mobile: string;
+    primary_image: string;
 }
 
-const HistoryCard: React.FC<HistoryCardProps> = ({
-    title,
-    tickets,
-    date,
-    time,
-    amount,
-    status,
-}) => {
-    const isCancelled = status === 'Cancelled';
+interface HistoryCardProps {
+    booking: FunActivityBooking;
+    onPress: () => void;
+}
 
-    const statusStyles = {
-        backgroundColor: isCancelled ? Colors.statusSoldBg : Colors.statusBg,
-        color: isCancelled ? Colors.statusSoldText : Colors.statusText,
+const HistoryCard: React.FC<HistoryCardProps> = ({ booking, onPress }) => {
+    const statusLower = booking.status.toLowerCase();
+    const isCancelled = statusLower === 'cancelled';
+    const isPending = statusLower === 'pending' || statusLower === 'pending_payment';
+
+    const getStatusStyles = () => {
+        if (isCancelled) {
+            return {
+                backgroundColor: Colors.statusSoldBg,
+                color: Colors.statusSoldText,
+            };
+        }
+        if (isPending) {
+            return {
+                backgroundColor: Colors.statusPendingBg,
+                color: Colors.statusPendingText,
+            };
+        }
+        // Confirmed or other statuses
+        return {
+            backgroundColor: Colors.statusBg,
+            color: Colors.statusText,
+        };
+    };
+
+    const getStatusDisplayText = () => {
+        if (isPending) {
+            return 'Pending';
+        }
+        return booking.status.charAt(0).toUpperCase() + booking.status.slice(1);
+    };
+
+    const statusStyles = getStatusStyles();
+
+    const formatDate = (dateString: string) => {
+        if (!dateString) return '';
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+            });
+        } catch {
+            return dateString;
+        }
+    };
+
+    const formatPrice = (price: string) => {
+        const numPrice = parseFloat(price);
+        if (isNaN(numPrice)) return price;
+        return `SAR ${numPrice.toFixed(2)}`;
     };
 
     return (
-        <View style={styles.card}>
-            <NMText fontSize={16} fontFamily="medium" color={Colors.textPrimary}>
-                {title}
-            </NMText>
+        <TouchableOpacity
+            style={styles.card}
+            onPress={onPress}
+            activeOpacity={0.7}
+        >
+            {/* Image */}
+            {booking.primary_image ? (
+                <Image
+                    source={{ uri: booking.primary_image }}
+                    style={styles.cardImage}
+                    resizeMode="cover"
+                />
+            ) : (
+                <View style={[styles.cardImage, styles.placeholderImage]} />
+            )}
 
-            <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
-                No. of Tickets:{' '}
-                <NMText fontSize={14} fontFamily="semiBold" color={Colors.primary}>
-                    {tickets}
-                </NMText>
-            </NMText>
+            {/* Content */}
+            <View style={styles.cardContent}>
+                <View style={styles.cardHeader}>
+                    <View style={styles.titleContainer}>
+                        <NMText
+                            fontSize={16}
+                            fontFamily="semiBold"
+                            color={Colors.textPrimary}
+                            numberOfLines={2}
+                            style={styles.title}
+                        >
+                            {booking.fun_activity_title}
+                        </NMText>
+                    </View>
+                    <View
+                        style={[
+                            styles.statusBox,
+                            { backgroundColor: statusStyles.backgroundColor },
+                        ]}
+                    >
+                        <NMText fontSize={12} fontFamily="semiBold" color={statusStyles.color}>
+                            {getStatusDisplayText()}
+                        </NMText>
+                    </View>
+                </View>
 
-            <View style={styles.row}>
-                <NMText fontSize={14} fontFamily="regular" color={Colors.textLight}>
-                    {date}
-                </NMText>
-                <View style={styles.divider} />
-                <NMText fontSize={14} fontFamily="regular" color={Colors.textLight}>
-                    {time}
-                </NMText>
-            </View>
-
-            <View style={styles.rightSection}>
-                <View
-                    style={[
-                        styles.statusBox,
-                        { backgroundColor: statusStyles.backgroundColor },
-                    ]}
-                >
-                    <NMText fontSize={12} fontFamily="regular" color={statusStyles.color}>
-                        {status}
+                {/* Location */}
+                <View style={styles.locationRow}>
+                    <MapPin color={Colors.primary} size={14} strokeWidth={1.5} />
+                    <NMText fontSize={13} fontFamily="regular" color={Colors.textLight} numberOfLines={1}>
+                        {booking.fun_activity_location}
                     </NMText>
                 </View>
-                <NMText
-                    fontSize={14}
-                    fontFamily="semiBold"
-                    color={Colors.primary}
-                    style={{ marginRight: 4 }}
-                >
-                    {amount}
-                </NMText>
+
+                {/* Booking Details */}
+                <View style={styles.detailsRow}>
+                    <View style={styles.detailItem}>
+                        <NMText fontSize={13} fontFamily="regular" color={Colors.textLight}>
+                            Booking Date:
+                        </NMText>
+                        <NMText fontSize={13} fontFamily="semiBold" color={Colors.textPrimary}>
+                            {formatDate(booking.date)}
+                        </NMText>
+                    </View>
+                </View>
+
+                {/* Tickets Info */}
+                <View style={styles.ticketsRow}>
+                    <View style={styles.ticketInfo}>
+                        <NMText fontSize={13} fontFamily="regular" color={Colors.textLight}>
+                            Total Tickets:
+                        </NMText>
+                        <NMText fontSize={13} fontFamily="semiBold" color={Colors.primary}>
+                            {booking.total_tickets}
+                        </NMText>
+                    </View>
+                    {booking.adults > 0 && (
+                        <View style={styles.ticketInfo}>
+                            <NMText fontSize={13} fontFamily="regular" color={Colors.textLight}>
+                                Adults:
+                            </NMText>
+                            <NMText fontSize={13} fontFamily="semiBold" color={Colors.textPrimary}>
+                                {booking.adults}
+                            </NMText>
+                        </View>
+                    )}
+                    {booking.children > 0 && (
+                        <View style={styles.ticketInfo}>
+                            <NMText fontSize={13} fontFamily="regular" color={Colors.textLight}>
+                                Children:
+                            </NMText>
+                            <NMText fontSize={13} fontFamily="semiBold" color={Colors.textPrimary}>
+                                {booking.children}
+                            </NMText>
+                        </View>
+                    )}
+                </View>
+
+                {/* Price */}
+                <View style={styles.priceRow}>
+                    <NMText fontSize={14} fontFamily="regular" color={Colors.textLight}>
+                        Price:
+                    </NMText>
+                    <NMText fontSize={16} fontFamily="semiBold" color={Colors.primary}>
+                        {formatPrice(booking.fun_activity_price)}
+                    </NMText>
+                </View>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 };
 
 const HistoryScreen: React.FC = () => {
     const navigation = useNavigation();
-    const [activeTab, setActiveTab] = useState<TabType>('Confirmed');
+    const [bookings, setBookings] = useState<FunActivityBooking[]>([]);
+    const [loading, setLoading] = useState(false);
 
-    const historyData: HistoryCardProps[] = [
-        {
-            title: 'Desert Safari Camp',
-            tickets: 2,
-            date: '05/05/2025',
-            time: '10:30 PM',
-            amount: '$50',
-            status: 'Confirmed',
-        },
-        {
-            title: 'Water Adventure Park',
-            tickets: 4,
-            date: '06/06/2025',
-            time: '02:00 PM',
-            amount: '$80',
-            status: 'Cancelled',
-        },
-    ];
+    const fetchBookings = async () => {
+        try {
+            setLoading(true);
+            const { result, error } = await apiRequest<{
+                message: string;
+                data: {
+                    data: FunActivityBooking[];
+                };
+            }>({
+                endpoint: 'v1/fun-activity-bookings',
+                method: 'GET',
+            });
 
-    const filteredData = historyData.filter((item) => item.status === activeTab);
+            if (error) {
+                showErrorToast(error);
+                setBookings([]);
+                return;
+            }
+
+            if (result?.data?.data) {
+                setBookings(result.data.data);
+            } else {
+                setBookings([]);
+            }
+        } catch (err) {
+            console.error('Error fetching bookings:', err);
+            showErrorToast('Failed to load bookings. Please try again.');
+            setBookings([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchBookings();
+    }, []);
+
+    const handleCardPress = (booking: FunActivityBooking) => {
+        navigation.navigate('FunActivityDetail' as never, { activityId: booking.fun_activity_id } as never);
+    };
 
     return (
         <NMSafeAreaWrapper statusBarColor={Colors.white} statusBarStyle="dark-content">
-            <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
-
+            <LoaderModal visible={loading} />
+            <ScrollView
+                style={styles.container}
+                contentContainerStyle={{ paddingBottom: 20 }}
+                showsVerticalScrollIndicator={false}
+            >
                 <View style={styles.header}>
                     <View style={styles.row}>
-                        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <TouchableOpacity
+                            style={styles.backButton}
+                            onPress={() => navigation.goBack()}
+                        >
                             <ChevronLeft color={Colors.black} size={24} strokeWidth={2} />
                         </TouchableOpacity>
                         <NMText
@@ -125,27 +268,21 @@ const HistoryScreen: React.FC = () => {
                     </View>
                 </View>
 
-                <View style={styles.tabsContainer}>
-                    {(['Confirmed', 'Cancelled'] as TabType[]).map((tab) => (
-                        <TouchableOpacity
-                            key={tab}
-                            style={[styles.tab, activeTab === tab && styles.activeTab]}
-                            onPress={() => setActiveTab(tab)}
-                        >
-                            <NMText
-                                fontSize={16}
-                                fontFamily={activeTab === tab ? 'semiBold' : 'regular'}
-                                color={activeTab === tab ? Colors.white : Colors.textPrimary}
-                            >
-                                {tab}
-                            </NMText>
-                        </TouchableOpacity>
-                    ))}
-                </View>
-
-                {filteredData.map((item, index) => (
-                    <HistoryCard key={index} {...item} />
-                ))}
+                {bookings.length === 0 && !loading ? (
+                    <View style={styles.emptyContainer}>
+                        <NMText fontSize={16} fontFamily="regular" color={Colors.textLight}>
+                            No bookings found
+                        </NMText>
+                    </View>
+                ) : (
+                    bookings.map((booking, index) => (
+                        <HistoryCard
+                            key={`${booking.fun_activity_id}-${index}`}
+                            booking={booking}
+                            onPress={() => handleCardPress(booking)}
+                        />
+                    ))
+                )}
             </ScrollView>
         </NMSafeAreaWrapper>
     );
@@ -180,51 +317,89 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         backgroundColor: Colors.background,
     },
-    tabsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginTop: 20,
-        marginBottom: 10,
-        marginHorizontal: '5%',
-        borderRadius: 8,
-        overflow: 'hidden',
-        backgroundColor: Colors.white,
-    },
-    tab: {
-        flex: 1,
-        paddingVertical: 12,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    activeTab: {
-        backgroundColor: Colors.primary,
-    },
     card: {
         marginHorizontal: '5%',
         backgroundColor: Colors.white,
-        marginVertical: 6,
-        padding: 14,
+        marginVertical: 8,
         borderRadius: 12,
-        gap: 8,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
-    divider: {
-        width: 1,
-        height: 10,
-        backgroundColor: Colors.textLight,
-        marginHorizontal: 6,
+    cardImage: {
+        width: '100%',
+        height: 180,
+        backgroundColor: Colors.borderLight,
+    },
+    placeholderImage: {
+        backgroundColor: Colors.borderLight,
+    },
+    cardContent: {
+        padding: 14,
+        gap: 10,
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 4,
+    },
+    titleContainer: {
+        flex: 1,
+        marginRight: 10,
+    },
+    title: {
+        lineHeight: 22,
     },
     statusBox: {
-        width: 80,
-        height: 30,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 6,
+        minWidth: 80,
+        alignItems: 'center',
+    },
+    locationRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        marginBottom: 4,
+    },
+    detailsRow: {
+        marginTop: 4,
+    },
+    detailItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    ticketsRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 16,
+        marginTop: 4,
+        flexWrap: 'wrap',
+    },
+    ticketInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    priceRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: 8,
+        paddingTop: 10,
+        borderTopWidth: 1,
+        borderTopColor: Colors.borderLight,
+    },
+    emptyContainer: {
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 8,
-    },
-    rightSection: {
-        alignItems: 'flex-end',
-        gap: 10,
-        position: 'absolute',
-        right: 14,
-        top: '30%',
+        paddingVertical: 60,
     },
 });

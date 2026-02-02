@@ -11,9 +11,11 @@ import { Asset } from 'react-native-image-picker'
 import { apiRequest, getLoginUser } from '../../../services/apiClient'
 import { showErrorToast, showSuccessToast } from '../../../utils/toastService'
 import { useNavigation } from '@react-navigation/native'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 interface AgentFormData {
     name: string
+    last_name: string
     email: string
     mobile: string
     address: string
@@ -39,6 +41,7 @@ const EditUserProfie: React.FC<Props> = ({ route }) => {
     const [agentData, setAgentData] = useState<AgentFormData | null>(null)
     const [formData, setFormData] = useState<AgentFormData>({
         name: '',
+        last_name: '',
         email: '',
         mobile: '',
         address: '',
@@ -66,6 +69,7 @@ const EditUserProfie: React.FC<Props> = ({ route }) => {
         if (agentData) {
             setFormData({
                 name: agentData?.first_name || '',
+                last_name: agentData?.last_name || '',
                 email: agentData?.email || '',
                 mobile: agentData?.mobile || '',
                 address: agentData?.address || '',
@@ -117,6 +121,10 @@ const EditUserProfie: React.FC<Props> = ({ route }) => {
             newErrors.name = 'Name is required'
         }
 
+        if (!formData.last_name.trim()) {
+            newErrors.last_name = 'Last name is required'
+        }
+
         if (!formData.email.trim()) {
             newErrors.email = 'Email is required'
         } else if (!validateEmail(formData.email)) {
@@ -160,10 +168,11 @@ const EditUserProfie: React.FC<Props> = ({ route }) => {
         const data = new FormData()
 
         data.append('first_name', formData.name)
+        data.append('last_name', formData.last_name)
         data.append('email', formData.email)
         data.append('mobile', formData.mobile)
         data.append('address', formData.address)
-        data.append('zip_code', formData.zip_code)
+        data.append('zipcode', formData.zip_code)
         data.append('city', formData.city)
         data.append('state', formData.state)
         data.append('_method', 'PUT')
@@ -200,6 +209,18 @@ const EditUserProfie: React.FC<Props> = ({ route }) => {
             }
             console.log('res', result);
 
+            const updatedUser = result?.data
+            if (updatedUser) {
+                const existingLoginUser = await getLoginUser()
+                if (existingLoginUser) {
+                    const newLoginUser = {
+                        ...existingLoginUser,
+                        user: updatedUser,
+                    }
+                    await AsyncStorage.setItem('loginUser', JSON.stringify(newLoginUser))
+                }
+            }
+
             showSuccessToast(`Profile updated successfully`)
             handleCancel()
             navigation.goBack()
@@ -213,6 +234,7 @@ const EditUserProfie: React.FC<Props> = ({ route }) => {
     const handleCancel = () => {
         setFormData({
             name: '',
+            last_name: '',
             email: '',
             mobile: '',
             address: '',
@@ -233,7 +255,7 @@ const EditUserProfie: React.FC<Props> = ({ route }) => {
             <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 20 }}>
                 <View style={styles.headerView}>
                     <View style={styles.inRow}>
-                        <TouchableOpacity style={styles.backBox}>
+                        <TouchableOpacity style={styles.backBox} onPress={() => navigation.goBack()}>
                             <ChevronLeft color={Colors.black} size={24} strokeWidth={2} />
                         </TouchableOpacity>
                         <View style={styles.titleView}>
@@ -263,12 +285,21 @@ const EditUserProfie: React.FC<Props> = ({ route }) => {
                     <View style={{ height: 20 }} />
 
                     <NMTextInput
-                        label='Name'
+                        label='First Name'
                         placeholder='Enter your name'
                         required
                         value={formData.name}
                         onChangeText={(value) => updateField('name', value)}
                         error={errors.name}
+                    />
+
+                    <NMTextInput
+                        label='Last Name'
+                        placeholder='Enter your name'
+                        required
+                        value={formData.last_name}
+                        onChangeText={(value) => updateField('last_name', value)}
+                        error={errors.last_name}
                     />
 
                     <NMTextInput
@@ -279,10 +310,11 @@ const EditUserProfie: React.FC<Props> = ({ route }) => {
                         value={formData.email}
                         onChangeText={(value) => updateField('email', value)}
                         error={errors.email}
+                        editable={false}
                     />
 
                     <NMTextInput
-                        label='Mobile'
+                        label='Phone'
                         placeholder='Enter your mobile'
                         required
                         value={formData.mobile}
@@ -339,7 +371,7 @@ const EditUserProfie: React.FC<Props> = ({ route }) => {
                             borderRadius={8}
                             width={'48%'}
                             style={{ borderWidth: 1, borderColor: Colors.primary }}
-                            onPress={handleCancel}
+                            onPress={() => navigation.goBack()}
                             disabled={loader}
                         />
                         <NMButton

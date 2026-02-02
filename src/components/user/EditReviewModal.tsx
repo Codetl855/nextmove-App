@@ -218,7 +218,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.white,
         borderTopLeftRadius: 25,
         borderTopRightRadius: 25,
-        paddingBottom: 20,
+        paddingBottom: 30,
     },
     header: {
         alignItems: 'center',

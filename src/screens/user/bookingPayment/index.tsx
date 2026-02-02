@@ -254,7 +254,7 @@ const BookingPayment: React.FC = ({ navigation, route }: any) => {
 
                     <View style={styles.headerView}>
                         <View style={styles.inRow}>
-                            <TouchableOpacity style={styles.backBox}>
+                            <TouchableOpacity style={styles.backBox} onPress={() => navigation.goBack()}>
                                 <ChevronLeft color={Colors.black} size={24} strokeWidth={2} />
                             </TouchableOpacity>
                             <View style={styles.titleView}>
@@ -271,7 +271,7 @@ const BookingPayment: React.FC = ({ navigation, route }: any) => {
                         </NMText>
                         <View style={[styles.checkInBox, { marginTop: 26 }]}>
                             <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary}>
-                                Checkin
+                                Check In
                             </NMText>
                             <View style={[styles.inRow, { gap: 6 }]}>
                                 <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
@@ -282,7 +282,7 @@ const BookingPayment: React.FC = ({ navigation, route }: any) => {
                         <View style={styles.divider} />
                         <View style={styles.checkInBox}>
                             <NMText fontSize={16} fontFamily="regular" color={Colors.textPrimary}>
-                                Checkout
+                                Check Out
                             </NMText>
                             <View style={[styles.inRow, { gap: 6 }]}>
                                 <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
@@ -311,7 +311,7 @@ const BookingPayment: React.FC = ({ navigation, route }: any) => {
                                     Rental Fee
                                 </NMText>
                                 <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-                                    00SAR
+                                    {propertyDetails?.price} SAR
                                 </NMText>
                             </View>
                             <View style={styles.rentalFeeBox}>
@@ -319,7 +319,7 @@ const BookingPayment: React.FC = ({ navigation, route }: any) => {
                                     Service Fee
                                 </NMText>
                                 <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-                                    00SAR
+                                    00 SAR
                                 </NMText>
                             </View>
                             <View style={styles.rentalFeeBox}>
@@ -327,7 +327,7 @@ const BookingPayment: React.FC = ({ navigation, route }: any) => {
                                     Total
                                 </NMText>
                                 <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
-                                    {propertyDetails?.price}
+                                    {propertyDetails?.price} SAR
                                 </NMText>
                             </View>
                         </View>

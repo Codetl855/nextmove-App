@@ -189,7 +189,7 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                 price: property.price?.toString() || '',
                 terms: property.terms || '',
                 amenities: amenitiesList,
-                booking_type: property.booking_type || 'instant',
+                booking_type: property.booking_type || 'instant booking',
                 availability_start_date: property.availability_start_date || '',
                 availability_end_date: property.availability_end_date || '',
             });
@@ -395,6 +395,11 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                 values.property_category !== 'Sell' && !val
                     ? 'Availability End Date is required'
                     : null,
+
+            booking_type: (val) =>
+                values.property_category !== 'Sell' && !val
+                    ? 'Booking Type is required'
+                    : null,
         });
 
         // Validate images
@@ -525,13 +530,19 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
             });
         }
 
+        if (property) {
+            data.append('_method', 'PUT');
+        }
+
+        // console.log('data post', data);
+
 
         try {
             setLoading(true);
             const endPointCheck = property ? `v1/properties/${property.id}` : 'v1/properties';
             const { result, error } = await apiRequest({
                 endpoint: endPointCheck,
-                method: property ? 'PUT' : 'POST',
+                method: 'POST',
                 data: data,
                 config: {
                     headers: {
@@ -849,8 +860,8 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                             maxLength={500}
                         />
                         {values.property_category !== 'Sell' && (<>
-                            <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
-                                Booking Options
+                            <NMText fontSize={14} fontFamily="medium" color={Colors.textPrimary}>
+                                Booking Options <NMText color={Colors.error}> *</NMText>
                             </NMText>
                             <View style={[styles.inRow, { justifyContent: 'space-between', marginVertical: 10 }]}>
                                 <NMRadioButton
@@ -872,6 +883,7 @@ const AddProperties: React.FC = ({ navigation, route }: any) => {
                                     innerColor={Colors.primary}
                                 />
                             </View>
+                            {errors.booking_type ? <NMText fontSize={12} color={Colors.error} style={{ marginBottom: 10 }}>{errors.booking_type}</NMText> : null}
                         </>)}
                         <NMButton
                             title='Next'

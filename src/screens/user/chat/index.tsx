@@ -1,6 +1,7 @@
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, ActivityIndicator, Linking } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { ChevronLeft, Circle, PhoneCall, Paperclip, Camera, Send, Smile, Check, Download, FileText } from 'lucide-react-native'
+import { Image, FlatList, StyleSheet, Text, TouchableOpacity, View, TextInput, ActivityIndicator, Linking } from 'react-native'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
+import { ChevronLeft, Circle, Paperclip, Camera, Send, Smile, Check, Download, FileText } from 'lucide-react-native'
+import { useFocusEffect } from '@react-navigation/native'
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper'
 import NMText from '../../../components/common/NMText'
 import { Colors } from '../../../theme/colors'
@@ -11,32 +12,97 @@ import EmojiPicker from "rn-emoji-keyboard";
 import { pick, types } from '@react-native-documents/picker';
 import { pickImagesFromGallery } from '../../../utils/mediaPicker'
 import { getEcho } from '../../../utils/echo'
+import { showErrorToast } from '../../../utils/toastService'
 const ChatScreen: React.FC = ({ navigation, route }: any) => {
     const { property } = route.params || {};
 
     const [messages, setMessages] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState('');
-    const [currentUserId, setCurrentUserId] = useState(1);
+    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
     const [emojiOpen, setEmojiOpen] = useState(false);
     const [btnLoading, setbtnLoading] = useState(false);
     const [attachment, setAttachment] = useState(null);
-    let typingTimeout: any = null;
+    const [chatUser, setChatUser] = useState<any>(null);
+    const flatListRef = useRef<FlatList>(null);
+    const intervalRef = useRef<NodeJS.Timeout | null>(null);
+    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const initialScrollDoneRef = useRef<boolean>(false);
+    const echoRef = useRef<any>(null);
+    const flatListLayoutRef = useRef<boolean>(false);
 
-    const fetchMessages = async () => {
+    const scrollToBottom = useCallback((animated = false) => {
+        if (!flatListRef.current || messages.length === 0) {
+            return;
+        }
+
+        const attemptScroll = () => {
+            if (!flatListRef.current) return;
+
+            try {
+                // Use scrollToEnd - most reliable for chat messages
+                flatListRef.current.scrollToEnd({ animated });
+            } catch (error) {
+                console.log("Scroll error:", error);
+            }
+        };
+
+        // Use requestAnimationFrame for better timing
+        requestAnimationFrame(() => {
+            // Add a small delay to ensure layout is complete
+            setTimeout(() => {
+                attemptScroll();
+            }, 100);
+        });
+    }, [messages.length]);
+
+    const fetchMessages = async (showLoading = true) => {
         try {
-            setLoading(true);
+            if (showLoading) {
+                setLoading(true);
+            }
             const userInfo = await AsyncStorage.getItem('loginUser');
             const conversationId = property?.owner_id || property?.conversation_id;
+
+            if (!conversationId) {
+                throw new Error('Conversation ID is missing');
+            }
+
             const response = await chatService.getMessages(conversationId);
-            const parsedUser = JSON.parse(userInfo);
-            setCurrentUserId(parsedUser?.user?.id);
+            const parsedUser = JSON.parse(userInfo || '{}');
+            const userId = parsedUser?.user?.id;
+            setCurrentUserId(userId);
+
             const messagesData = response?.data || response || [];
-            setMessages(messagesData.reverse());
+            const reversedMessages = messagesData.reverse();
+            setMessages(reversedMessages);
+
+            // Set chat user info from messages or property
+            if (reversedMessages.length > 0) {
+                const otherUser = reversedMessages.find((msg: any) => msg.user?.id !== userId)?.user;
+                if (otherUser) {
+                    setChatUser(otherUser);
+                }
+            } else if (property?.otherItem) {
+                setChatUser(property.otherItem);
+            }
+
+            // Note: Scroll will be handled by useEffect when both messages and layout are ready
         } catch (error: any) {
             console.log("Failed to load messages:", error.message);
+            if (showLoading) {
+                showErrorToast(error.message || 'Failed to load conversation');
+                // Navigate back to ChatList on error
+                const errorTimeout = setTimeout(() => {
+                    navigation.goBack();
+                }, 1500);
+                return () => clearTimeout(errorTimeout);
+            }
         } finally {
-            setLoading(false);
+            if (showLoading) {
+                setLoading(false);
+            }
         }
     };
 
@@ -51,10 +117,38 @@ const ChatScreen: React.FC = ({ navigation, route }: any) => {
         }
     };
 
-    useEffect(() => {
-        markAsRead();
-        fetchMessages();
-    }, []);
+    // Use focus effect to handle interval polling safely
+    useFocusEffect(
+        useCallback(() => {
+            // Reset flags when screen comes into focus
+            initialScrollDoneRef.current = false;
+            flatListLayoutRef.current = false;
+            
+            markAsRead();
+            fetchMessages(true); // Show loading on initial load
+
+            // Set up interval polling for messages (every 5 seconds) only when screen is focused
+            const conversationId = property?.owner_id || property?.conversation_id;
+            if (conversationId) {
+                intervalRef.current = setInterval(() => {
+                    fetchMessages(false); // Don't show loading during interval updates
+                }, 5000);
+            }
+
+            return () => {
+                // Cleanup interval when screen loses focus
+                if (intervalRef.current) {
+                    clearInterval(intervalRef.current);
+                    intervalRef.current = null;
+                }
+                // Cleanup scroll timeout
+                if (scrollTimeoutRef.current) {
+                    clearTimeout(scrollTimeoutRef.current);
+                    scrollTimeoutRef.current = null;
+                }
+            };
+        }, [property?.owner_id, property?.conversation_id])
+    );
 
     const handlePickImage = async () => {
         const images = await pickImagesFromGallery({ multiple: false });
@@ -92,7 +186,10 @@ const ChatScreen: React.FC = ({ navigation, route }: any) => {
     };
 
     const handleSendMessage = async () => {
+        if (!message.trim() && !attachment) return;
+
         try {
+            setbtnLoading(true);
             const conversationId = property?.owner_id || property?.conversation_id;
 
             const formData = new FormData();
@@ -112,9 +209,18 @@ const ChatScreen: React.FC = ({ navigation, route }: any) => {
             setMessage('');
             setAttachment(null);
 
-            fetchMessages();
-        } catch (e) {
+            // Fetch messages and scroll to bottom
+            await fetchMessages(false);
+
+            // Scroll to bottom after sending
+            setTimeout(() => {
+                scrollToBottom(true);
+            }, 100);
+        } catch (e: any) {
             console.log("Send message error:", e);
+            showErrorToast(e.message || 'Failed to send message');
+        } finally {
+            setbtnLoading(false);
         }
     };
 
@@ -131,8 +237,13 @@ const ChatScreen: React.FC = ({ navigation, route }: any) => {
     const onTyping = (text: any) => {
         setMessage(text);
 
-        clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(() => {
+        // Clear existing timeout
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        // Set new timeout
+        typingTimeoutRef.current = setTimeout(() => {
             handleTyping();
         }, 500);
     };
@@ -234,24 +345,96 @@ const ChatScreen: React.FC = ({ navigation, route }: any) => {
     // }, [property?.owner_id, property?.conversation_id]);
 
     useEffect(() => {
-        let echo: Echo | null = null;
-        const channelName = `conversation-list.user.${property?.users || property?.conversation_id}`;
+        let echo: any = null;
+        let scrollTimeout: NodeJS.Timeout | null = null;
+        const conversationId = property?.owner_id || property?.conversation_id;
+        if (!conversationId) return;
+
+        const channelName = `conversation.${conversationId}`;
 
         const setup = async () => {
-            echo = await getEcho();
-            echo.private(channelName)
-                .subscribed(() => console.log("📡 Subscribed to", channelName))
-                .listen(".conversation.updated", e => console.log("EVENT:", e));
+            try {
+                echo = await getEcho();
+                echoRef.current = echo;
+                echo.private(channelName)
+                    .subscribed(() => console.log("📡 Subscribed to conversation", channelName))
+                    .listen(".message.sent", (newMessage: any) => {
+                        console.log("📩 New message received:", newMessage);
+                        setMessages(prev => {
+                            // Check if message already exists
+                            const exists = prev.find(m => m.id === newMessage.id);
+                            if (exists) return prev;
+                            return [...prev, newMessage];
+                        });
+
+                        // Scroll to bottom when new message arrives
+                        if (scrollTimeout) {
+                            clearTimeout(scrollTimeout);
+                        }
+                        scrollTimeout = setTimeout(() => {
+                            scrollToBottom(true);
+                        }, 100);
+                    });
+            } catch (error) {
+                console.log("Failed to setup echo listener:", error);
+            }
         };
 
         setup();
 
         return () => {
-            if (echo) echo.leave(channelName);
+            // Cleanup scroll timeout
+            if (scrollTimeout) {
+                clearTimeout(scrollTimeout);
+            }
+            // Cleanup Echo listener
+            if (echo) {
+                try {
+                    echo.leave(channelName);
+                    console.log("🧹 Left channel:", channelName);
+                } catch (error) {
+                    console.log("Error leaving channel:", error);
+                }
+            }
+            echoRef.current = null;
         };
     }, [property?.owner_id, property?.conversation_id]);
 
+    // Scroll to bottom when both messages are loaded AND FlatList is laid out
+    useEffect(() => {
+        if (messages.length > 0 && flatListLayoutRef.current && !initialScrollDoneRef.current) {
+            initialScrollDoneRef.current = true;
+            // Try scrolling multiple times with increasing delays to ensure it works
+            // This handles cases where the list needs time to measure its content
+            const timeout1 = setTimeout(() => scrollToBottom(false), 150);
+            const timeout2 = setTimeout(() => scrollToBottom(false), 400);
+            const timeout3 = setTimeout(() => scrollToBottom(false), 700);
+            
+            return () => {
+                clearTimeout(timeout1);
+                clearTimeout(timeout2);
+                clearTimeout(timeout3);
+            };
+        }
+    }, [messages.length, scrollToBottom]);
 
+    // Cleanup all timeouts on unmount
+    useEffect(() => {
+        return () => {
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+                intervalRef.current = null;
+            }
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+                typingTimeoutRef.current = null;
+            }
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+                scrollTimeoutRef.current = null;
+            }
+        };
+    }, []);
 
 
     return (
@@ -265,39 +448,43 @@ const ChatScreen: React.FC = ({ navigation, route }: any) => {
                         </TouchableOpacity>
                         <View style={styles.titleView}>
                             <NMText fontSize={20} fontFamily='semiBold' color={Colors.textSecondary}>
-                                {currentUserId !== messages[0]?.user?.id ?
-                                    messages[0]?.user?.first_name + ' ' + messages[0]?.user?.last_name : property?.otherItem?.name}
+                                {loading ? 'Loading...' :
+                                    (chatUser?.first_name && chatUser?.last_name
+                                        ? `${chatUser.first_name} ${chatUser.last_name}`
+                                        : chatUser?.name || property?.otherItem?.name || 'Chat')}
                             </NMText>
                             <View style={styles.inRow}>
                                 <Circle
-                                    color={messages[0]?.user?.is_online ? Colors.statusText : Colors.textLight}
+                                    color={chatUser?.is_online ? Colors.statusText : Colors.textLight}
                                     size={8}
-                                    fill={messages[0]?.user?.is_online ? Colors.statusText : Colors.textLight}
+                                    fill={chatUser?.is_online ? Colors.statusText : Colors.textLight}
                                     style={{ marginRight: 5 }}
                                 />
-                                <NMText fontSize={14} fontFamily='regular' color={Colors.statusText}>
-                                    {messages[0]?.user?.is_online ? 'Online' : 'Offline'}
+                                <NMText fontSize={14} fontFamily='regular' color={chatUser?.is_online ? Colors.statusText : Colors.textLight}>
+                                    {chatUser?.is_online ? 'Online' : 'Offline'}
                                 </NMText>
                             </View>
                         </View>
                     </View>
-                    <TouchableOpacity style={styles.backBox}>
-                        <PhoneCall color={Colors.black} size={18} strokeWidth={2} />
-                    </TouchableOpacity>
                 </View>
 
                 {/* Messages */}
-                <ScrollView
+                <FlatList
+                    ref={flatListRef}
+                    data={messages}
+                    keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
                     style={styles.messagesContainer}
-                    contentContainerStyle={{ paddingBottom: 20 }}
+                    contentContainerStyle={{ paddingBottom: 20, paddingTop: 20 }}
                     showsVerticalScrollIndicator={false}
-                >
-                    {messages.map((msg) => {
-                        const isSent = msg.user.id === currentUserId;
+                    onLayout={() => {
+                        // Mark FlatList as laid out
+                        flatListLayoutRef.current = true;
+                    }}
+                    renderItem={({ item: msg }) => {
+                        const isSent = msg.user?.id === currentUserId;
 
                         return (
                             <View
-                                key={msg.id}
                                 style={[
                                     styles.messageWrapper,
                                     isSent ? styles.sentWrapper : styles.receivedWrapper
@@ -306,7 +493,7 @@ const ChatScreen: React.FC = ({ navigation, route }: any) => {
                                 {!isSent && (
                                     <Image
                                         source={{
-                                            uri: msg.user.profile_image
+                                            uri: msg.user?.profile_image || ''
                                         }}
                                         style={styles.avatar}
                                     />
@@ -347,8 +534,8 @@ const ChatScreen: React.FC = ({ navigation, route }: any) => {
                                 )}
                             </View>
                         );
-                    })}
-                </ScrollView>
+                    }}
+                />
 
                 {attachment && (
                     <View style={styles.attachmentContainer}>
@@ -577,7 +764,8 @@ const styles = StyleSheet.create({
     },
     fileName: {
         fontSize: 14,
-        fontWeight: '500'
+        fontWeight: '500',
+        width: '74%',
     },
     fileSize: {
         fontSize: 12,

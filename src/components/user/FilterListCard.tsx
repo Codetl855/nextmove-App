@@ -24,12 +24,7 @@ const FilterListCard: React.FC<Props> = ({ item, SelectedCategory, onFavoritePre
         <TouchableOpacity
             style={styles.container}
             activeOpacity={0.8}
-            onPress={() =>
-                navigation.navigate('PropertyDetailScreen', {
-                    property: item,
-                    SelectedCategory: SelectedCategory,
-                })
-            }
+            onPress={() => navigation.navigate('PropertyDetailScreen', { property: item })}
         >
 
             {/* Property Image */}
@@ -55,11 +50,11 @@ const FilterListCard: React.FC<Props> = ({ item, SelectedCategory, onFavoritePre
                 </View>
 
                 {/* Features (these are not in API → default 0) */}
-                {/* <View style={styles.featuresContainer}>
+                <View style={styles.featuresContainer}>
                     <View style={styles.feature}>
                         <Image source={require('../../assets/icons/sqf.png')} style={styles.featureIcon} />
                         <NMText fontSize={12} fontFamily='regular' color={Colors.textPrimary}>
-                            {item?.size || 0}sqf
+                            {item?.size || 0} Sqft
                         </NMText>
                     </View>
 
@@ -76,16 +71,16 @@ const FilterListCard: React.FC<Props> = ({ item, SelectedCategory, onFavoritePre
                             {item?.bathrooms || 0} Baths
                         </NMText>
                     </View>
-                </View> */}
+                </View>
 
                 {/* Price + Added Date */}
                 <View style={styles.priceContainer}>
-                    <NMText fontSize={12} fontFamily='regular' color={Colors.textLight}>
-                        Added: {item.added_on}
+                    <NMText fontSize={10} fontFamily='regular' color={Colors.textLight}>
+                        Added: {item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}
                     </NMText>
 
-                    <NMText fontSize={14} fontFamily='semiBold' color={Colors.primary}>
-                        ${item.price}
+                    <NMText fontSize={12} fontFamily='semiBold' color={Colors.primary}>
+                        SAR {item.price}
                     </NMText>
                 </View>
 
@@ -192,7 +187,7 @@ const styles = StyleSheet.create({
     },
     imageStyle: {
         width: 110,
-        height: 90,
+        height: 113,
         // height: 113,
         borderRadius: 12,
     },

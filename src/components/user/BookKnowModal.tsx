@@ -6,7 +6,7 @@ import {
     StyleSheet,
     ScrollView,
 } from 'react-native';
-import { X, Calendar, ChevronDown, SquareCheckIcon } from 'lucide-react-native';
+import { X, Calendar, ChevronDown, SquareCheckIcon, Square, SquareIcon } from 'lucide-react-native';
 import NMText from '../common/NMText';
 import { Colors } from '../../theme/colors';
 import NMTextInput from '../common/NMTextInput';
@@ -37,6 +37,7 @@ const BookKnowModal: React.FC<BookKnowModalProps> = ({
     const [showApprovalModal, setShowApprovalModal] = useState(false);
     const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
     const [availabilityData, setAvailabilityData] = useState<any>(null);
+    const [agreeCheck, setAgreeCheck] = useState(false);
 
     const guestData = [
         { label: '1', value: '1' },
@@ -50,6 +51,35 @@ const BookKnowModal: React.FC<BookKnowModalProps> = ({
         checkOut: '',
         guest: '',
     });
+
+    // Calculate number of days between check-in and check-out
+    const calculateDays = (checkIn: string, checkOut: string): number => {
+        if (!checkIn || !checkOut) return 0;
+        try {
+            const startDate = new Date(checkIn);
+            const endDate = new Date(checkOut);
+            // Ensure check-out is after check-in
+            if (endDate <= startDate) return 0;
+            const diffTime = endDate.getTime() - startDate.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays > 0 ? diffDays : 0;
+        } catch (error) {
+            return 0;
+        }
+    };
+
+    // Calculate total price based on days (only for Stay)
+    const calculateTotalPrice = (): number => {
+        if (propertyDetails?.property_category?.toLowerCase() === 'stay') {
+            const days = calculateDays(values.checkIn, values.checkOut);
+            const pricePerDay = parseFloat(propertyDetails?.price || '0');
+            return days * pricePerDay;
+        }
+        return parseFloat(propertyDetails?.price || '0');
+    };
+
+    const numberOfDays = calculateDays(values.checkIn, values.checkOut);
+    const totalPrice = calculateTotalPrice();
 
     const handleNavigate = async () => {
         // Clear previous error
@@ -70,6 +100,8 @@ const BookKnowModal: React.FC<BookKnowModalProps> = ({
                 checkIn: values.checkIn,
                 checkOut: values.checkOut,
                 guest: values.guest,
+                totalPrice: propertyDetails?.property_category?.toLowerCase() === 'stay' ? totalPrice : undefined,
+                numberOfDays: propertyDetails?.property_category?.toLowerCase() === 'stay' ? numberOfDays : undefined,
             });
         } else if (isAvailable?.data?.is_available && propertyDetails?.booking_type === "approval needed") {
             setShowApprovalModal(true);
@@ -155,8 +187,8 @@ const BookKnowModal: React.FC<BookKnowModalProps> = ({
                                 <NMText fontSize={20} fontFamily="semiBold" color={Colors.textSecondary}>
                                     Book Now
                                 </NMText>
-                                <View style={styles.statusBox}>
-                                    <NMText fontSize={14} fontFamily="regular" color={Colors.statusText}>
+                                <View style={[styles.statusBox, { backgroundColor: propertyDetails?.booking_type === 'instant booking' ? Colors.statusBg : Colors.statusPendingBg }]}>
+                                    <NMText fontSize={14} fontFamily="regular" color={propertyDetails?.booking_type === 'instant booking' ? Colors.statusText : Colors.statusPendingText}>
                                         {propertyDetails?.booking_type
                                             ?.replace(/\bbooking\b/i, "")
                                             ?.trim()
@@ -172,10 +204,14 @@ const BookKnowModal: React.FC<BookKnowModalProps> = ({
 
                         <View style={styles.priceBox}>
                             <NMText fontSize={18} fontFamily="bold" color={Colors.primary}>
-                                {propertyDetails?.price}
+                                SAR {propertyDetails?.price}
                             </NMText>
-                            <NMText fontSize={18} fontFamily="regular" color={Colors.primary}>
-                                /Month
+                            <NMText fontSize={12} fontFamily="medium" color={Colors.primary}>
+                                {propertyDetails?.property_category == 'Rent'
+                                    ? '/Month'
+                                    : propertyDetails?.property_category == 'Sell'
+                                        ? ''
+                                        : '/Day'}
                             </NMText>
                         </View>
 
@@ -197,7 +233,7 @@ const BookKnowModal: React.FC<BookKnowModalProps> = ({
 
                         <View style={styles.checkInBox}>
                             <NMDatePicker
-                                label="Check-out"
+                                label="Check-Out"
                                 placeholder="dd/mm/yyyy"
                                 value={values.checkOut}
                                 onChange={(value) => {
@@ -228,12 +264,34 @@ const BookKnowModal: React.FC<BookKnowModalProps> = ({
                             <NMText fontSize={16} fontFamily="semiBold" color={Colors.textPrimary}>
                                 Cost Breakdown
                             </NMText>
+                            {propertyDetails?.property_category?.toLowerCase() === 'stay' && values.checkIn && values.checkOut && numberOfDays > 0 && (
+                                <View style={styles.costBox}>
+                                    <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                        Price per day
+                                    </NMText>
+                                    <NMText fontSize={14} fontFamily="semiBold" color={Colors.textPrimary}>
+                                        {propertyDetails?.price} SAR
+                                    </NMText>
+                                </View>
+                            )}
+                            {propertyDetails?.property_category?.toLowerCase() === 'stay' && values.checkIn && values.checkOut && numberOfDays > 0 && (
+                                <View style={styles.costBox}>
+                                    <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
+                                        Number of days
+                                    </NMText>
+                                    <NMText fontSize={14} fontFamily="semiBold" color={Colors.textPrimary}>
+                                        {numberOfDays} {numberOfDays === 1 ? 'day' : 'days'}
+                                    </NMText>
+                                </View>
+                            )}
                             <View style={styles.costBox}>
                                 <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
                                     Rental Fee
                                 </NMText>
                                 <NMText fontSize={14} fontFamily="semiBold" color={Colors.textPrimary}>
-                                    00SAR
+                                    {propertyDetails?.property_category?.toLowerCase() === 'stay' && values.checkIn && values.checkOut && numberOfDays > 0
+                                        ? `${totalPrice.toFixed(2)} SAR`
+                                        : `${propertyDetails?.price} SAR`}
                                 </NMText>
                             </View>
                             <View style={styles.costBox}>
@@ -241,7 +299,7 @@ const BookKnowModal: React.FC<BookKnowModalProps> = ({
                                     Service Fee
                                 </NMText>
                                 <NMText fontSize={14} fontFamily="semiBold" color={Colors.textPrimary}>
-                                    00SAR
+                                    00 SAR
                                 </NMText>
                             </View>
                             <View style={styles.costBox}>
@@ -249,12 +307,21 @@ const BookKnowModal: React.FC<BookKnowModalProps> = ({
                                     Total
                                 </NMText>
                                 <NMText fontSize={14} fontFamily="semiBold" color={Colors.textPrimary}>
-                                    {propertyDetails?.price}
+                                    {propertyDetails?.property_category?.toLowerCase() === 'stay' && values.checkIn && values.checkOut && numberOfDays > 0
+                                        ? `${totalPrice.toFixed(2)} SAR`
+                                        : `${propertyDetails?.price} SAR`}
                                 </NMText>
                             </View>
 
                             <View style={styles.agreeBox}>
-                                <SquareCheckIcon color={Colors.white} size={22} strokeWidth={1} fill={Colors.primary} />
+                                <TouchableOpacity onPress={() => setAgreeCheck(!agreeCheck)}>
+                                    {agreeCheck ? (
+                                        <SquareCheckIcon color={Colors.white} size={22} strokeWidth={1} fill={Colors.primary} />
+                                    ) : (
+                                        <SquareIcon color={Colors.primary} size={22} strokeWidth={1} />
+                                    )
+                                    }
+                                </TouchableOpacity>
                                 <NMText fontSize={14} fontFamily="regular" color={Colors.textPrimary}>
                                     I agree to the rental <NMText fontSize={14} fontFamily="medium" color={Colors.primary}>terms</NMText> & cancellation policy
                                 </NMText>
@@ -262,13 +329,14 @@ const BookKnowModal: React.FC<BookKnowModalProps> = ({
                         </View>
 
                         <NMButton
-                            title="Book Now"
+                            title={propertyDetails?.booking_type === 'instant booking' ? "Book Now" : "Send Request"}
                             fontFamily='semiBold'
                             width={'92%'}
                             borderRadius={8}
                             style={{ alignSelf: 'center', marginTop: 10 }}
                             onPress={() => handleNavigate()}
                             loading={loader}
+                            disabled={!agreeCheck}
                         />
                         {errorMessage ? (
                             <View style={styles.errorContainer}>

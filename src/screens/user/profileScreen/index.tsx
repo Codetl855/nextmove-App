@@ -5,6 +5,7 @@ import { Colors } from '../../../theme/colors';
 import NMSafeAreaWrapper from '../../../components/common/NMSafeAreaWrapper';
 import NMText from '../../../components/common/NMText';
 import { apiRequest, getLoginUser } from '../../../services/apiClient';
+import { useFocusEffect } from '@react-navigation/native';
 
 const ProfileScreen: React.FC = ({ navigation }) => {
     const [activeTab, setActiveTab] = useState<'overview' | 'documents' | 'agents'>('overview');
@@ -72,6 +73,12 @@ const ProfileScreen: React.FC = ({ navigation }) => {
             console.error('Failed to fetch agency agents', err);
         }
     }
+
+    useFocusEffect(
+        React.useCallback(() => {
+            loadUser();
+        }, [])
+    );
 
     useEffect(() => {
         loadUser();
@@ -207,10 +214,10 @@ const ProfileScreen: React.FC = ({ navigation }) => {
 
 const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
     <View style={styles.infoRow}>
-        <NMText fontSize={16} fontFamily="regular" color={Colors.textLight} style={{ width: '40%' }}>
+        <NMText fontSize={16} fontFamily="regular" color={Colors.textLight} style={{ width: '30%' }}>
             {label}
         </NMText>
-        <NMText fontSize={16} fontFamily="medium" color={Colors.textPrimary}>
+        <NMText fontSize={16} fontFamily="medium" color={Colors.textPrimary} style={{ width: '70%' }}>
             {value}
         </NMText>
     </View>
@@ -320,7 +327,8 @@ const styles = StyleSheet.create({
     },
     infoRow: {
         flexDirection: 'row',
-        overflow: 'hidden',
+        flexWrap: 'wrap',
+        // overflow: 'hidden',
         paddingVertical: 12,
         borderBottomWidth: 1,
         borderBottomColor: Colors.border,

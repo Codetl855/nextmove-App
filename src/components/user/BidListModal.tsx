@@ -249,7 +249,7 @@ const BidListModal: React.FC<BidListModalProps> = ({
                                                         styles.statusBadge,
                                                         {
                                                             backgroundColor:
-                                                                bid.status === 'active'
+                                                                bid.status === 'active' || bid.status === 'approved'
                                                                     ? Colors.statusBg
                                                                     : Colors.statusPendingBg,
                                                         },
@@ -259,7 +259,7 @@ const BidListModal: React.FC<BidListModalProps> = ({
                                                         fontSize={12}
                                                         fontFamily="regular"
                                                         color={
-                                                            bid.status === 'active'
+                                                            bid.status === 'active' || bid.status === 'approved'
                                                                 ? Colors.statusText
                                                                 : Colors.statusPendingText
                                                         }
@@ -270,7 +270,7 @@ const BidListModal: React.FC<BidListModalProps> = ({
                                             </View>
                                         </View>
 
-                                        {bid.status !== 'approved' && (<View style={styles.actionButtons}>
+                                        {(bid.status !== 'approved') && (bid.status !== 'cancelled') && (<View style={styles.actionButtons}>
                                             <NMButton
                                                 title="Cancel"
                                                 backgroundColor={Colors.white}
@@ -415,6 +415,7 @@ const styles = StyleSheet.create({
 });
 
 export default BidListModal;
+
 
 
 

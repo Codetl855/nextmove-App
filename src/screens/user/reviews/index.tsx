@@ -65,7 +65,7 @@ const ReviewsScreen: React.FC = () => {
         try {
             setLoading(true);
             const { result, error } = await apiRequest({
-                endpoint: 'v1/reviews',
+                endpoint: 'v1/reviews?page=1&per_page=1000',
                 method: 'GET',
             });
 

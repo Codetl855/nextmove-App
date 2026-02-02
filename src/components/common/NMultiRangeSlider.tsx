@@ -191,7 +191,7 @@ const MultiRangeSlider: React.FC<MultiRangeSliderProps> = ({
                     {title}
                 </NMText>
                 <NMText fontSize={14} fontFamily='medium' color={Colors.textLight}>
-                    {prefix}{formatValue(min)}{suffix} - {prefix}{formatValue(max)}{suffix}
+                    {prefix}{' '}{formatValue(min)}{' '}{suffix} - {prefix}{' '}{formatValue(max)}{' '}{suffix}
                 </NMText>
             </View>
 
@@ -234,12 +234,12 @@ const MultiRangeSlider: React.FC<MultiRangeSliderProps> = ({
             <View style={styles.labelsContainer}>
                 <View style={styles.label}>
                     <NMText fontSize={12} fontFamily='medium' color={Colors.textLight}>
-                        {prefix}{formatValue(minValue)}{suffix}
+                        {prefix}{' '}{formatValue(minValue)}{' '}{suffix}
                     </NMText>
                 </View>
                 <View style={styles.label}>
                     <NMText fontSize={12} fontFamily='medium' color={Colors.textLight}>
-                        {prefix}{formatValue(maxValue)}{suffix}
+                        {prefix}{' '}{formatValue(maxValue)}{' '}{suffix}
                     </NMText>
                 </View>
             </View>
